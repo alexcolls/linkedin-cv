@@ -116,39 +116,67 @@ poetry run python -m src.cli https://www.linkedin.com/in/your-username/
 
 ## 💻 Usage
 
+### ⚠️ Important: LinkedIn Authentication
+
+**LinkedIn requires authentication to view full profiles.** When scraping directly from a URL without being logged in, LinkedIn will show an authentication wall instead of profile content, resulting in an empty PDF.
+
+**We recommend using the `--html-file` option** to generate PDFs from manually saved HTML. See the [HTML Export Guide](HTML_EXPORT_GUIDE.md) for detailed instructions.
+
 ### Basic Command
 
 ```bash
+# Using manually saved HTML (Recommended)
+poetry run python -m src.cli --html-file linkedin-profile.html
+
+# Direct scraping (may encounter authentication wall)
 poetry run python -m src.cli <linkedin-profile-url>
 ```
 
 ### Command-Line Options
 
 ```bash
-poetry run python -m src.cli [OPTIONS] <linkedin-profile-url>
+poetry run python -m src.cli [OPTIONS] [PROFILE_URL]
 
 Options:
   -o, --output-dir PATH    Output directory for generated PDFs [default: ./output]
   -t, --template PATH      Custom HTML template path [default: built-in]
+  --html-file PATH         Use manually saved LinkedIn HTML file (bypasses scraping)
   --headless / --no-headless  Run browser in headless mode [default: headless]
   --debug                  Enable debug logging
   --help                   Show this message and exit
+
+Note: Either PROFILE_URL or --html-file must be provided.
 ```
 
 ### Examples
 
 ```bash
-# Basic usage - generates PDF in ./output/
+# Using manually saved HTML (RECOMMENDED)
+poetry run python -m src.cli --html-file linkedin-profile.html
+
+# With custom output directory
+poetry run python -m src.cli --html-file linkedin-profile.html -o ~/Documents/CVs
+
+# With custom template
+poetry run python -m src.cli --html-file linkedin-profile.html -t my_template.html
+
+# Direct scraping (may encounter authentication issues)
 poetry run python -m src.cli https://www.linkedin.com/in/johndoe/
 
-# Custom output directory
-poetry run python -m src.cli -o ~/Documents/CVs https://www.linkedin.com/in/johndoe/
-
-# Debug mode with visible browser
+# Debug mode with visible browser (for direct scraping)
 poetry run python -m src.cli --no-headless --debug https://www.linkedin.com/in/johndoe/
+```
 
-# Custom template
-poetry run python -m src.cli -t my_custom_template.html https://www.linkedin.com/in/johndoe/
+### How to Save LinkedIn HTML Manually
+
+For best results, manually save your LinkedIn profile HTML while logged in:
+
+1. **Log in to LinkedIn** and navigate to your profile
+2. **Open Developer Tools** (F12 or Ctrl+Shift+I)
+3. **Copy the HTML**: Right-click the `<html>` tag → Copy → Copy outerHTML
+4. **Save to file**: Paste into a text editor and save as `linkedin-profile.html`
+
+📖 **See the complete guide:** [HTML_EXPORT_GUIDE.md](HTML_EXPORT_GUIDE.md)
 ```
 
 ### Output

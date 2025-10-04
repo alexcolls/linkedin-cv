@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-10-04
+
+### Added
+- 📜 **--html-file option** - Generate PDFs from manually saved LinkedIn HTML files
+- 📖 **HTML_EXPORT_GUIDE.md** - Comprehensive guide for exporting LinkedIn profile HTML
+- ⚠️ **LinkedIn authentication warning** - Documentation about authentication wall issues
+
+### Changed
+- ⬆️ **WeasyPrint updated** - Upgraded from v60.0 to v62.x to fix pydyf compatibility
+- 📄 **CLI improved** - PROFILE_URL argument now optional when using --html-file
+- 📝 **Documentation enhanced** - README updated with HTML file workflow
+
+### Fixed
+- 🐛 **WeasyPrint PDF generation** - Fixed `PDF.__init__()` compatibility issue with pydyf
+- 🔒 **Authentication wall handling** - Added workaround for LinkedIn login requirements
+
 ## [0.2.0] - 2025-10-04
 
 ### Added

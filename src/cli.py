@@ -31,7 +31,7 @@ def display_banner():
 
 
 @click.command()
-@click.argument("profile_url", type=str)
+@click.argument("profile_url", type=str, required=False)
 @click.option(
     "-o",
     "--output-dir",
@@ -47,6 +47,12 @@ def display_banner():
     help="Custom HTML template path",
 )
 @click.option(
+    "--html-file",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False),
+    default=None,
+    help="Path to manually saved LinkedIn profile HTML file (bypasses scraping)",
+)
+@click.option(
     "--headless/--no-headless",
     default=True,
     help="Run browser in headless mode",
@@ -57,17 +63,27 @@ def display_banner():
     help="Enable debug logging",
 )
 def main(
-    profile_url: str,
+    profile_url: Optional[str],
     output_dir: str,
     template: Optional[str],
+    html_file: Optional[str],
     headless: bool,
     debug: bool,
 ):
     """Generate a professional PDF CV from a LinkedIn profile.
 
     PROFILE_URL: LinkedIn profile URL (e.g., https://www.linkedin.com/in/username/)
+                 Not required if --html-file is provided.
     """
     display_banner()
+
+    # Validate inputs
+    if not profile_url and not html_file:
+        console.print("[red]❌ Error: Either PROFILE_URL or --html-file must be provided[/red]")
+        sys.exit(1)
+
+    if profile_url and html_file:
+        console.print("[yellow]⚠️  Both URL and HTML file provided. Using HTML file.[/yellow]")
 
     # Create output directory if it doesn't exist
     output_path = Path(output_dir)
@@ -75,7 +91,7 @@ def main(
 
     try:
         # Run the async workflow
-        asyncio.run(generate_cv(profile_url, output_path, template, headless, debug))
+        asyncio.run(generate_cv(profile_url, output_path, template, html_file, headless, debug))
     except KeyboardInterrupt:
         console.print("\n[yellow]⚠️  Operation cancelled by user[/yellow]")
         sys.exit(0)
@@ -87,9 +103,10 @@ def main(
 
 
 async def generate_cv(
-    profile_url: str,
+    profile_url: Optional[str],
     output_path: Path,
     template: Optional[str],
+    html_file: Optional[str],
     headless: bool,
     debug: bool,
 ):
@@ -101,14 +118,26 @@ async def generate_cv(
         console=console,
     ) as progress:
 
-        # Step 1: Scrape LinkedIn profile
-        task1 = progress.add_task("🔍 Scraping LinkedIn profile...", total=None)
+        # Step 1: Get HTML content (either from file or by scraping)
+        if html_file:
+            task1 = progress.add_task("📂 Loading HTML file...", total=None)
+            
+            try:
+                with open(html_file, "r", encoding="utf-8") as f:
+                    html_content = f.read()
+                progress.update(task1, completed=True)
+                console.print("   [green]✓[/green] HTML file loaded successfully!")
+            except Exception as e:
+                progress.update(task1, completed=True)
+                raise Exception(f"Failed to read HTML file: {str(e)}")
+        else:
+            task1 = progress.add_task("🔍 Scraping LinkedIn profile...", total=None)
 
-        scraper = LinkedInScraper(headless=headless, debug=debug)
-        html_content = await scraper.scrape_profile(profile_url)
+            scraper = LinkedInScraper(headless=headless, debug=debug)
+            html_content = await scraper.scrape_profile(profile_url)
 
-        progress.update(task1, completed=True)
-        console.print("   [green]✓[/green] Profile scraped successfully!")
+            progress.update(task1, completed=True)
+            console.print("   [green]✓[/green] Profile scraped successfully!")
 
         # Step 2: Parse profile data
         task2 = progress.add_task("📋 Parsing profile data...", total=None)
