@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ name }} - Professional CV</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            {% if profile_image_data %}
+            <div class="profile-photo">
+                <img src="{{ profile_image_data }}" alt="{{ name }}">
+            </div>
+            {% endif %}
+            <div class="header-content">
+                {% if name %}
+                <h1 class="name">{{ name }}</h1>
+                {% endif %}
+                {% if headline %}
+                <div class="headline">{{ headline }}</div>
+                {% endif %}
+                {% if location %}
+                <div class="location">{{ location }}</div>
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- About Section -->
+        {% if about %}
+        <section class="section">
+            <h2 class="section-title">About</h2>
+            <div class="section-content">
+                <p class="about-text">{{ about }}</p>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Experience Section -->
+        {% if experience and experience|length > 0 %}
+        <section class="section">
+            <h2 class="section-title">Experience</h2>
+            <div class="section-content">
+                {% for job in experience %}
+                <div class="experience-item">
+                    <div class="experience-header">
+                        {% if job.title %}
+                        <div class="job-title">{{ job.title }}</div>
+                        {% endif %}
+                        {% if job.company %}
+                        <div class="company-name">{{ job.company }}</div>
+                        {% endif %}
+                        {% if job.duration %}
+                        <div class="job-duration">{{ job.duration }}</div>
+                        {% endif %}
+                        {% if job.location %}
+                        <div class="job-location">{{ job.location }}</div>
+                        {% endif %}
+                    </div>
+                    {% if job.description %}
+                    <div class="job-description">{{ job.description }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Education Section -->
+        {% if education and education|length > 0 %}
+        <section class="section">
+            <h2 class="section-title">Education</h2>
+            <div class="section-content">
+                {% for edu in education %}
+                <div class="education-item">
+                    {% if edu.institution %}
+                    <div class="institution-name">{{ edu.institution }}</div>
+                    {% endif %}
+                    {% if edu.degree %}
+                    <div class="degree">{{ edu.degree }}</div>
+                    {% endif %}
+                    {% if edu.field %}
+                    <div class="field-of-study">{{ edu.field }}</div>
+                    {% endif %}
+                    {% if edu.duration %}
+                    <div class="education-duration">{{ edu.duration }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Skills Section -->
+        {% if skills and skills|length > 0 %}
+        <section class="section">
+            <h2 class="section-title">Skills</h2>
+            <div class="section-content">
+                <div class="skills-grid">
+                    {% for skill in skills %}
+                    <div class="skill-item">{{ skill }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Certifications Section -->
+        {% if certifications and certifications|length > 0 %}
+        <section class="section">
+            <h2 class="section-title">Licenses & Certifications</h2>
+            <div class="section-content">
+                {% for cert in certifications %}
+                <div class="certification-item">
+                    {% if cert.name %}
+                    <div class="certification-name">{{ cert.name }}</div>
+                    {% endif %}
+                    {% if cert.issuer %}
+                    <div class="certification-issuer">{{ cert.issuer }}</div>
+                    {% endif %}
+                    {% if cert.date %}
+                    <div class="certification-date">{{ cert.date }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Languages Section -->
+        {% if languages and languages|length > 0 %}
+        <section class="section">
+            <h2 class="section-title">Languages</h2>
+            <div class="section-content">
+                <div class="languages-list">
+                    {% for language in languages %}
+                    <div class="language-item">{{ language }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Projects Section -->
+        {% if projects and projects|length > 0 %}
+        <section class="section">
+            <h2 class="section-title">Projects</h2>
+            <div class="section-content">
+                {% for project in projects %}
+                <div class="project-item">
+                    {% if project.name %}
+                    <div class="project-name">{{ project.name }}</div>
+                    {% endif %}
+                    {% if project.description %}
+                    <div class="project-description">{{ project.description }}</div>
+                    {% endif %}
+                    {% if project.date %}
+                    <div class="project-date">{{ project.date }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Publications Section -->
+        {% if publications and publications|length > 0 %}
+        <section class="section">
+            <h2 class="section-title">Publications</h2>
+            <div class="section-content">
+                {% for pub in publications %}
+                <div class="publication-item">
+                    {% if pub.title %}
+                    <div class="publication-title">{{ pub.title }}</div>
+                    {% endif %}
+                    {% if pub.publisher %}
+                    <div class="publication-publisher">{{ pub.publisher }}</div>
+                    {% endif %}
+                    {% if pub.date %}
+                    <div class="publication-date">{{ pub.date }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Volunteer Experience Section -->
+        {% if volunteer and volunteer|length > 0 %}
+        <section class="section">
+            <h2 class="section-title">Volunteer Experience</h2>
+            <div class="section-content">
+                {% for vol in volunteer %}
+                <div class="volunteer-item">
+                    {% if vol.role %}
+                    <div class="volunteer-role">{{ vol.role }}</div>
+                    {% endif %}
+                    {% if vol.organization %}
+                    <div class="volunteer-organization">{{ vol.organization }}</div>
+                    {% endif %}
+                    {% if vol.duration %}
+                    <div class="volunteer-duration">{{ vol.duration }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Honors & Awards Section -->
+        {% if honors and honors|length > 0 %}
+        <section class="section">
+            <h2 class="section-title">Honors & Awards</h2>
+            <div class="section-content">
+                {% for honor in honors %}
+                <div class="honor-item">
+                    {% if honor.title %}
+                    <div class="honor-title">{{ honor.title }}</div>
+                    {% endif %}
+                    {% if honor.issuer %}
+                    <div class="honor-issuer">{{ honor.issuer }}</div>
+                    {% endif %}
+                    {% if honor.date %}
+                    <div class="honor-date">{{ honor.date }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Courses Section -->
+        {% if courses and courses|length > 0 %}
+        <section class="section">
+            <h2 class="section-title">Courses</h2>
+            <div class="section-content">
+                <ul class="courses-list">
+                    {% for course in courses %}
+                    <li class="course-item">{{ course }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Footer -->
+        <footer class="footer">
+            Generated with LinkedIn CV Generator | Open Source MIT License
+        </footer>
+    </div>
+</body>
+</html>

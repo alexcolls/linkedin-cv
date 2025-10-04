@@ -1,0 +1,457 @@
+/* LinkedIn CV Generator - Professional Stylesheet */
+
+:root {
+  /* LinkedIn Brand Colors */
+  --primary-color: #0a66c2;
+  --primary-hover: #004182;
+  --secondary-color: #70b5f9;
+  --accent-color: #057642;
+
+  /* Typography Colors */
+  --text-primary: #000000;
+  --text-secondary: #666666;
+  --text-muted: #999999;
+  --text-light: #cccccc;
+
+  /* Background Colors */
+  --background-white: #ffffff;
+  --background-light: #f8f9fa;
+  --background-section: #f3f2ef;
+
+  /* Border Colors */
+  --border-color: #e0e0e0;
+  --border-light: #f0f0f0;
+
+  /* Fonts */
+  --font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-heading: 'Segoe UI Semibold', 'Helvetica Neue', Arial, sans-serif;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+}
+
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--background-white);
+}
+
+/* Page Layout */
+@page {
+  size: A4;
+  margin: 1.5cm 1.5cm 2cm 1.5cm;
+}
+
+.container {
+  max-width: 210mm;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* Header Section */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-xl) 0;
+  border-bottom: 3px solid var(--primary-color);
+  margin-bottom: var(--spacing-xl);
+  page-break-inside: avoid;
+}
+
+.profile-photo {
+  flex-shrink: 0;
+}
+
+.profile-photo img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--primary-color);
+}
+
+.header-content {
+  flex: 1;
+}
+
+.name {
+  font-family: var(--font-heading);
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  line-height: 1.2;
+}
+
+.headline {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+  line-height: 1.4;
+}
+
+.location {
+  font-size: 14px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.location::before {
+  content: "📍";
+}
+
+/* Section Styles */
+.section {
+  margin-bottom: var(--spacing-xl);
+  page-break-inside: avoid;
+}
+
+.section-title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 2px solid var(--border-color);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.section-content {
+  padding-left: var(--spacing-sm);
+}
+
+/* About Section */
+.about-text {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  text-align: justify;
+  white-space: pre-wrap;
+}
+
+/* Experience Section */
+.experience-item {
+  margin-bottom: var(--spacing-lg);
+  page-break-inside: avoid;
+}
+
+.experience-header {
+  margin-bottom: var(--spacing-sm);
+}
+
+.job-title {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.company-name {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.job-duration {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: var(--spacing-xs);
+}
+
+.job-location {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.job-description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin-top: var(--spacing-sm);
+  padding-left: var(--spacing-md);
+  border-left: 2px solid var(--border-light);
+}
+
+/* Education Section */
+.education-item {
+  margin-bottom: var(--spacing-lg);
+  page-break-inside: avoid;
+}
+
+.institution-name {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.degree {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.field-of-study {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.education-duration {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: var(--spacing-xs);
+}
+
+/* Skills Section */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+.skill-item {
+  background: var(--background-section);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--text-primary);
+  text-align: center;
+  border: 1px solid var(--border-light);
+}
+
+/* Certifications Section */
+.certification-item {
+  margin-bottom: var(--spacing-md);
+  page-break-inside: avoid;
+}
+
+.certification-name {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.certification-issuer {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.certification-date {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Languages Section */
+.languages-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+}
+
+.language-item {
+  background: var(--primary-color);
+  color: var(--background-white);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Projects Section */
+.project-item {
+  margin-bottom: var(--spacing-lg);
+  page-break-inside: avoid;
+}
+
+.project-name {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.project-description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.project-date {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: var(--spacing-xs);
+}
+
+/* Publications Section */
+.publication-item {
+  margin-bottom: var(--spacing-md);
+  page-break-inside: avoid;
+}
+
+.publication-title {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  font-style: italic;
+}
+
+.publication-publisher {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.publication-date {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Volunteer Section */
+.volunteer-item {
+  margin-bottom: var(--spacing-lg);
+  page-break-inside: avoid;
+}
+
+.volunteer-role {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.volunteer-organization {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.volunteer-duration {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Honors & Awards Section */
+.honor-item {
+  margin-bottom: var(--spacing-md);
+  page-break-inside: avoid;
+}
+
+.honor-title {
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent-color);
+  margin-bottom: var(--spacing-xs);
+}
+
+.honor-issuer {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.honor-date {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Courses Section */
+.courses-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.course-item {
+  padding: var(--spacing-xs) 0;
+  padding-left: var(--spacing-md);
+  border-left: 2px solid var(--border-color);
+  margin-bottom: var(--spacing-sm);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.course-item::before {
+  content: "✓";
+  color: var(--accent-color);
+  font-weight: bold;
+  margin-right: var(--spacing-sm);
+}
+
+/* Footer */
+.footer {
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Print Optimizations */
+@media print {
+  body {
+    background: white;
+  }
+
+  .section {
+    page-break-inside: avoid;
+  }
+
+  .experience-item,
+  .education-item,
+  .project-item {
+    page-break-inside: avoid;
+  }
+
+  a {
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+}
+
+/* Utility Classes */
+.mb-sm { margin-bottom: var(--spacing-sm); }
+.mb-md { margin-bottom: var(--spacing-md); }
+.mb-lg { margin-bottom: var(--spacing-lg); }
+
+.mt-sm { margin-top: var(--spacing-sm); }
+.mt-md { margin-top: var(--spacing-md); }
+.mt-lg { margin-top: var(--spacing-lg); }
+
+.text-muted { color: var(--text-muted); }
+.text-primary { color: var(--primary-color); }
+.text-accent { color: var(--accent-color); }
+
+.font-bold { font-weight: 600; }
+.font-semibold { font-weight: 500; }
+.font-normal { font-weight: 400; }
