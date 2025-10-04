@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-10-04
+
+### Added
+- 🚀 **install.sh** - One-command installation script with system detection
+- 🚀 **run.sh** - Quick run script with automatic dependency checking
+- 🧪 **test.sh** - Comprehensive test runner with coverage and code quality checks
+- 🐳 **Dockerfile** - Production-ready containerization with multi-stage build
+- ✅ **Complete E2E test suite** - End-to-end workflow testing
+- ✅ **CLI integration tests** - Full CLI command testing
+- ✅ **Enhanced unit tests** - Comprehensive test coverage for all components
+- 📦 **.dockerignore** - Optimized Docker build context
+
+### Improved
+- 🧪 Test coverage increased significantly
+- 📝 Better developer experience with helper scripts
+- 🐳 Easy deployment with Docker support
+- 🔧 Automated setup and testing workflows
+
 ## [0.1.0] - 2025-10-04
 
 ### Added

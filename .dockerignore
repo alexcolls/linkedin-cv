@@ -1,0 +1,56 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.tox/
+.venv/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Project specific
+output/
+*.pdf
+.env
+.env.local
+poetry.lock
+.pre-commit-config.yaml
+
+# Documentation
+README.md
+CHANGELOG.md
+PROJECT_SUMMARY.md
+docs/
+*.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Tests
+tests/
+test.sh
+
+# Development
+.editorconfig
+.pre-commit-config.yaml
