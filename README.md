@@ -1,4 +1,4 @@
-# 🖨️ LinkedIn Beatiful & Complete Profile CV Downloader
+# 🖨️ LinkedIn Beatiful & Complete Profile CV.Downloader
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.9%2B-blue?style=flat-square" alt="Python 3.9+">
