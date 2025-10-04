@@ -48,8 +48,8 @@ class PDFGenerator:
             # Load CSS
             css_path = self.templates_dir / "style.css"
 
-            # Generate PDF
-            html_doc = HTML(string=html_content, base_url=str(self.templates_dir))
+            # Generate PDF using WeasyPrint
+            html_doc = HTML(string=html_content)
             
             if css_path.exists():
                 css_doc = CSS(filename=str(css_path))
