@@ -171,8 +171,8 @@ async def generate_cv(
         # Add profile image to data
         profile_data["profile_image_data"] = profile_image_data
 
-        # Step 4: Generate PDF
-        task4 = progress.add_task("📄 Generating PDF...", total=None)
+        # Step 4: Generate PDF and HTML
+        task4 = progress.add_task("📄 Generating PDF and HTML...", total=None)
 
         generator = PDFGenerator(template_path=template)
         username = profile_data.get("username", "linkedin-profile")
@@ -180,17 +180,20 @@ async def generate_cv(
         output_filename = f"{username}_{timestamp}.pdf"
         output_file = output_path / output_filename
 
-        generator.generate(profile_data, str(output_file))
+        html_file_path = generator.generate(profile_data, str(output_file))
+        html_file = Path(html_file_path)
 
         progress.update(task4, completed=True)
-        console.print("   [green]✓[/green] PDF generated successfully!")
+        console.print("   [green]✓[/green] PDF and HTML generated successfully!")
 
     # Success message
     console.print()
     console.print(
         Panel(
             f"[bold green]✅ Done![/bold green]\n\n"
-            f"Your CV is ready at:\n[cyan]{output_file}[/cyan]",
+            f"Your CV is ready at:\n"
+            f"📄 PDF:  [cyan]{output_file}[/cyan]\n"
+            f"🌐 HTML: [cyan]{html_file}[/cyan]",
             border_style="green",
             padding=(1, 2),
         )
