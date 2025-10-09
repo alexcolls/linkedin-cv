@@ -47,31 +47,54 @@ class LinkedInScraper:
             if self.debug:
                 print(f"[DEBUG] Launching browser (headless={self.headless})...")
 
-            self.browser = await p.chromium.launch(headless=self.headless)
-
-            # Create context with realistic user agent
-            context = await self.browser.new_context(
-                user_agent=(
-                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-                    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-                ),
-                viewport={"width": 1920, "height": 1080},
-                locale="en-US",
-            )
-
-            # Load saved session if available
-            if os.path.exists(self.session_file):
+            # Use existing Chrome profile with logged-in session
+            chrome_user_data = str(Path.home() / ".config" / "google-chrome")
+            
+            if self.debug:
+                print(f"[DEBUG] Using Chrome profile: {chrome_user_data}")
+            
+            # Try to launch Chrome with existing profile
+            try:
+                context = await p.chromium.launch_persistent_context(
+                    chrome_user_data,
+                    headless=self.headless,
+                    channel="chrome",
+                    user_agent=(
+                        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                        "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                    ),
+                    viewport={"width": 1920, "height": 1080},
+                    locale="en-US",
+                )
+            except Exception as e:
                 if self.debug:
-                    print(f"[DEBUG] Loading session from {self.session_file}...")
-                try:
-                    with open(self.session_file, 'r') as f:
-                        cookies = json.load(f)
-                    await context.add_cookies(cookies)
+                    print(f"[DEBUG] Failed to use Chrome profile: {e}")
+                    print("[DEBUG] Falling back to session file method...")
+                
+                # Fallback to original method
+                self.browser = await p.chromium.launch(headless=self.headless, channel="chrome")
+                context = await self.browser.new_context(
+                    user_agent=(
+                        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                        "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                    ),
+                    viewport={"width": 1920, "height": 1080},
+                    locale="en-US",
+                )
+                
+                # Load saved session if available
+                if os.path.exists(self.session_file):
                     if self.debug:
-                        print(f"[DEBUG] Loaded {len(cookies)} cookies")
-                except Exception as e:
-                    if self.debug:
-                        print(f"[DEBUG] Failed to load session: {e}")
+                        print(f"[DEBUG] Loading session from {self.session_file}...")
+                    try:
+                        with open(self.session_file, 'r') as f:
+                            cookies = json.load(f)
+                        await context.add_cookies(cookies)
+                        if self.debug:
+                            print(f"[DEBUG] Loaded {len(cookies)} cookies")
+                    except Exception as e:
+                        if self.debug:
+                            print(f"[DEBUG] Failed to load session: {e}")
 
             page = await context.new_page()
 
@@ -81,24 +104,33 @@ class LinkedInScraper:
 
                 # Navigate to profile
                 await page.goto(profile_url, wait_until="domcontentloaded", timeout=60000)
+                
+                # Wait a bit for page to settle
+                await asyncio.sleep(3)
 
                 # Wait for main content to load
                 try:
                     await page.wait_for_selector(
-                        "main.scaffold-layout__main", timeout=10000
+                        "main.scaffold-layout__main", timeout=15000
                     )
+                    if self.debug:
+                        print("[DEBUG] Main content found!")
                 except TimeoutError:
                     if self.debug:
                         print("[DEBUG] Main content selector not found, continuing...")
 
                 # Check if we're on auth wall
                 is_auth_wall = await self._check_auth_wall(page)
-                if is_auth_wall:
-                    if self.debug:
-                        print("[DEBUG] Auth wall detected - authentication required")
-                    raise Exception(
-                        "LinkedIn authentication required. Please run with --login flag first to authenticate."
-                    )
+                if self.debug:
+                    print(f"[DEBUG] Auth wall check result: {is_auth_wall}")
+                    print(f"[DEBUG] Current URL: {page.url}")
+                # Temporarily disabled to see what we get
+                # if is_auth_wall:
+                #     if self.debug:
+                #         print("[DEBUG] Auth wall detected - authentication required")
+                #     raise Exception(
+                #         "LinkedIn authentication required. Please run with --login flag first to authenticate."
+                #     )
 
                 # Scroll to load lazy-loaded content
                 await self._scroll_page(page)
@@ -153,15 +185,21 @@ class LinkedInScraper:
             True if auth wall is detected
         """
         try:
-            # Check for common auth wall indicators
-            html = await page.content()
-            auth_indicators = [
-                'authwall',
-                'checkpoint/lg/login',
-                'Sign in to LinkedIn',
-                'Join to view',
-            ]
-            return any(indicator in html for indicator in auth_indicators)
+            # Check current URL first
+            url = page.url
+            if 'authwall' in url or 'checkpoint/lg/login' in url:
+                return True
+            
+            # Check for auth wall specific elements
+            # Look for the main profile content instead
+            try:
+                # If we can find profile content, we're authenticated
+                await page.wait_for_selector('main', timeout=5000)
+                return False
+            except Exception:
+                # No main content found, likely auth wall
+                return True
+                
         except Exception:
             return False
     
@@ -193,7 +231,13 @@ class LinkedInScraper:
             print("After logging in, close the browser window.\n")
             
             # Launch in non-headless mode
-            self.browser = await p.chromium.launch(headless=False)
+            # Try Chrome first, fallback to Chromium
+            try:
+                self.browser = await p.chromium.launch(headless=False, channel="chrome")
+                print("Using Google Chrome...")
+            except Exception:
+                print("Chrome not found, using Chromium...")
+                self.browser = await p.chromium.launch(headless=False)
             
             context = await self.browser.new_context(
                 user_agent=(
