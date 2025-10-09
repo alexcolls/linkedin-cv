@@ -83,38 +83,48 @@ LinkedIn's built-in PDF export is **frankly terrible** - cluttered, poorly forma
 
 ## 🚀 Quick Start
 
+### Single Command Installation
+
+```bash
+# Clone and run - that's it!
+git clone https://github.com/alexcolls/linkedin-cv.git
+cd linkedin-cv
+./run.sh  # Handles everything!
+```
+
+**The `run.sh` script is your ONLY entry point** - it handles:
+- ✅ Dependency installation
+- ✅ Authentication
+- ✅ CV generation
+- ✅ Testing
+- ✅ Documentation
+- ✅ Everything else!
+
 ### Prerequisites
 
 - **Python 3.9+** ([Download](https://www.python.org/downloads/))
 - **Poetry** ([Install Guide](https://python-poetry.org/docs/#installation))
 
-### Installation
+### Usage (Using run.sh)
+
+**Everything through one script:**
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/yourusername/linkedin-cv.git
-cd linkedin-cv
-
-# 2. Install dependencies
-poetry install
-
-# 3. You're ready!
+./run.sh  # Interactive menu with 9 options
 ```
-
-### Usage
 
 #### 🔐 Method 1: Authenticated Scraping (Recommended)
 
 Get full, unmasked content with authentication:
 
 ```bash
-# Step 1: Authenticate once (session lasts ~30 days)
-./run.sh  # Select option 2: Login to LinkedIn
-# Or: poetry run python -m src.cli --login
+# Interactive (recommended)
+./run.sh
+# Then: 2 → Login, then 1 → Generate CV
 
-# Step 2: Generate CV
-./run.sh  # Select option 1: Generate CV
-# Or: poetry run python -m src.cli alex-colls-outumuro
+# Or command line
+./run.sh --login  # Step 1: Login
+./run.sh alex-colls-outumuro  # Step 2: Generate
 ```
 
 **Why authenticate?**
@@ -130,40 +140,42 @@ Get full, unmasked content with authentication:
 
 #### 🍪 Method 2: Cookie Extraction (If Chrome Already Open)
 
-Extract cookies from your running Chrome:
-
 ```bash
-poetry run python scripts/extract_cookies.py
-poetry run python -m src.cli alex-colls-outumuro
+./run.sh  # Select option 3: Extract cookies
 ```
 
 #### 🔤 Method 3: Username Input
 
-You can use just the username instead of full URL:
-
 ```bash
-poetry run python -m src.cli username  # Instead of full URL
+./run.sh username  # Just the username!
 ```
 
 ---
 
 ## 💻 Interactive Menu
 
-Run `./run.sh` for an interactive experience:
+**One script, all features:**
+
+```bash
+./run.sh
+```
 
 ```
-╔══════════════════════════════════════════════════════╗
-║        LinkedIn CV Generator - Main Menu             ║
-╚══════════════════════════════════════════════════════╝
+📋 Main Operations:
+  1) 🚀 Generate CV (from URL or .env)
+  2) 🔐 Login to LinkedIn (save session)
+  3) 🍪 Extract cookies from Chrome
 
-1) 🚀 Generate CV (from URL or .env)
-2) 🔐 Login to LinkedIn (save session)
-3) ⚙️  Run installation/setup
-4) 🧪 Run tests
-5) 📖 View documentation
-6) ❌ Exit
+🔧 Setup & Testing:
+  4) ⚙️  Run installation/setup
+  5) 🧪 Run tests
+  6) 📊 View test coverage
 
-Select an option:
+📚 Documentation:
+  7) 📖 View documentation
+  8) 🔍 Quick help
+
+  9) ❌ Exit
 ```
 
 ---
