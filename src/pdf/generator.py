@@ -24,18 +24,15 @@ class PDFGenerator:
             autoescape=True,
         )
 
-    def generate(self, profile_data: Dict[str, Any], output_path: str) -> str:
-        """Generate PDF and HTML from profile data.
+    def generate(self, profile_data: Dict[str, Any], output_path: str) -> None:
+        """Generate professional PDF CV from profile data.
 
         Args:
             profile_data: Dictionary containing profile information
             output_path: Path where PDF should be saved
 
-        Returns:
-            Path to the generated HTML file
-
         Raises:
-            Exception: If PDF or HTML generation fails
+            Exception: If PDF generation fails
         """
         try:
             # Load template
@@ -51,11 +48,6 @@ class PDFGenerator:
             # Load CSS
             css_path = self.templates_dir / "style.css"
 
-            # Save HTML file (replace .pdf extension with .html)
-            html_output_path = str(Path(output_path).with_suffix(".html"))
-            with open(html_output_path, "w", encoding="utf-8") as f:
-                f.write(html_content)
-
             # Generate PDF using WeasyPrint
             html_doc = HTML(string=html_content)
             
@@ -65,10 +57,8 @@ class PDFGenerator:
             else:
                 html_doc.write_pdf(output_path)
 
-            return html_output_path
-
         except Exception as e:
-            raise Exception(f"Failed to generate PDF/HTML: {str(e)}")
+            raise Exception(f"Failed to generate PDF: {str(e)}")
 
     def validate_template(self, template_path: str) -> bool:
         """Validate if template file is valid HTML.
