@@ -739,19 +739,103 @@ class ProfileParser:
 
         return certifications
 
-    def _extract_languages(self, soup: BeautifulSoup) -> List[str]:
-        """Extract languages."""
+    def _extract_languages(self, soup: BeautifulSoup) -> List[Dict[str, str]]:
+        """Extract languages with proficiency levels.
+        
+        Returns:
+            List of dictionaries: {name: str, proficiency: str}
+        """
         languages = []
-        section = soup.find("section", {"id": re.compile(r".*languages.*")})
-
-        if section:
+        
+        # Modern LinkedIn selectors for languages section
+        section_selectors = [
+            'section[id*="languages"]',
+            'section[data-section="languages"]',
+            'div#languages-section',
+            'section.pv-profile-section.languages-section',
+        ]
+        
+        section = None
+        for selector in section_selectors:
+            section = soup.select_one(selector)
+            if section:
+                break
+        
+        if not section:
+            return languages
+        
+        # Find language items
+        item_selectors = [
+            'li.pvs-list__paged-list-item',
+            'li.artdeco-list__item',
+            'li[class*="language"]',
+        ]
+        
+        items = []
+        for selector in item_selectors:
+            found_items = section.select(selector)
+            if found_items:
+                items = found_items
+                break
+        
+        for item in items:
+            lang_data = self._extract_single_language(item)
+            if lang_data and lang_data.get('name'):
+                languages.append(lang_data)
+        
+        # Fallback: Simple extraction
+        if not languages:
             lang_elements = section.find_all("div", {"class": re.compile(r".*language.*")})
             for element in lang_elements:
-                lang = element.get_text(strip=True)
-                if lang:
-                    languages.append(lang)
-
+                lang_name = element.get_text(strip=True)
+                if lang_name and len(lang_name) < 100:
+                    languages.append({'name': lang_name, 'proficiency': 'Professional working proficiency'})
+        
         return languages
+    
+    def _extract_single_language(self, item) -> Optional[Dict[str, str]]:
+        """Extract details from a single language item.
+        
+        Args:
+            item: BeautifulSoup element containing language data
+            
+        Returns:
+            Dictionary with language name and proficiency
+        """
+        lang = {}
+        
+        # Language Name
+        name_selectors = [
+            'div.display-flex.align-items-center span[aria-hidden="true"]',
+            'h3 span[aria-hidden="true"]',
+            'div.t-bold span',
+            'span.pv-entity__language-name',
+        ]
+        
+        for selector in name_selectors:
+            name = self._safe_extract(item, selector)
+            if name and len(name) > 0 and len(name) < 100:
+                lang['name'] = name
+                break
+        
+        # Proficiency Level
+        proficiency_selectors = [
+            'span.t-14.t-normal.t-black--light span[aria-hidden="true"]',
+            'div.pv-entity__proficiency',
+            'span[class*="proficiency"]',
+        ]
+        
+        for selector in proficiency_selectors:
+            proficiency = self._safe_extract(item, selector)
+            if proficiency and len(proficiency) > 0:
+                lang['proficiency'] = proficiency
+                break
+        
+        # Default proficiency if not found
+        if 'name' in lang and 'proficiency' not in lang:
+            lang['proficiency'] = 'Professional working proficiency'
+        
+        return lang if lang else None
 
     def _extract_volunteer(self, soup: BeautifulSoup) -> List[Dict[str, str]]:
         """Extract volunteer experience."""

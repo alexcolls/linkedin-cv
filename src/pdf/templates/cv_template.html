@@ -213,9 +213,24 @@
         <section class="section">
             <h2 class="section-title">Languages</h2>
             <div class="section-content">
-                <div class="languages-list">
+                <div class="languages-grid">
                     {% for language in languages %}
-                    <div class="language-item">{{ language }}</div>
+                    <div class="language-item">
+                        {% if language is mapping %}
+                        <div class="language-header">
+                            <span class="language-icon">🌐</span>
+                            <span class="language-name">{{ language.name }}</span>
+                        </div>
+                        {% if language.proficiency %}
+                        <div class="language-proficiency">{{ language.proficiency }}</div>
+                        {% endif %}
+                        {% else %}
+                        <div class="language-header">
+                            <span class="language-icon">🌐</span>
+                            <span class="language-name">{{ language }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
                     {% endfor %}
                 </div>
             </div>

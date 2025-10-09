@@ -447,20 +447,44 @@ body {
 }
 
 /* Languages Section */
-.languages-list {
-  display: flex;
-  flex-wrap: wrap;
+.languages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: var(--spacing-md);
-  margin-top: var(--spacing-sm);
+  margin-top: var(--spacing-md);
 }
 
 .language-item {
-  background: var(--primary-color);
-  color: var(--background-white);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: 20px;
+  background: var(--background-light);
+  padding: var(--spacing-md);
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  page-break-inside: avoid;
+}
+
+.language-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.language-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.language-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.language-proficiency {
   font-size: 13px;
-  font-weight: 500;
+  color: var(--text-muted);
+  font-style: italic;
+  padding-left: 28px; /* Align with name */
 }
 
 /* Projects Section */
