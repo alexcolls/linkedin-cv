@@ -27,12 +27,10 @@ show_menu() {
     echo -e "${CYAN}Please select an option:${NC}"
     echo ""
     echo -e "  ${BOLD}1)${NC} 🚀 Generate CV (from URL or .env)"
-    echo -e "  ${BOLD}2)${NC} 📂 Generate CV (from saved HTML file)"
-    echo -e "  ${BOLD}3)${NC} 📋 Export LinkedIn HTML manually (step-by-step guide)"
-    echo -e "  ${BOLD}4)${NC} ⚙️  Run installation/setup"
-    echo -e "  ${BOLD}5)${NC} 🧪 Run tests"
-    echo -e "  ${BOLD}6)${NC} 📖 View documentation"
-    echo -e "  ${BOLD}7)${NC} ❌ Exit"
+    echo -e "  ${BOLD}2)${NC} ⚙️  Run installation/setup"
+    echo -e "  ${BOLD}3)${NC} 🧪 Run tests"
+    echo -e "  ${BOLD}4)${NC} 📖 View documentation"
+    echo -e "  ${BOLD}5)${NC} ❌ Exit"
     echo ""
 }
 
@@ -53,44 +51,6 @@ generate_cv_from_url() {
     press_any_key
 }
 
-generate_cv_from_html() {
-    print_header "📂 Generate CV from Saved HTML File"
-    
-    # Check dependencies first
-    if ! check_dependencies; then
-        print_error "Dependencies not installed properly."
-        print_info "Please run option 4 (Installation) first."
-        press_any_key
-        return 1
-    fi
-    
-    echo -e "${CYAN}Enter the path to your LinkedIn HTML file:${NC}"
-    read -e -p "Path: " html_file
-    
-    if [ -z "$html_file" ]; then
-        print_error "No file path provided."
-        press_any_key
-        return 1
-    fi
-    
-    if [ ! -f "$html_file" ]; then
-        print_error "File not found: $html_file"
-        press_any_key
-        return 1
-    fi
-    
-    echo ""
-    print_step "Generating CV from HTML file..."
-    poetry run python -m src.cli --html-file "$html_file"
-    
-    press_any_key
-}
-
-export_helper() {
-    # Run the export helper script
-    bash "$SCRIPT_DIR/scripts/export-helper.sh"
-    press_any_key
-}
 
 run_installation() {
     # Run the installation script
@@ -181,7 +141,7 @@ main() {
     while true; do
         show_menu
         
-        read -p "$(echo -e ${CYAN}Enter your choice [1-7]: ${NC})" choice
+        read -p "$(echo -e ${CYAN}Enter your choice [1-5]: ${NC})" choice
         echo ""
         
         case $choice in
@@ -189,27 +149,21 @@ main() {
                 generate_cv_from_url
                 ;;
             2)
-                generate_cv_from_html
-                ;;
-            3)
-                export_helper
-                ;;
-            4)
                 run_installation
                 ;;
-            5)
+            3)
                 run_tests
                 ;;
-            6)
+            4)
                 view_documentation
                 ;;
-            7)
+            5)
                 echo -e "${GREEN}Thank you for using LinkedIn CV Generator! 👋${NC}"
                 echo ""
                 exit 0
                 ;;
             *)
-                print_error "Invalid option. Please select 1-7."
+                print_error "Invalid option. Please select 1-5."
                 sleep 2
                 ;;
         esac
