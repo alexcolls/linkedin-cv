@@ -1,4 +1,4 @@
-# 🎓 LinkedIn CV Generator
+# 🎓 LinkedIn Curriculum Vitae Generator
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.9%2B-blue?style=for-the-badge&logo=python" alt="Python 3.9+">
@@ -39,23 +39,24 @@ LinkedIn's built-in PDF export is **frankly terrible** - cluttered, poorly forma
 
 ### Profile Sections Extracted
 
-| Section | Features Extracted | Visual Elements |
-|---------|-------------------|-----------------|
-| **Profile Header** | • Profile photo<br>• Name & headline<br>• Location<br>• Contact info (email, phone, website)<br>• Connection & follower stats | • Circular photo with border<br>• Icons for all fields<br>• Stats badges<br>• Contact info grid |
-| **Experience** | • Job title & company<br>• Employment type<br>• Duration & location<br>• **Full descriptions** (multi-line)<br>• Skills used per job | • Computer icons<br>• Employment type badges<br>• Skills tags<br>• Separated cards |
-| **Education** | • Institution & degree<br>• Field of study<br>• Duration & GPA/grade<br>• Activities & societies<br>• Descriptions | • School emoji<br>• Trophy for grades<br>• Activity boxes<br>• Clean hierarchy |
-| **Skills** | • Skill names<br>• **Endorsement counts**<br>• Category grouping | • Thumbs up icons<br>• Blue badges<br>• 3-column grid |
-| **Languages** | • Language names<br>• **Proficiency levels**<br>• All languages listed | • Globe icons<br>• Card-based layout<br>• Auto-fill grid |
-| **Certifications** | • Certificate name<br>• Issuing organization<br>• Issue & expiry dates<br>• **Credential IDs**<br>• **Verification URLs** | • Trophy icons<br>• Credential badges<br>• Date stamps<br>• Clickable URLs |
-| **Volunteer** | • Role & organization<br>• Duration<br>• **Cause** (e.g., Education)<br>• Full descriptions | • Heart icons<br>• Cause badges<br>• Organization icons |
-| **Projects** | • Project name & dates<br>• Full descriptions<br>• **Project URLs** | • Computer icons<br>• Link icons<br>• Professional layout |
-| **Publications** | • Title & publisher<br>• Publication date<br>• Descriptions | • Document icons<br>• Italic styling<br>• Clean formatting |
-| **Honors & Awards** | • Award title & issuer<br>• Date received<br>• Descriptions | • Trophy icons<br>• Green accent color<br>• Prominent display |
-| **Courses** | • Course names<br>• Completion tracking | • Checkmark bullets<br>• List formatting |
+| Section             | Features Extracted                                                                                                                   | Visual Elements                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| **Profile Header**  | • Profile photo<br>• Name & headline<br>• Location<br>• Contact info (email, phone, website)<br>• Connection & follower stats        | • Circular photo with border<br>• Icons for all fields<br>• Stats badges<br>• Contact info grid |
+| **Experience**      | • Job title & company<br>• Employment type<br>• Duration & location<br>• **Full descriptions** (multi-line)<br>• Skills used per job | • Computer icons<br>• Employment type badges<br>• Skills tags<br>• Separated cards              |
+| **Education**       | • Institution & degree<br>• Field of study<br>• Duration & GPA/grade<br>• Activities & societies<br>• Descriptions                   | • School emoji<br>• Trophy for grades<br>• Activity boxes<br>• Clean hierarchy                  |
+| **Skills**          | • Skill names<br>• **Endorsement counts**<br>• Category grouping                                                                     | • Thumbs up icons<br>• Blue badges<br>• 3-column grid                                           |
+| **Languages**       | • Language names<br>• **Proficiency levels**<br>• All languages listed                                                               | • Globe icons<br>• Card-based layout<br>• Auto-fill grid                                        |
+| **Certifications**  | • Certificate name<br>• Issuing organization<br>• Issue & expiry dates<br>• **Credential IDs**<br>• **Verification URLs**            | • Trophy icons<br>• Credential badges<br>• Date stamps<br>• Clickable URLs                      |
+| **Volunteer**       | • Role & organization<br>• Duration<br>• **Cause** (e.g., Education)<br>• Full descriptions                                          | • Heart icons<br>• Cause badges<br>• Organization icons                                         |
+| **Projects**        | • Project name & dates<br>• Full descriptions<br>• **Project URLs**                                                                  | • Computer icons<br>• Link icons<br>• Professional layout                                       |
+| **Publications**    | • Title & publisher<br>• Publication date<br>• Descriptions                                                                          | • Document icons<br>• Italic styling<br>• Clean formatting                                      |
+| **Honors & Awards** | • Award title & issuer<br>• Date received<br>• Descriptions                                                                          | • Trophy icons<br>• Green accent color<br>• Prominent display                                   |
+| **Courses**         | • Course names<br>• Completion tracking                                                                                              | • Checkmark bullets<br>• List formatting                                                        |
 
 ### Design Features
 
 #### 🎨 Professional Styling
+
 - **LinkedIn Brand Colors** - Primary blue (#0a66c2), secondary, and accent colors
 - **Typography** - Segoe UI / Helvetica Neue professional fonts
 - **Consistent Spacing** - 4px/8px/16px/24px/32px spacing system
@@ -63,6 +64,7 @@ LinkedIn's built-in PDF export is **frankly terrible** - cluttered, poorly forma
 - **Badges** - Professional badges for stats, credentials, and causes
 
 #### 📄 Layout & Structure
+
 - **Responsive Grids** - Auto-fill and multi-column layouts
 - **Card-Based Design** - Modern card components for sections
 - **Section Separators** - Clear visual hierarchy
@@ -70,6 +72,7 @@ LinkedIn's built-in PDF export is **frankly terrible** - cluttered, poorly forma
 - **Multi-Page Support** - Handles 1-20+ page CVs seamlessly
 
 #### 🖨️ Print Optimization
+
 - **Page Break Control** - Smart breaks between sections
 - **Header Protection** - Keeps headers with content
 - **Orphan/Widow Prevention** - No lonely lines
@@ -182,6 +185,7 @@ linkedin-cv/
 ### What You Get
 
 **Header Section:**
+
 ```
 ┌─────────────────────────────────────────────────────┐
 │  [Photo]  John Doe                                  │
@@ -193,6 +197,7 @@ linkedin-cv/
 ```
 
 **Experience Section:**
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EXPERIENCE
@@ -201,17 +206,18 @@ EXPERIENCE
 💼 Senior Software Engineer
    Acme Corp
    Full-time | 2020 - Present | San Francisco, CA
-   
+
    Led development of microservices architecture
    serving 10M+ users. Implemented CI/CD pipelines
    reducing deployment time by 70%.
-   
+
    Skills: Python • Docker • Kubernetes • AWS
-   
+
 ─────────────────────────────────────────────────────
 ```
 
 **Certifications:**
+
 ```
 🏆 AWS Certified Solutions Architect
    Amazon Web Services
@@ -263,18 +269,21 @@ pytest tests/ --cov=src --cov-report=html
 ## 📊 Technical Highlights
 
 ### Parser Statistics
+
 - **1,260 lines** of extraction code
 - **22 extraction methods**
 - **3-5 fallback selectors** per field
 - **530% growth** from original
 
 ### Template & Styling
+
 - **800+ lines** of professional CSS
 - **11 complete sections** with unique styling
 - **15+ emoji icons** for visual enhancement
 - **60+ styled components**
 
 ### Code Quality
+
 - ✅ Type hints throughout
 - ✅ Comprehensive docstrings
 - ✅ Error handling
@@ -335,6 +344,7 @@ Contributions are welcome! Here's how:
 ### Commit Message Convention
 
 Use emoji prefixes:
+
 - ✨ `:sparkles:` - New features
 - 🐛 `:bug:` - Bug fixes
 - 📚 `:books:` - Documentation
@@ -373,18 +383,23 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ## ❓ FAQ
 
 ### Q: Why is my PDF empty?
+
 **A:** LinkedIn requires authentication. Use the `--html` option with manually saved HTML instead of direct scraping.
 
 ### Q: Can I customize the design?
+
 **A:** Yes! Edit `src/pdf/templates/cv_template.html` and `style.css` to your liking.
 
 ### Q: Does it work with all LinkedIn profiles?
+
 **A:** Yes, it extracts whatever sections are present on the profile. Empty sections are automatically hidden.
 
 ### Q: Is it safe?
+
 **A:** Absolutely. All processing happens locally on your machine. No data is sent anywhere.
 
 ### Q: Can I use it for my clients/company?
+
 **A:** Yes! MIT license allows commercial use. Check LICENSE for details.
 
 ---
@@ -392,6 +407,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ## 🚀 Roadmap
 
 ### Future Enhancements
+
 - [ ] Multi-language PDF support
 - [ ] Custom color themes
 - [ ] QR code for profile URL
@@ -413,6 +429,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ## ⭐ Show Your Support
 
 If this project helped you, please consider:
+
 - ⭐ **Starring the repository**
 - 🐛 **Reporting bugs**
 - 💡 **Suggesting features**
@@ -422,8 +439,8 @@ If this project helped you, please consider:
 ---
 
 <p align="center">
-  <b>Made with ❤️ and Python</b><br>
-  <i>Transform your LinkedIn profile into a masterpiece</i>
+  <b>Made with ❤️ and 🐍 Python</b><br>
+  <i>Transform your LinkedIn profile into a masterpiece Curriculum Vitae</i>
 </p>
 
 <p align="center">
