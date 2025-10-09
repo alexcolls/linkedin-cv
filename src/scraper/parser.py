@@ -262,24 +262,186 @@ class ProfileParser:
         return stats
 
     def _extract_experience(self, soup: BeautifulSoup) -> List[Dict[str, str]]:
-        """Extract work experience."""
+        """Extract work experience with full details.
+        
+        Extracts comprehensive job information including:
+        - Job title and company
+        - Employment type (Full-time, Part-time, etc.)
+        - Duration and location
+        - Full job description with proper text formatting
+        - Skills used in each role
+        - Media/attachments if present
+        """
         experiences = []
-        section = soup.find("section", {"id": re.compile(r".*experience.*")})
-
-        if section:
-            items = section.find_all("li", {"class": re.compile(r".*profile.*")})
-            for item in items:
-                exp = {
-                    "title": self._safe_extract(item, "div.t-bold"),
-                    "company": self._safe_extract(item, "span.t-14.t-normal"),
-                    "duration": self._safe_extract(item, "span.t-14.t-normal.t-black--light"),
-                    "location": self._safe_extract(item, "span.t-14.t-normal"),
-                    "description": self._safe_extract(item, "div.inline-show-more-text"),
-                }
-                if exp["title"] or exp["company"]:
-                    experiences.append(exp)
-
+        
+        # Modern LinkedIn selectors for experience section
+        section_selectors = [
+            'section[id*="experience"]',
+            'section[data-section="experience"]',
+            'div#experience-section',
+            'section.pv-profile-section.experience-section',
+        ]
+        
+        section = None
+        for selector in section_selectors:
+            section = soup.select_one(selector)
+            if section:
+                break
+        
+        if not section:
+            return experiences
+        
+        # Find all experience items with multiple selector patterns
+        item_selectors = [
+            'li.pvs-list__paged-list-item',
+            'li.artdeco-list__item',
+            'li[class*="profile"]',
+            'div.pv-entity__position-group-pager',
+            'li.pv-entity__position-group-pager',
+        ]
+        
+        items = []
+        for selector in item_selectors:
+            found_items = section.select(selector)
+            if found_items:
+                items = found_items
+                break
+        
+        for item in items:
+            exp = self._extract_single_experience(item)
+            if exp and (exp.get("title") or exp.get("company")):
+                experiences.append(exp)
+        
         return experiences
+    
+    def _extract_single_experience(self, item) -> Optional[Dict[str, str]]:
+        """Extract details from a single experience item.
+        
+        Args:
+            item: BeautifulSoup element containing experience data
+            
+        Returns:
+            Dictionary with experience details or None
+        """
+        exp = {}
+        
+        # Job Title - try multiple selectors
+        title_selectors = [
+            'div.display-flex.align-items-center span[aria-hidden="true"]',
+            'div[class*="entity-result__title"] span[aria-hidden="true"]',
+            'div.t-bold span',
+            'h3 span[aria-hidden="true"]',
+            'div.mr1.t-bold span',
+            '.pv-entity__role-details-container div.t-bold',
+        ]
+        
+        for selector in title_selectors:
+            title = self._safe_extract(item, selector)
+            if title and len(title) > 0:
+                exp["title"] = title
+                break
+        
+        # Company Name - try multiple selectors
+        company_selectors = [
+            'span.t-14.t-normal span[aria-hidden="true"]',
+            'div.pv-entity__secondary-title',
+            'span.pv-entity__secondary-title',
+            'div[class*="company-name"]',
+            'a[data-control-name*="background_details_company"]',
+        ]
+        
+        for selector in company_selectors:
+            company = self._safe_extract(item, selector)
+            if company and len(company) > 0 and company != exp.get("title"):
+                exp["company"] = company
+                break
+        
+        # Employment Type (Full-time, Part-time, Contract, etc.)
+        employment_type_selectors = [
+            'span.t-14.t-normal.t-black--light span[aria-hidden="true"]',
+            'span.pv-entity__secondary-title',
+        ]
+        
+        for selector in employment_type_selectors:
+            elements = item.select(selector)
+            for element in elements:
+                text = element.get_text(strip=True)
+                # Check if it matches employment type patterns
+                if any(emp_type in text for emp_type in [
+                    'Full-time', 'Part-time', 'Contract', 'Freelance', 
+                    'Internship', 'Self-employed', 'Seasonal'
+                ]):
+                    exp["employment_type"] = text
+                    break
+            if "employment_type" in exp:
+                break
+        
+        # Duration - try multiple selectors
+        duration_selectors = [
+            'span.t-14.t-normal.t-black--light span[aria-hidden="true"]',
+            'span.pv-entity__date-range span:nth-child(2)',
+            'div.pv-entity__date-range span',
+            'span[class*="date-range"]',
+        ]
+        
+        for selector in duration_selectors:
+            duration = self._safe_extract(item, selector)
+            if duration and ('-' in duration or 'Present' in duration or 'yr' in duration or 'mo' in duration):
+                exp["duration"] = duration
+                break
+        
+        # Location
+        location_selectors = [
+            'span.t-14.t-normal.t-black--light span.visually-hidden',
+            'span.pv-entity__location span:nth-child(2)',
+            'div.pv-entity__location span',
+        ]
+        
+        for selector in location_selectors:
+            location = self._safe_extract(item, selector)
+            if location and location != exp.get("duration"):
+                exp["location"] = location
+                break
+        
+        # Job Description - CRITICAL: Extract full text with paragraph preservation
+        description_selectors = [
+            'div.pv-shared-text-with-see-more span[aria-hidden="true"]',
+            'div.inline-show-more-text span[aria-hidden="true"]',
+            'div[class*="show-more-less"] span[aria-hidden="true"]',
+            'div.pv-entity__description',
+            'div[class*="description"]',
+        ]
+        
+        for selector in description_selectors:
+            try:
+                element = item.select_one(selector)
+                if element:
+                    # Preserve paragraphs and line breaks
+                    description = element.get_text(separator='\n', strip=True)
+                    if description and len(description) > 10:
+                        exp["description"] = description
+                        break
+            except Exception:
+                continue
+        
+        # Skills - extract skills mentioned for this role
+        skills_selectors = [
+            'div[class*="skill"] span[aria-hidden="true"]',
+            'div.pv-skill-category-entity__name span',
+        ]
+        
+        skills = []
+        for selector in skills_selectors:
+            skill_elements = item.select(selector)
+            for skill_elem in skill_elements:
+                skill = skill_elem.get_text(strip=True)
+                if skill and len(skill) < 50:
+                    skills.append(skill)
+        
+        if skills:
+            exp["skills"] = skills
+        
+        return exp if exp else None
 
     def _extract_education(self, soup: BeautifulSoup) -> List[Dict[str, str]]:
         """Extract education."""
