@@ -7,6 +7,65 @@ from bs4 import BeautifulSoup
 
 class ProfileParser:
     """Parses LinkedIn profile HTML to extract structured data."""
+    
+    # Modern LinkedIn selectors (2024) with fallbacks
+    SELECTORS = {
+        'name': [
+            'h1.text-heading-xlarge',
+            'h1[class*="top-card"]',
+            '[data-generated-suggestion-target]',
+            'div.pv-text-details__left-panel h1',
+            'h1.inline.t-24',
+        ],
+        'headline': [
+            'div.text-body-medium.break-words',
+            'div[class*="headline"]',
+            'div.pv-text-details__left-panel div.text-body-medium',
+            'h2.mt1.t-18',
+            '.top-card__headline',
+        ],
+        'location': [
+            'span.text-body-small.inline.t-black--light.break-words',
+            'div.pv-text-details__left-panel span.text-body-small',
+            'span.t-16.t-black.t-normal',
+            'div.top-card__subline-item',
+        ],
+        'profile_photo': [
+            'img.pv-top-card-profile-picture__image',
+            'img[class*="profile-photo"]',
+            'button img[data-ghost-classes]',
+            'div.profile-photo-edit__preview img',
+        ],
+        'about': [
+            'div.pv-shared-text-with-see-more span[aria-hidden="true"]',
+            'section[data-section="summary"] span[aria-hidden="true"]',
+            'div.pv-about__summary-text span',
+            'div.inline-show-more-text span[aria-hidden="true"]',
+        ],
+        'contact': {
+            'email': [
+                'a[href^="mailto:"]',
+                'section.pv-contact-info a[href^="mailto:"]',
+            ],
+            'phone': [
+                'span.t-14.t-black.t-normal[class*="phone"]',
+                'section.pv-contact-info span[class*="phone"]',
+            ],
+            'website': [
+                'a.pv-contact-info__contact-link',
+                'section.pv-contact-info a[href^="http"]',
+            ],
+        },
+        'stats': {
+            'connections': [
+                'span.t-bold[class*="connection"]',
+                'li.pv-top-card--list-bullet span.t-bold',
+            ],
+            'followers': [
+                'span.t-bold[class*="follower"]',
+            ],
+        },
+    }
 
     def parse(self, html_content: str) -> Dict[str, Any]:
         """Parse LinkedIn profile HTML and extract all sections.
@@ -26,6 +85,8 @@ class ProfileParser:
             "location": self._extract_location(soup),
             "profile_picture_url": self._extract_profile_picture(soup),
             "about": self._extract_about(soup),
+            "contact_info": self._extract_contact_info(soup),  # NEW
+            "stats": self._extract_stats(soup),                # NEW
             "experience": self._extract_experience(soup),
             "education": self._extract_education(soup),
             "skills": self._extract_skills(soup),
@@ -56,62 +117,149 @@ class ProfileParser:
         return "linkedin-profile"
 
     def _extract_name(self, soup: BeautifulSoup) -> Optional[str]:
-        """Extract profile name."""
-        # Try multiple selectors
-        selectors = [
-            "h1.text-heading-xlarge",
-            "h1.top-card-layout__title",
-            "[data-generated-suggestion-target]",
-        ]
-
-        for selector in selectors:
-            element = soup.select_one(selector)
-            if element:
-                return element.get_text(strip=True)
-        return None
+        """Extract profile name with multiple fallbacks."""
+        for selector in self.SELECTORS['name']:
+            try:
+                element = soup.select_one(selector)
+                if element and element.get_text(strip=True):
+                    return element.get_text(strip=True)
+            except Exception:
+                continue
+        return "Name Not Found"
 
     def _extract_headline(self, soup: BeautifulSoup) -> Optional[str]:
-        """Extract profile headline/title."""
-        selectors = [
-            "div.text-body-medium.break-words",
-            "div.top-card-layout__headline",
-            ".top-card__headline",
-        ]
-
-        for selector in selectors:
-            element = soup.select_one(selector)
-            if element:
-                return element.get_text(strip=True)
+        """Extract professional headline."""
+        for selector in self.SELECTORS['headline']:
+            try:
+                element = soup.select_one(selector)
+                if element:
+                    text = element.get_text(strip=True)
+                    # Skip if it's just the location or connections
+                    if text and 'connections' not in text.lower() and len(text) > 0:
+                        return text
+            except Exception:
+                continue
         return None
 
     def _extract_location(self, soup: BeautifulSoup) -> Optional[str]:
-        """Extract location."""
-        selectors = [
-            "span.text-body-small.inline.t-black--light.break-words",
-            "div.top-card__subline-item",
-        ]
-
-        for selector in selectors:
-            element = soup.select_one(selector)
-            if element and "location" in element.get_text().lower():
-                return element.get_text(strip=True)
+        """Extract location with validation."""
+        for selector in self.SELECTORS['location']:
+            try:
+                element = soup.select_one(selector)
+                if element:
+                    text = element.get_text(strip=True)
+                    # Validate it looks like a location (not too long, not connections)
+                    if text and len(text) < 100 and 'connection' not in text.lower():
+                        return text
+            except Exception:
+                continue
         return None
 
     def _extract_profile_picture(self, soup: BeautifulSoup) -> Optional[str]:
-        """Extract profile picture URL."""
-        img = soup.find("img", {"class": re.compile(r".*profile.*photo.*")})
-        if img and img.get("src"):
-            return img["src"]
+        """Extract profile picture URL with fallbacks."""
+        for selector in self.SELECTORS['profile_photo']:
+            try:
+                img = soup.select_one(selector)
+                if img and img.get('src'):
+                    src = img['src']
+                    # Prefer https URLs with profile indicator
+                    if 'http' in src:
+                        return src
+            except Exception:
+                continue
         return None
 
     def _extract_about(self, soup: BeautifulSoup) -> Optional[str]:
-        """Extract About/Summary section."""
-        section = soup.find("section", {"id": re.compile(r".*about.*")})
-        if section:
-            content = section.find("div", {"class": re.compile(r".*display-flex.*")})
-            if content:
-                return content.get_text(strip=True)
+        """Extract About/Summary section with full text and paragraph preservation."""
+        for selector in self.SELECTORS['about']:
+            try:
+                element = soup.select_one(selector)
+                if element:
+                    # Get text preserving paragraphs and line breaks
+                    text = element.get_text(separator='\n\n', strip=True)
+                    if text and len(text) > 20:  # Ensure substantial content
+                        return text
+            except Exception:
+                continue
         return None
+    
+    def _extract_contact_info(self, soup: BeautifulSoup) -> Dict[str, str]:
+        """Extract contact information (email, phone, website)."""
+        contact = {}
+        
+        # Email
+        for selector in self.SELECTORS['contact']['email']:
+            try:
+                element = soup.select_one(selector)
+                if element and element.get('href'):
+                    email = element['href'].replace('mailto:', '')
+                    if '@' in email:
+                        contact['email'] = email
+                        break
+            except Exception:
+                continue
+        
+        # Phone
+        for selector in self.SELECTORS['contact']['phone']:
+            try:
+                element = soup.select_one(selector)
+                if element:
+                    phone = element.get_text(strip=True)
+                    if phone:
+                        contact['phone'] = phone
+                        break
+            except Exception:
+                continue
+        
+        # Website
+        for selector in self.SELECTORS['contact']['website']:
+            try:
+                elements = soup.select(selector)
+                for element in elements:
+                    href = element.get('href', '')
+                    if href and 'linkedin.com' not in href:
+                        contact['website'] = href
+                        break
+                if 'website' in contact:
+                    break
+            except Exception:
+                continue
+        
+        return contact
+    
+    def _extract_stats(self, soup: BeautifulSoup) -> Dict[str, str]:
+        """Extract profile statistics (connections, followers)."""
+        stats = {}
+        
+        # Connections
+        for selector in self.SELECTORS['stats']['connections']:
+            try:
+                element = soup.select_one(selector)
+                if element:
+                    text = element.get_text(strip=True)
+                    # Extract number from text
+                    numbers = re.findall(r'\d+[\d,]*', text)
+                    if numbers:
+                        stats['connections'] = numbers[0]
+                        break
+            except Exception:
+                continue
+        
+        # Followers
+        for selector in self.SELECTORS['stats']['followers']:
+            try:
+                element = soup.select_one(selector)
+                if element:
+                    text = element.get_text(strip=True)
+                    # Extract number from text
+                    numbers = re.findall(r'\d+[\d,]*', text)
+                    if numbers:
+                        stats['followers'] = numbers[0]
+                        break
+            except Exception:
+                continue
+        
+        return stats
 
     def _extract_experience(self, soup: BeautifulSoup) -> List[Dict[str, str]]:
         """Extract work experience."""
