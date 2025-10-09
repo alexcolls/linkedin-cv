@@ -1,5 +1,6 @@
 """Command-line interface for LinkedIn CV Generator."""
 import asyncio
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -77,10 +78,30 @@ def main(
     """
     display_banner()
 
-    # Validate inputs
+    # Load .env file if it exists and PROFILE_URL is not provided
     if not profile_url and not html_file:
-        console.print("[red]❌ Error: Either PROFILE_URL or --html-file must be provided[/red]")
-        sys.exit(1)
+        env_file = Path(".env")
+        if env_file.exists():
+            with open(env_file, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("PROFILE_URL="):
+                        profile_url = line.split("=", 1)[1].strip().strip('"').strip("'")
+                        if profile_url:
+                            console.print(f"[dim]ℹ️  Using PROFILE_URL from .env file[/dim]")
+                            break
+    
+    # If still no profile_url and no html_file, prompt the user
+    if not profile_url and not html_file:
+        console.print()
+        console.print("[yellow]⚠️  No PROFILE_URL found in .env file[/yellow]")
+        console.print()
+        profile_url = console.input("[cyan]Please enter your LinkedIn profile URL: [/cyan]")
+        profile_url = profile_url.strip()
+        
+        if not profile_url:
+            console.print("[red]❌ Error: Profile URL cannot be empty[/red]")
+            sys.exit(1)
 
     if profile_url and html_file:
         console.print("[yellow]⚠️  Both URL and HTML file provided. Using HTML file.[/yellow]")
