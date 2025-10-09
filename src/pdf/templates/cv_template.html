@@ -25,6 +25,48 @@
                 {% if location %}
                 <div class="location">{{ location }}</div>
                 {% endif %}
+                
+                <!-- Profile Stats -->
+                {% if stats and (stats.connections or stats.followers) %}
+                <div class="stats">
+                    {% if stats.connections %}
+                    <span class="stat-item">
+                        <span class="stat-icon">👥</span>
+                        <span class="stat-value">{{ stats.connections }} connections</span>
+                    </span>
+                    {% endif %}
+                    {% if stats.followers %}
+                    <span class="stat-item">
+                        <span class="stat-icon">📊</span>
+                        <span class="stat-value">{{ stats.followers }} followers</span>
+                    </span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- Contact Information -->
+                {% if contact_info and (contact_info.email or contact_info.phone or contact_info.website) %}
+                <div class="contact-info">
+                    {% if contact_info.email %}
+                    <div class="contact-item">
+                        <span class="contact-icon">✉️</span>
+                        <span class="contact-text">{{ contact_info.email }}</span>
+                    </div>
+                    {% endif %}
+                    {% if contact_info.phone %}
+                    <div class="contact-item">
+                        <span class="contact-icon">📞</span>
+                        <span class="contact-text">{{ contact_info.phone }}</span>
+                    </div>
+                    {% endif %}
+                    {% if contact_info.website %}
+                    <div class="contact-item">
+                        <span class="contact-icon">🌐</span>
+                        <span class="contact-text">{{ contact_info.website }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
             </div>
         </header>
 
