@@ -17,7 +17,9 @@ def sample_html():
             <div class="text-body-medium break-words">Software Engineer</div>
             <span class="text-body-small inline t-black--light break-words">San Francisco, CA</span>
             <section id="about">
-                <div class="display-flex">Experienced software engineer...</div>
+                <div class="pv-shared-text-with-see-more">
+                    <span aria-hidden="true">Experienced software engineer with expertise in Python and web development.</span>
+                </div>
             </section>
         </body>
     </html>
