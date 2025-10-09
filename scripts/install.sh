@@ -233,7 +233,7 @@ main() {
     echo ""
     echo -e "${GREEN}${BOLD}"
     echo "╔════════════════════════════════════════════════════════════════╗"
-    echo "║               ✓ Installation Complete!                        ║"
+    echo "║               ✓ Installation Complete!                         ║"
     echo "╚════════════════════════════════════════════════════════════════╝"
     echo -e "${NC}"
     echo ""
