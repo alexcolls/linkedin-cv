@@ -193,14 +193,25 @@
             <div class="section-content">
                 {% for cert in certifications %}
                 <div class="certification-item">
-                    {% if cert.name %}
-                    <div class="certification-name">{{ cert.name }}</div>
-                    {% endif %}
+                    <div class="certification-header">
+                        <span class="cert-icon">🏆</span>
+                        {% if cert.name %}
+                        <div class="certification-name">{{ cert.name }}</div>
+                        {% endif %}
+                    </div>
                     {% if cert.issuer %}
-                    <div class="certification-issuer">{{ cert.issuer }}</div>
+                    <div class="certification-issuer">🏢 {{ cert.issuer }}</div>
                     {% endif %}
-                    {% if cert.date %}
-                    <div class="certification-date">{{ cert.date }}</div>
+                    <div class="certification-meta">
+                        {% if cert.date %}
+                        <span class="certification-date">📅 {{ cert.date }}</span>
+                        {% endif %}
+                        {% if cert.credential_id %}
+                        <span class="certification-credential">🎟️ ID: {{ cert.credential_id }}</span>
+                        {% endif %}
+                    </div>
+                    {% if cert.url %}
+                    <div class="certification-url">🔗 Verification: {{ cert.url }}</div>
                     {% endif %}
                 </div>
                 {% endfor %}

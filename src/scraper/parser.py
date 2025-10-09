@@ -722,22 +722,139 @@ class ProfileParser:
         return skill if skill else None
 
     def _extract_certifications(self, soup: BeautifulSoup) -> List[Dict[str, str]]:
-        """Extract certifications."""
+        """Extract certifications with detailed information.
+        
+        Extracts:
+        - Certificate name
+        - Issuing organization
+        - Issue date and expiry date
+        - Credential ID
+        - Credential URL
+        """
         certifications = []
-        section = soup.find("section", {"id": re.compile(r".*licenses.*|.*certifications.*")})
-
-        if section:
-            items = section.find_all("li")
-            for item in items:
-                cert = {
-                    "name": self._safe_extract(item, "div.t-bold"),
-                    "issuer": self._safe_extract(item, "span.t-14.t-normal"),
-                    "date": self._safe_extract(item, "span.t-14.t-normal.t-black--light"),
-                }
-                if cert["name"]:
-                    certifications.append(cert)
-
+        
+        # Modern LinkedIn selectors for certifications section
+        section_selectors = [
+            'section[id*="licenses"]',
+            'section[id*="certifications"]',
+            'section[data-section="certifications"]',
+            'div#certifications-section',
+        ]
+        
+        section = None
+        for selector in section_selectors:
+            section = soup.select_one(selector)
+            if section:
+                break
+        
+        if not section:
+            return certifications
+        
+        # Find certification items
+        item_selectors = [
+            'li.pvs-list__paged-list-item',
+            'li.artdeco-list__item',
+            'li[class*="certification"]',
+        ]
+        
+        items = []
+        for selector in item_selectors:
+            found_items = section.select(selector)
+            if found_items:
+                items = found_items
+                break
+        
+        for item in items:
+            cert_data = self._extract_single_certification(item)
+            if cert_data and cert_data.get('name'):
+                certifications.append(cert_data)
+        
         return certifications
+    
+    def _extract_single_certification(self, item) -> Optional[Dict[str, str]]:
+        """Extract details from a single certification item.
+        
+        Args:
+            item: BeautifulSoup element containing certification data
+            
+        Returns:
+            Dictionary with certification details
+        """
+        cert = {}
+        
+        # Certificate Name
+        name_selectors = [
+            'div.display-flex.align-items-center span[aria-hidden="true"]',
+            'h3 span[aria-hidden="true"]',
+            'div.t-bold span',
+            'div.pv-certifications__summary-info h3',
+        ]
+        
+        for selector in name_selectors:
+            name = self._safe_extract(item, selector)
+            if name and len(name) > 0:
+                cert['name'] = name
+                break
+        
+        # Issuing Organization
+        issuer_selectors = [
+            'span.t-14.t-normal span[aria-hidden="true"]',
+            'div.pv-certifications__summary-info p',
+            'span[class*="issuer"]',
+        ]
+        
+        for selector in issuer_selectors:
+            issuer = self._safe_extract(item, selector)
+            if issuer and len(issuer) > 0 and issuer != cert.get('name'):
+                cert['issuer'] = issuer
+                break
+        
+        # Date (Issue and Expiry)
+        date_selectors = [
+            'span.t-14.t-normal.t-black--light span[aria-hidden="true"]',
+            'div.pv-certifications__summary-info span.t-14',
+            'span[class*="date"]',
+        ]
+        
+        for selector in date_selectors:
+            date = self._safe_extract(item, selector)
+            if date and len(date) > 0:
+                cert['date'] = date
+                break
+        
+        # Credential ID
+        credential_selectors = [
+            'div[class*="credential"] span[aria-hidden="true"]',
+            'span[class*="credential-id"]',
+        ]
+        
+        for selector in credential_selectors:
+            credential = self._safe_extract(item, selector)
+            if credential and 'credential' in credential.lower():
+                # Extract just the ID part
+                parts = credential.split(':', 1)
+                if len(parts) > 1:
+                    cert['credential_id'] = parts[1].strip()
+                else:
+                    cert['credential_id'] = credential
+                break
+        
+        # Credential URL
+        url_selectors = [
+            'a[href*="credential"]',
+            'a[class*="certification-url"]',
+        ]
+        
+        for selector in url_selectors:
+            try:
+                link = item.select_one(selector)
+                if link and link.get('href'):
+                    cert['url'] = link['href']
+                    break
+            except Exception:
+                continue
+        
+        return cert if cert else None
 
     def _extract_languages(self, soup: BeautifulSoup) -> List[Dict[str, str]]:
         """Extract languages with proficiency levels.
