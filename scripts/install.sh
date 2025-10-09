@@ -6,48 +6,15 @@
 
 set -e  # Exit on any error
 
-# Colors for pretty output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-MAGENTA='\033[0;35m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
-BOLD='\033[1m'
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# ═══════════════════════════════════════════════════════════════
-# Helper Functions
-# ═══════════════════════════════════════════════════════════════
+# Source common functions
+source "$SCRIPT_DIR/common.sh"
 
-print_header() {
-    echo -e "${CYAN}${BOLD}"
-    echo "╔════════════════════════════════════════════════════════════════╗"
-    echo "║           🖨️  LinkedIn CV Generator Installer                  ║"
-    echo "║      Generate Beautiful PDFs from LinkedIn Profiles            ║"
-    echo "╚════════════════════════════════════════════════════════════════╝"
-    echo -e "${NC}"
-}
-
-print_success() {
-    echo -e "${GREEN}✓ $1${NC}"
-}
-
-print_error() {
-    echo -e "${RED}✗ $1${NC}"
-}
-
-print_info() {
-    echo -e "${BLUE}ℹ $1${NC}"
-}
-
-print_warning() {
-    echo -e "${YELLOW}⚠ $1${NC}"
-}
-
-print_step() {
-    echo -e "\n${MAGENTA}${BOLD}▶ $1${NC}"
-}
+# Change to project root
+cd "$PROJECT_ROOT"
 
 # ═══════════════════════════════════════════════════════════════
 # System Detection
@@ -78,9 +45,7 @@ detect_os() {
 # Dependency Checking
 # ═══════════════════════════════════════════════════════════════
 
-check_command() {
-    command -v "$1" >/dev/null 2>&1
-}
+# check_command is now in common.sh
 
 check_python() {
     if check_command python3; then
@@ -232,7 +197,7 @@ setup_pre_commit() {
 # ═══════════════════════════════════════════════════════════════
 
 main() {
-    print_header
+    print_header "🖨️  LinkedIn CV Generator Installer" "Generate Beautiful PDFs from LinkedIn Profiles"
     
     print_step "Detecting system"
     detect_os
@@ -273,13 +238,13 @@ main() {
     echo -e "${NC}"
     echo ""
     echo -e "${CYAN}${BOLD}Quick Start:${NC}"
-    echo -e "  ${BLUE}./run.sh https://www.linkedin.com/in/your-username/${NC}"
+    echo -e "  ${BLUE}./run.sh${NC}"
     echo ""
     echo -e "${CYAN}${BOLD}Or use Poetry directly:${NC}"
-    echo -e "  ${BLUE}poetry run python -m src.cli https://www.linkedin.com/in/your-username/${NC}"
+    echo -e "  ${BLUE}poetry run python -m src.cli${NC}"
     echo ""
-    echo -e "${CYAN}${BOLD}Run tests:${NC}"
-    echo -e "  ${BLUE}./test.sh${NC}"
+    echo -e "${CYAN}${BOLD}For more options, run the interactive menu:${NC}"
+    echo -e "  ${BLUE}./run.sh${NC}"
     echo ""
 }
 

@@ -6,34 +6,15 @@
 
 set -e
 
-# Colors
-GREEN='\033[0;32m'
-BLUE='\033[0;34m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-CYAN='\033[0;36m'
-NC='\033[0m'
-BOLD='\033[1m'
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-print_header() {
-    echo -e "${CYAN}${BOLD}"
-    echo "╔════════════════════════════════════════════════════════════════╗"
-    echo "║          🧪 LinkedIn CV Generator - Test Suite                ║"
-    echo "╚════════════════════════════════════════════════════════════════╝"
-    echo -e "${NC}\n"
-}
+# Source common functions
+source "$SCRIPT_DIR/common.sh"
 
-print_step() {
-    echo -e "${BLUE}${BOLD}▶ $1${NC}"
-}
-
-print_success() {
-    echo -e "${GREEN}✓ $1${NC}"
-}
-
-print_error() {
-    echo -e "${RED}✗ $1${NC}"
-}
+# Change to project root
+cd "$PROJECT_ROOT"
 
 # Check if verbose mode
 VERBOSE=""
@@ -41,11 +22,11 @@ if [[ "$1" == "-v" ]] || [[ "$1" == "--verbose" ]]; then
     VERBOSE="-v"
 fi
 
-print_header
+print_header "🧪 LinkedIn CV Generator - Test Suite"
 
 # Check dependencies
-if ! command -v poetry &> /dev/null; then
-    print_error "Poetry not found. Please run ./install.sh first"
+if ! check_poetry; then
+    print_error "Poetry not found. Please run: ./run.sh and select option 4 (Install)"
     exit 1
 fi
 
