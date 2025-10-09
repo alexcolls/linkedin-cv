@@ -616,19 +616,110 @@ class ProfileParser:
         
         return edu if edu else None
 
-    def _extract_skills(self, soup: BeautifulSoup) -> List[str]:
-        """Extract skills."""
+    def _extract_skills(self, soup: BeautifulSoup) -> List[Dict[str, Any]]:
+        """Extract skills with endorsements and categories.
+        
+        Returns:
+            List of dictionaries containing skill name and endorsement count
+        """
         skills = []
-        section = soup.find("section", {"id": re.compile(r".*skills.*")})
-
-        if section:
+        
+        # Modern LinkedIn selectors for skills section
+        section_selectors = [
+            'section[id*="skills"]',
+            'section[data-section="skills"]',
+            'div#skills-section',
+            'section.pv-profile-section.pv-skill-categories-section',
+        ]
+        
+        section = None
+        for selector in section_selectors:
+            section = soup.select_one(selector)
+            if section:
+                break
+        
+        if not section:
+            return skills
+        
+        # Try extracting skills with endorsements (detailed view)
+        skill_items = section.select('div.pv-skill-category-entity, li.pvs-list__paged-list-item')
+        
+        if skill_items:
+            for item in skill_items:
+                skill_data = self._extract_single_skill(item)
+                if skill_data and skill_data.get('name'):
+                    skills.append(skill_data)
+        else:
+            # Fallback: Simple skill extraction
             skill_elements = section.find_all("div", {"class": re.compile(r".*skill.*")})
             for element in skill_elements:
-                skill = element.get_text(strip=True)
-                if skill and len(skill) < 50:  # Filter out noise
-                    skills.append(skill)
-
-        return list(set(skills))  # Remove duplicates
+                skill_name = element.get_text(strip=True)
+                if skill_name and len(skill_name) < 100:  # Filter out noise
+                    # Check if not already added
+                    if not any(s.get('name') == skill_name for s in skills):
+                        skills.append({'name': skill_name, 'endorsements': 0})
+        
+        # Remove duplicates by name while preserving order
+        seen = set()
+        unique_skills = []
+        for skill in skills:
+            skill_name = skill.get('name', '').lower()
+            if skill_name and skill_name not in seen:
+                seen.add(skill_name)
+                unique_skills.append(skill)
+        
+        return unique_skills
+    
+    def _extract_single_skill(self, item) -> Optional[Dict[str, Any]]:
+        """Extract details from a single skill item.
+        
+        Args:
+            item: BeautifulSoup element containing skill data
+            
+        Returns:
+            Dictionary with skill name and endorsement count
+        """
+        skill = {}
+        
+        # Skill Name
+        name_selectors = [
+            'div.display-flex.align-items-center span[aria-hidden="true"]',
+            'span.pv-skill-category-entity__name',
+            'div.t-bold span',
+            'p.pv-skill-category-entity__name',
+        ]
+        
+        for selector in name_selectors:
+            name = self._safe_extract(item, selector)
+            if name and len(name) > 0 and len(name) < 100:
+                skill['name'] = name
+                break
+        
+        # Endorsement Count
+        endorsement_selectors = [
+            'span.t-14.t-black--light span[aria-hidden="true"]',
+            'span.pv-skill-category-entity__endorsement-count',
+            'button span.t-bold',
+        ]
+        
+        for selector in endorsement_selectors:
+            try:
+                element = item.select_one(selector)
+                if element:
+                    text = element.get_text(strip=True)
+                    # Extract number from endorsement text
+                    numbers = re.findall(r'\d+', text)
+                    if numbers:
+                        skill['endorsements'] = int(numbers[0])
+                        break
+            except Exception:
+                continue
+        
+        # If no endorsements found, default to 0
+        if 'endorsements' not in skill and 'name' in skill:
+            skill['endorsements'] = 0
+        
+        return skill if skill else None
 
     def _extract_certifications(self, soup: BeautifulSoup) -> List[Dict[str, str]]:
         """Extract certifications."""

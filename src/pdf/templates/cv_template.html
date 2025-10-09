@@ -170,7 +170,16 @@
             <div class="section-content">
                 <div class="skills-grid">
                     {% for skill in skills %}
-                    <div class="skill-item">{{ skill }}</div>
+                    <div class="skill-item">
+                        {% if skill is mapping %}
+                        <span class="skill-name">{{ skill.name }}</span>
+                        {% if skill.endorsements and skill.endorsements > 0 %}
+                        <span class="skill-endorsements">👍 {{ skill.endorsements }}</span>
+                        {% endif %}
+                        {% else %}
+                        <span class="skill-name">{{ skill }}</span>
+                        {% endif %}
+                    </div>
                     {% endfor %}
                 </div>
             </div>
