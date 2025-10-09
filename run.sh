@@ -27,7 +27,7 @@ cd "$PROJECT_ROOT"
 
 show_menu() {
     clear
-    print_header "🖨️  LinkedIn CV Generator - Main Menu" "Professional CV generation from LinkedIn profiles"
+    print_header "🖨️ LinkedIn CV Generator - Main Menu" "Professional CV generation from LinkedIn profiles"
     
     echo -e "${CYAN}${BOLD}📋 Main Operations:${NC}"
     echo -e "  ${BOLD}1)${NC} 🚀 Generate CV (from URL or .env)"
