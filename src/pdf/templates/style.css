@@ -749,19 +749,50 @@ body {
     background: white;
   }
 
+  /* Prevent orphans and widows */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+
   .section {
     page-break-inside: avoid;
   }
 
+  .section-title {
+    page-break-after: avoid;
+  }
+
+  /* Avoid breaking items across pages */
   .experience-item,
   .education-item,
-  .project-item {
+  .certification-item,
+  .language-item,
+  .volunteer-item,
+  .project-item,
+  .publication-item,
+  .honor-item {
     page-break-inside: avoid;
+  }
+
+  /* Keep headers with content */
+  .experience-header,
+  .education-header,
+  .certification-header,
+  .volunteer-header,
+  .project-header,
+  .honor-header {
+    page-break-after: avoid;
   }
 
   a {
     color: var(--text-primary);
     text-decoration: none;
+  }
+
+  /* Remove unnecessary elements for print */
+  button {
+    display: none;
   }
 }
 
