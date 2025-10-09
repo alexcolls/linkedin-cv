@@ -31,6 +31,33 @@ def display_banner():
         console.print("[cyan]📄 Professional CV Generator 📄[/cyan]\n", justify="center")
 
 
+def normalize_profile_url(input_str: str) -> str:
+    """Normalize profile input to full LinkedIn URL.
+    
+    Accepts:
+    - Full URL: https://www.linkedin.com/in/username/
+    - Username only: username
+    
+    Returns:
+    - Full LinkedIn profile URL
+    """
+    input_str = input_str.strip().rstrip('/')
+    
+    # If it's already a full URL, return as-is
+    if input_str.startswith('http://') or input_str.startswith('https://'):
+        return input_str
+    
+    # If it contains linkedin.com, assume it's a partial URL without protocol
+    if 'linkedin.com' in input_str:
+        if not input_str.startswith('http'):
+            return f'https://{input_str}'
+        return input_str
+    
+    # Otherwise, treat as username and construct full URL
+    username = input_str.replace('@', '').strip()
+    return f'https://www.linkedin.com/in/{username}/'
+
+
 @click.command()
 @click.argument("profile_url", type=str, required=False)
 @click.option(
@@ -96,13 +123,24 @@ def main(
         console.print()
         console.print("[yellow]⚠️  No PROFILE_URL found in .env file[/yellow]")
         console.print()
-        profile_url = console.input("[cyan]Please enter your LinkedIn profile URL: [/cyan]")
-        profile_url = profile_url.strip()
+        console.print("[dim]You can enter:[/dim]")
+        console.print("[dim]  • Full URL: https://www.linkedin.com/in/username/[/dim]")
+        console.print("[dim]  • Username only: username[/dim]")
+        console.print()
+        profile_input = console.input("[cyan]Enter LinkedIn profile URL or username: [/cyan]")
+        profile_input = profile_input.strip()
         
-        if not profile_url:
-            console.print("[red]❌ Error: Profile URL cannot be empty[/red]")
+        if not profile_input:
+            console.print("[red]❌ Error: Profile URL/username cannot be empty[/red]")
             sys.exit(1)
+        
+        profile_url = normalize_profile_url(profile_input)
+        console.print(f"[dim]ℹ️  Using profile: {profile_url}[/dim]")
 
+    # Normalize profile_url if provided
+    if profile_url:
+        profile_url = normalize_profile_url(profile_url)
+    
     if profile_url and html_file:
         console.print("[yellow]⚠️  Both URL and HTML file provided. Using HTML file.[/yellow]")
 
