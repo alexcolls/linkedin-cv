@@ -13,6 +13,7 @@ class ProfileParser:
     SELECTORS = {
         'name': [
             'h1.text-heading-xlarge',
+            'h1.text-heading-xlarge.inline.t-24',  # New pattern from analysis
             'h1[class*="top-card"]',
             '[data-generated-suggestion-target]',
             'div.pv-text-details__left-panel h1',
@@ -20,6 +21,7 @@ class ProfileParser:
         ],
         'headline': [
             'div.text-body-medium.break-words',
+            'div.text-body-medium',  # Simplified pattern
             'div[class*="headline"]',
             'div.pv-text-details__left-panel div.text-body-medium',
             'h2.mt1.t-18',
@@ -27,6 +29,7 @@ class ProfileParser:
         ],
         'location': [
             'span.text-body-small.inline.t-black--light.break-words',
+            'span.text-body-small',  # Simplified pattern
             'div.pv-text-details__left-panel span.text-body-small',
             'span.t-16.t-black.t-normal',
             'div.top-card__subline-item',
@@ -38,6 +41,7 @@ class ProfileParser:
             'div.profile-photo-edit__preview img',
         ],
         'about': [
+            'section#about div.pv-shared-text-with-see-more span[aria-hidden="true"]',  # More specific
             'div.pv-shared-text-with-see-more span[aria-hidden="true"]',
             'section[data-section="summary"] span[aria-hidden="true"]',
             'div.pv-about__summary-text span',
@@ -79,33 +83,37 @@ class ProfileParser:
         """
         soup = BeautifulSoup(html_content, "lxml")
 
-        # Try to extract from JSON-LD first (for public/unauthenticated profiles)
+        # Always extract HTML data first
+        profile_data = {
+            "username": self._extract_username(soup),
+            "name": self._extract_name(soup),
+            "headline": self._extract_headline(soup),
+            "location": self._extract_location(soup),
+            "profile_picture_url": self._extract_profile_picture(soup),
+            "about": self._extract_about(soup),
+            "contact_info": self._extract_contact_info(soup),
+            "stats": self._extract_stats(soup),
+            "experience": self._extract_experience(soup),
+            "education": self._extract_education(soup),
+            "skills": self._extract_skills(soup),
+            "certifications": self._extract_certifications(soup),
+            "languages": self._extract_languages(soup),
+            "volunteer": self._extract_volunteer(soup),
+            "projects": self._extract_projects(soup),
+            "publications": self._extract_publications(soup),
+            "honors": self._extract_honors(soup),
+            "courses": self._extract_courses(soup),
+        }
+        
+        # Try to extract from JSON-LD for additional/missing data
         json_ld_data = self._extract_json_ld(soup)
         if json_ld_data:
-            # JSON-LD data is available, use it as primary source
-            profile_data = self._parse_json_ld(json_ld_data, soup)
-        else:
-            # Fall back to HTML scraping (for authenticated profiles)
-            profile_data = {
-                "username": self._extract_username(soup),
-                "name": self._extract_name(soup),
-                "headline": self._extract_headline(soup),
-                "location": self._extract_location(soup),
-                "profile_picture_url": self._extract_profile_picture(soup),
-                "about": self._extract_about(soup),
-                "contact_info": self._extract_contact_info(soup),
-                "stats": self._extract_stats(soup),
-                "experience": self._extract_experience(soup),
-                "education": self._extract_education(soup),
-                "skills": self._extract_skills(soup),
-                "certifications": self._extract_certifications(soup),
-                "languages": self._extract_languages(soup),
-                "volunteer": self._extract_volunteer(soup),
-                "projects": self._extract_projects(soup),
-                "publications": self._extract_publications(soup),
-                "honors": self._extract_honors(soup),
-                "courses": self._extract_courses(soup),
-            }
+            # Merge JSON-LD data, but don't overwrite existing HTML data
+            json_ld_profile = self._parse_json_ld(json_ld_data, soup)
+            for key, value in json_ld_profile.items():
+                # Only use JSON-LD data if HTML extraction didn't find anything
+                if not profile_data.get(key) and value:
+                    profile_data[key] = value
 
         # Count non-empty sections
         sections = [k for k, v in profile_data.items() if v and k not in ["username"]]
@@ -449,8 +457,9 @@ class ProfileParser:
         """
         experiences = []
         
-        # Modern LinkedIn selectors for experience section
+        # Modern LinkedIn selectors for experience section (2024)
         section_selectors = [
+            'section#experience',  # Primary selector
             'section[id*="experience"]',
             'section[data-section="experience"]',
             'div#experience-section',
@@ -466,8 +475,9 @@ class ProfileParser:
         if not section:
             return experiences
         
-        # Find all experience items with multiple selector patterns
+        # Find all experience items with updated selector patterns
         item_selectors = [
+            'li.pvs-list__paged-list-item.artdeco-list__item',  # Combined pattern
             'li.pvs-list__paged-list-item',
             'li.artdeco-list__item',
             'li[class*="profile"]',
@@ -500,9 +510,10 @@ class ProfileParser:
         """
         exp = {}
         
-        # Job Title - try multiple selectors
+        # Job Title - try multiple selectors (updated 2024)
         title_selectors = [
             'div.display-flex.align-items-center span[aria-hidden="true"]',
+            'div.display-flex span[aria-hidden="true"]',  # Simplified
             'div[class*="entity-result__title"] span[aria-hidden="true"]',
             'div.t-bold span',
             'h3 span[aria-hidden="true"]',

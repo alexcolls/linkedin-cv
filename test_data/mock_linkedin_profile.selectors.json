@@ -1,0 +1,50 @@
+{
+  "header": {
+    "name": {
+      "text": "John Doe",
+      "selector": "h1.text-heading-xlarge.inline.t-24"
+    },
+    "headline": {
+      "text": "Senior Software Engineer | Tech Lead | Full Stack Developer",
+      "selector": "div.text-body-medium"
+    },
+    "location": {
+      "text": "San Francisco, California, United States",
+      "selector": "span.text-body-small"
+    },
+    "about": {
+      "text": "Passionate software engineer with 8+ years of experience building scalable web applications. Specialized in React, Node.js, Python, and cloud platforms. Currently leading a team at TechCorp developing...",
+      "selector": "section[id*=\"about\"] div.pv-shared-text-with-see-more"
+    }
+  },
+  "experience": {
+    "section_selector": "section#experience",
+    "item_count": 2,
+    "item_selector": "li.pvs-list__paged-list-item.artdeco-list__item",
+    "title_example": "Senior Software Engineer"
+  },
+  "education": {
+    "section_selector": "section#education",
+    "item_count": 1,
+    "item_selector": "li.pvs-list__paged-list-item.artdeco-list__item"
+  },
+  "skills": {
+    "section_selector": "section#skills",
+    "count": 4,
+    "examples": [
+      "React",
+      "Skills",
+      "Node.js",
+      "Python"
+    ]
+  },
+  "certifications": {
+    "section_selector": "section#licenses_and_certifications",
+    "item_count": 1
+  },
+  "json_ld": {
+    "found": true,
+    "count": 1,
+    "type_0": "Person"
+  }
+}
