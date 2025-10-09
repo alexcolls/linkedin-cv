@@ -103,26 +103,47 @@ poetry install
 
 ### Usage
 
-#### 🎯 Recommended Method: HTML File
+#### 🔐 Method 1: Authenticated Scraping (Recommended)
 
-For best results, save your LinkedIn HTML manually (while logged in):
+Get full, unmasked content with authentication:
 
 ```bash
-# Run the interactive menu
-./run.sh
+# Step 1: Authenticate once (session lasts ~30 days)
+./run.sh  # Select option 2: Login to LinkedIn
+# Or: poetry run python -m src.cli --login
 
-# Or directly
-python src/cli.py --html linkedin-profile.html --output ./output/
+# Step 2: Generate CV
+./run.sh  # Select option 1: Generate CV
+# Or: poetry run python -m src.cli alex-colls-outumuro
 ```
 
-#### 📖 How to Export LinkedIn HTML
+**Why authenticate?**
+- ❌ Without auth: Content is masked with asterisks (`*****`)
+- ✅ With auth: Full descriptions, complete profile data
 
-1. **Log in to LinkedIn** and go to your profile
-2. **Open Developer Tools** (F12 or right-click → Inspect)
-3. **Copy HTML**: Right-click `<html>` tag → Copy → Copy outerHTML
-4. **Save to file**: Paste into text editor, save as `linkedin-profile.html`
+**How it works:**
+1. Opens Chrome browser for you to log in
+2. Saves session cookies to `~/.linkedin_session.json`
+3. Reuses session for ~30 days (no need to log in again!)
 
-📚 **Detailed guide**: See `docs/HTML_EXPORT_GUIDE.md`
+📚 **Full guide**: See `docs/AUTHENTICATION_GUIDE.md`
+
+#### 🍪 Method 2: Cookie Extraction (If Chrome Already Open)
+
+Extract cookies from your running Chrome:
+
+```bash
+poetry run python scripts/extract_cookies.py
+poetry run python -m src.cli alex-colls-outumuro
+```
+
+#### 🔤 Method 3: Username Input
+
+You can use just the username instead of full URL:
+
+```bash
+poetry run python -m src.cli username  # Instead of full URL
+```
 
 ---
 
@@ -135,12 +156,12 @@ Run `./run.sh` for an interactive experience:
 ║        LinkedIn CV Generator - Main Menu             ║
 ╚══════════════════════════════════════════════════════╝
 
-1) Generate CV from HTML file
-2) Export LinkedIn HTML (instructions)
-3) Run installation
-4) Run tests
-5) View documentation
-6) Exit
+1) 🚀 Generate CV (from URL or .env)
+2) 🔐 Login to LinkedIn (save session)
+3) ⚙️  Run installation/setup
+4) 🧪 Run tests
+5) 📖 View documentation
+6) ❌ Exit
 
 Select an option:
 ```

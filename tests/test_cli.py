@@ -24,10 +24,12 @@ def test_cli_help(runner):
 
 
 def test_cli_missing_url(runner):
-    """Test CLI without required URL argument."""
-    result = runner.invoke(main, [])
-    assert result.exit_code != 0
-    assert "Missing argument" in result.output or "Error" in result.output
+    """Test CLI without required URL argument - should prompt for input."""
+    # CLI now prompts for input, so should not error immediately
+    result = runner.invoke(main, [], input="\n")
+    # Aborted because no input provided
+    assert result.exit_code == 1
+    assert "Aborted" in result.output or "cannot be empty" in result.output
 
 
 def test_cli_invalid_url(runner):

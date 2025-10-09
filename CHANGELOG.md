@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2025-10-09
+
+### Added
+- 🔐 **LinkedIn Authentication System** - Interactive login with persistent session cookies
+- 🍪 **Cookie Extraction Script** - Extract cookies from running Chrome browser (`scripts/extract_cookies.py`)
+- 📊 **JSON-LD Parser** - Parse LinkedIn's structured data for public profiles
+- ✨ **Username Normalization** - Accept just username instead of full URL (e.g., "alex-colls-outumuro")
+- 🌐 **Chrome Profile Integration** - Attempt to use existing Chrome session automatically
+- 📚 **Authentication Guide** - Comprehensive documentation in `docs/AUTHENTICATION_GUIDE.md`
+- 🔐 **Login Command** - New `--login` flag for interactive authentication
+- 💻 **Interactive Menu Enhanced** - Added "Login to LinkedIn" option in run.sh
+- 🧪 **JSON-LD Tests** - Comprehensive test suite for structured data parsing
+- 🎯 **Auth Wall Detection** - Smart detection of LinkedIn authentication requirements
+
+### Changed
+- ⬆️ **Test Coverage** - Improved from 21% to 40% (almost doubled!)
+- 🔧 **CLI Enhanced** - Now prompts for profile URL if not provided
+- 📝 **README Updated** - Added authentication instructions and workflow
+- 🎨 **Menu Simplified** - Removed HTML file options from interactive menu
+- ⚡ **Parser Improved** - Falls back to HTML scraping if JSON-LD not available
+
+### Fixed
+- 🐛 **Content Masking** - Solved asterisk (`*****`) issue with proper authentication
+- 🔒 **Auth Wall** - Proper session management for authenticated scraping
+- ✅ **All Tests** - Fixed failing e2e and CLI tests
+- 🌐 **Chrome Integration** - Handle locked profile directory gracefully
+
 ## [0.3.0] - 2025-10-04
 
 ### Added

@@ -92,6 +92,7 @@ async def test_e2e_workflow_success(tmp_path, sample_html, sample_profile_data):
                         profile_url="https://www.linkedin.com/in/john-doe/",
                         output_path=output_dir,
                         template=None,
+                        html_file=None,
                         headless=True,
                         debug=False,
                     )
@@ -150,6 +151,7 @@ async def test_e2e_workflow_without_profile_picture(tmp_path, sample_html):
                     profile_url="https://www.linkedin.com/in/john-doe/",
                     output_path=output_dir,
                     template=None,
+                    html_file=None,
                     headless=True,
                     debug=False,
                 )
@@ -182,6 +184,7 @@ async def test_e2e_workflow_image_processing_fails(tmp_path, sample_html, sample
                         profile_url="https://www.linkedin.com/in/john-doe/",
                         output_path=output_dir,
                         template=None,
+                        html_file=None,
                         headless=True,
                         debug=False,
                     )
