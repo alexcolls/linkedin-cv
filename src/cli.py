@@ -90,6 +90,11 @@ def normalize_profile_url(input_str: str) -> str:
     is_flag=True,
     help="Enable debug logging",
 )
+@click.option(
+    "--login",
+    is_flag=True,
+    help="Launch browser to log in to LinkedIn and save session",
+)
 def main(
     profile_url: Optional[str],
     output_dir: str,
@@ -97,6 +102,7 @@ def main(
     html_file: Optional[str],
     headless: bool,
     debug: bool,
+    login: bool,
 ):
     """Generate a professional PDF CV from a LinkedIn profile.
 
@@ -104,6 +110,21 @@ def main(
                  Not required if --html-file is provided.
     """
     display_banner()
+    
+    # Handle login mode
+    if login:
+        try:
+            scraper = LinkedInScraper(debug=debug)
+            result = asyncio.run(scraper.login_interactive())
+            sys.exit(0 if result else 1)
+        except KeyboardInterrupt:
+            console.print("\n[yellow]⚠️  Login cancelled by user[/yellow]")
+            sys.exit(0)
+        except Exception as e:
+            console.print(f"\n[red]❌ Error during login: {str(e)}[/red]")
+            if debug:
+                console.print_exception()
+            sys.exit(1)
 
     # Load .env file if it exists and PROFILE_URL is not provided
     if not profile_url and not html_file:

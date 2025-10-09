@@ -27,10 +27,11 @@ show_menu() {
     echo -e "${CYAN}Please select an option:${NC}"
     echo ""
     echo -e "  ${BOLD}1)${NC} 🚀 Generate CV (from URL or .env)"
-    echo -e "  ${BOLD}2)${NC} ⚙️  Run installation/setup"
-    echo -e "  ${BOLD}3)${NC} 🧪 Run tests"
-    echo -e "  ${BOLD}4)${NC} 📖 View documentation"
-    echo -e "  ${BOLD}5)${NC} ❌ Exit"
+    echo -e "  ${BOLD}2)${NC} 🔐 Login to LinkedIn (save session)"
+    echo -e "  ${BOLD}3)${NC} ⚙️  Run installation/setup"
+    echo -e "  ${BOLD}4)${NC} 🧪 Run tests"
+    echo -e "  ${BOLD}5)${NC} 📖 View documentation"
+    echo -e "  ${BOLD}6)${NC} ❌ Exit"
     echo ""
 }
 
@@ -40,13 +41,37 @@ generate_cv_from_url() {
     # Check dependencies first
     if ! check_dependencies; then
         print_error "Dependencies not installed properly."
-        print_info "Please run option 4 (Installation) first."
+        print_info "Please run option 3 (Installation) first."
         press_any_key
         return 1
     fi
     
     # Run the CLI (it will handle .env and interactive prompts)
     poetry run python -m src.cli
+    
+    press_any_key
+}
+
+login_to_linkedin() {
+    print_header "🔐 Login to LinkedIn"
+    
+    # Check dependencies first
+    if ! check_dependencies; then
+        print_error "Dependencies not installed properly."
+        print_info "Please run option 3 (Installation) first."
+        press_any_key
+        return 1
+    fi
+    
+    echo -e "${CYAN}This will open a browser for you to log in to LinkedIn.${NC}"
+    echo -e "${CYAN}Your session will be saved for future use.${NC}"
+    echo ""
+    echo -e "${YELLOW}Important: Use your real LinkedIn credentials.${NC}"
+    echo -e "${YELLOW}Your credentials are NOT stored - only cookies.${NC}"
+    echo ""
+    read -p "$(echo -e ${CYAN}Press Enter to continue...${NC})"
+    
+    poetry run python -m src.cli --login
     
     press_any_key
 }
@@ -141,7 +166,7 @@ main() {
     while true; do
         show_menu
         
-        read -p "$(echo -e ${CYAN}Enter your choice [1-5]: ${NC})" choice
+        read -p "$(echo -e ${CYAN}Enter your choice [1-6]: ${NC})" choice
         echo ""
         
         case $choice in
@@ -149,21 +174,24 @@ main() {
                 generate_cv_from_url
                 ;;
             2)
-                run_installation
+                login_to_linkedin
                 ;;
             3)
-                run_tests
+                run_installation
                 ;;
             4)
-                view_documentation
+                run_tests
                 ;;
             5)
+                view_documentation
+                ;;
+            6)
                 echo -e "${GREEN}Thank you for using LinkedIn CV Generator! 👋${NC}"
                 echo ""
                 exit 0
                 ;;
             *)
-                print_error "Invalid option. Please select 1-5."
+                print_error "Invalid option. Please select 1-6."
                 sleep 2
                 ;;
         esac
