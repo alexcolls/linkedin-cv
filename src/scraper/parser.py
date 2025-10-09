@@ -444,23 +444,177 @@ class ProfileParser:
         return exp if exp else None
 
     def _extract_education(self, soup: BeautifulSoup) -> List[Dict[str, str]]:
-        """Extract education."""
+        """Extract education with comprehensive details.
+        
+        Extracts full education information including:
+        - Institution name and logo
+        - Degree type and field of study
+        - Duration (start and end dates)
+        - Grade/GPA if available
+        - Activities and societies
+        - Description
+        """
         education = []
-        section = soup.find("section", {"id": re.compile(r".*education.*")})
-
-        if section:
-            items = section.find_all("li", {"class": re.compile(r".*profile.*")})
-            for item in items:
-                edu = {
-                    "institution": self._safe_extract(item, "div.t-bold"),
-                    "degree": self._safe_extract(item, "span.t-14.t-normal"),
-                    "field": self._safe_extract(item, "span.t-14.t-normal"),
-                    "duration": self._safe_extract(item, "span.t-14.t-normal.t-black--light"),
-                }
-                if edu["institution"] or edu["degree"]:
-                    education.append(edu)
-
+        
+        # Modern LinkedIn selectors for education section
+        section_selectors = [
+            'section[id*="education"]',
+            'section[data-section="education"]',
+            'div#education-section',
+            'section.pv-profile-section.education-section',
+        ]
+        
+        section = None
+        for selector in section_selectors:
+            section = soup.select_one(selector)
+            if section:
+                break
+        
+        if not section:
+            return education
+        
+        # Find all education items
+        item_selectors = [
+            'li.pvs-list__paged-list-item',
+            'li.artdeco-list__item',
+            'li[class*="profile"]',
+            'div.pv-education-entity',
+        ]
+        
+        items = []
+        for selector in item_selectors:
+            found_items = section.select(selector)
+            if found_items:
+                items = found_items
+                break
+        
+        for item in items:
+            edu = self._extract_single_education(item)
+            if edu and (edu.get("institution") or edu.get("degree")):
+                education.append(edu)
+        
         return education
+    
+    def _extract_single_education(self, item) -> Optional[Dict[str, str]]:
+        """Extract details from a single education item.
+        
+        Args:
+            item: BeautifulSoup element containing education data
+            
+        Returns:
+            Dictionary with education details or None
+        """
+        edu = {}
+        
+        # Institution Name
+        institution_selectors = [
+            'div.display-flex.align-items-center span[aria-hidden="true"]',
+            'h3 span[aria-hidden="true"]',
+            'div.t-bold span',
+            'div.pv-entity__school-name',
+        ]
+        
+        for selector in institution_selectors:
+            institution = self._safe_extract(item, selector)
+            if institution and len(institution) > 0:
+                edu["institution"] = institution
+                break
+        
+        # Degree and Field of Study
+        degree_selectors = [
+            'span.t-14.t-normal span[aria-hidden="true"]',
+            'div.pv-entity__degree-name span',
+            'p.pv-entity__secondary-title',
+        ]
+        
+        degree_text = None
+        for selector in degree_selectors:
+            degree_text = self._safe_extract(item, selector)
+            if degree_text and len(degree_text) > 0:
+                # Try to split degree and field if in one string
+                if ',' in degree_text:
+                    parts = degree_text.split(',', 1)
+                    edu["degree"] = parts[0].strip()
+                    if len(parts) > 1:
+                        edu["field"] = parts[1].strip()
+                else:
+                    edu["degree"] = degree_text
+                break
+        
+        # Field of Study (if not already extracted)
+        if "field" not in edu:
+            field_selectors = [
+                'span.t-14.t-normal span[aria-hidden="true"]',
+                'div.pv-entity__fos span',
+                'p.pv-entity__fos',
+            ]
+            
+            for selector in field_selectors:
+                elements = item.select(selector)
+                for element in elements:
+                    text = element.get_text(strip=True)
+                    if text and text != edu.get("degree") and text != edu.get("institution"):
+                        edu["field"] = text
+                        break
+                if "field" in edu:
+                    break
+        
+        # Duration
+        duration_selectors = [
+            'span.t-14.t-normal.t-black--light span[aria-hidden="true"]',
+            'span.pv-entity__dates span:nth-child(2)',
+            'div.pv-entity__dates span',
+        ]
+        
+        for selector in duration_selectors:
+            duration = self._safe_extract(item, selector)
+            if duration and ('-' in duration or 'Present' in duration or len(duration) >= 4):
+                edu["duration"] = duration
+                break
+        
+        # Grade/GPA
+        grade_selectors = [
+            'span[class*="grade"]',
+            'div.pv-entity__grade span',
+        ]
+        
+        for selector in grade_selectors:
+            grade = self._safe_extract(item, selector)
+            if grade:
+                edu["grade"] = grade
+                break
+        
+        # Activities and Societies
+        activities_selectors = [
+            'div.pv-entity__extra-details span',
+            'div[class*="activities"] span[aria-hidden="true"]',
+        ]
+        
+        for selector in activities_selectors:
+            activities = self._safe_extract(item, selector)
+            if activities and len(activities) > 5:
+                edu["activities"] = activities
+                break
+        
+        # Description
+        description_selectors = [
+            'div.pv-shared-text-with-see-more span[aria-hidden="true"]',
+            'div.inline-show-more-text span[aria-hidden="true"]',
+            'div.pv-entity__description',
+        ]
+        
+        for selector in description_selectors:
+            try:
+                element = item.select_one(selector)
+                if element:
+                    description = element.get_text(separator='\n', strip=True)
+                    if description and len(description) > 10:
+                        edu["description"] = description
+                        break
+            except Exception:
+                continue
+        
+        return edu if edu else None
 
     def _extract_skills(self, soup: BeautifulSoup) -> List[str]:
         """Extract skills."""

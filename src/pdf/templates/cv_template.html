@@ -133,7 +133,7 @@
                 {% for edu in education %}
                 <div class="education-item">
                     {% if edu.institution %}
-                    <div class="institution-name">{{ edu.institution }}</div>
+                    <div class="institution-name">🏫 {{ edu.institution }}</div>
                     {% endif %}
                     {% if edu.degree %}
                     <div class="degree">{{ edu.degree }}</div>
@@ -141,8 +141,21 @@
                     {% if edu.field %}
                     <div class="field-of-study">{{ edu.field }}</div>
                     {% endif %}
-                    {% if edu.duration %}
-                    <div class="education-duration">{{ edu.duration }}</div>
+                    <div class="education-meta">
+                        {% if edu.duration %}
+                        <span class="education-duration">{{ edu.duration }}</span>
+                        {% endif %}
+                        {% if edu.grade %}
+                        <span class="education-grade">🏆 Grade: {{ edu.grade }}</span>
+                        {% endif %}
+                    </div>
+                    {% if edu.activities %}
+                    <div class="education-activities">
+                        <strong>Activities:</strong> {{ edu.activities }}
+                    </div>
+                    {% endif %}
+                    {% if edu.description %}
+                    <div class="education-description">{{ edu.description }}</div>
                     {% endif %}
                 </div>
                 {% endfor %}

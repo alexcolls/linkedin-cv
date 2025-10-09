@@ -304,34 +304,85 @@ body {
 
 /* Education Section */
 .education-item {
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-light);
   page-break-inside: avoid;
+}
+
+.education-item:last-child {
+  border-bottom: none;
 }
 
 .institution-name {
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--primary-color);
   margin-bottom: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
 }
 
 .degree {
   font-size: 15px;
-  color: var(--text-secondary);
+  font-weight: 500;
+  color: var(--text-primary);
   margin-bottom: var(--spacing-xs);
 }
 
 .field-of-study {
   font-size: 14px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-style: italic;
+  margin-bottom: var(--spacing-xs);
+}
+
+.education-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-xs);
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
 .education-duration {
+  font-style: italic;
+}
+
+.education-grade {
+  background: var(--background-section);
+  padding: 2px var(--spacing-sm);
+  border-radius: 4px;
+  font-weight: 500;
+  color: var(--accent-color);
+}
+
+.education-activities {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--background-light);
+  border-radius: 4px;
   font-size: 13px;
-  color: var(--text-muted);
-  margin-top: var(--spacing-xs);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.education-activities strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.education-description {
+  margin-top: var(--spacing-sm);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  padding-left: var(--spacing-md);
+  border-left: 2px solid var(--border-color);
+  white-space: pre-wrap;
 }
 
 /* Skills Section */
