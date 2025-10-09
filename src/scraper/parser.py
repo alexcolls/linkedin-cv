@@ -1,4 +1,5 @@
 """LinkedIn profile HTML parser."""
+import json
 import re
 from typing import Any, Dict, List, Optional
 
@@ -78,32 +79,206 @@ class ProfileParser:
         """
         soup = BeautifulSoup(html_content, "lxml")
 
-        profile_data = {
-            "username": self._extract_username(soup),
-            "name": self._extract_name(soup),
-            "headline": self._extract_headline(soup),
-            "location": self._extract_location(soup),
-            "profile_picture_url": self._extract_profile_picture(soup),
-            "about": self._extract_about(soup),
-            "contact_info": self._extract_contact_info(soup),  # NEW
-            "stats": self._extract_stats(soup),                # NEW
-            "experience": self._extract_experience(soup),
-            "education": self._extract_education(soup),
-            "skills": self._extract_skills(soup),
-            "certifications": self._extract_certifications(soup),
-            "languages": self._extract_languages(soup),
-            "volunteer": self._extract_volunteer(soup),
-            "projects": self._extract_projects(soup),
-            "publications": self._extract_publications(soup),
-            "honors": self._extract_honors(soup),
-            "courses": self._extract_courses(soup),
-        }
+        # Try to extract from JSON-LD first (for public/unauthenticated profiles)
+        json_ld_data = self._extract_json_ld(soup)
+        if json_ld_data:
+            # JSON-LD data is available, use it as primary source
+            profile_data = self._parse_json_ld(json_ld_data, soup)
+        else:
+            # Fall back to HTML scraping (for authenticated profiles)
+            profile_data = {
+                "username": self._extract_username(soup),
+                "name": self._extract_name(soup),
+                "headline": self._extract_headline(soup),
+                "location": self._extract_location(soup),
+                "profile_picture_url": self._extract_profile_picture(soup),
+                "about": self._extract_about(soup),
+                "contact_info": self._extract_contact_info(soup),
+                "stats": self._extract_stats(soup),
+                "experience": self._extract_experience(soup),
+                "education": self._extract_education(soup),
+                "skills": self._extract_skills(soup),
+                "certifications": self._extract_certifications(soup),
+                "languages": self._extract_languages(soup),
+                "volunteer": self._extract_volunteer(soup),
+                "projects": self._extract_projects(soup),
+                "publications": self._extract_publications(soup),
+                "honors": self._extract_honors(soup),
+                "courses": self._extract_courses(soup),
+            }
 
         # Count non-empty sections
         sections = [k for k, v in profile_data.items() if v and k not in ["username"]]
         profile_data["sections"] = sections
 
         return profile_data
+
+    def _extract_json_ld(self, soup: BeautifulSoup) -> Optional[Dict]:
+        """Extract JSON-LD structured data from LinkedIn public profiles."""
+        try:
+            # Find script tag with JSON-LD data
+            scripts = soup.find_all('script', {'type': 'application/ld+json'})
+            for script in scripts:
+                if script.string:
+                    data = json.loads(script.string)
+                    # Look for the Person schema
+                    if isinstance(data, dict) and data.get('@type') == 'Person':
+                        return data
+                    # Check if it's in a @graph array
+                    if isinstance(data, dict) and '@graph' in data:
+                        for item in data['@graph']:
+                            if isinstance(item, dict) and item.get('@type') == 'Person':
+                                return item
+        except Exception as e:
+            print(f"[DEBUG] Error extracting JSON-LD: {e}")
+        return None
+
+    def _parse_json_ld(self, json_data: Dict, soup: BeautifulSoup) -> Dict[str, Any]:
+        """Parse profile data from JSON-LD structured data."""
+        # Extract username from URL
+        username = "linkedin-profile"
+        if 'sameAs' in json_data:
+            match = re.search(r"linkedin\.com/in/([^/]+)", json_data['sameAs'])
+            if match:
+                username = match.group(1)
+        
+        # Extract profile picture from JSON-LD
+        profile_pic = None
+        if 'image' in json_data and isinstance(json_data['image'], dict):
+            profile_pic = json_data['image'].get('contentUrl')
+        
+        return {
+            "username": username,
+            "name": json_data.get('name', 'Name Not Found'),
+            "headline": json_data.get('jobTitle', [None])[0] if isinstance(json_data.get('jobTitle'), list) else json_data.get('jobTitle'),
+            "location": self._parse_json_ld_location(json_data.get('address', {})),
+            "profile_picture_url": profile_pic,
+            "about": json_data.get('disambiguatingDescription', None),
+            "contact_info": {},  # Not typically in public JSON-LD
+            "stats": self._parse_json_ld_stats(json_data),
+            "experience": self._parse_json_ld_experience(json_data.get('worksFor', [])),
+            "education": self._parse_json_ld_education(json_data.get('alumniOf', [])),
+            "skills": [],  # Not typically in JSON-LD
+            "certifications": [],  # Not typically in JSON-LD
+            "languages": self._parse_json_ld_languages(json_data.get('knowsLanguage', [])),
+            "volunteer": [],  # Not typically in JSON-LD
+            "projects": [],  # Not typically in JSON-LD
+            "publications": [],  # Not typically in JSON-LD
+            "honors": json_data.get('awards', []),
+            "courses": [],  # Not typically in JSON-LD
+        }
+    
+    def _parse_json_ld_location(self, address: Dict) -> Optional[str]:
+        """Parse location from JSON-LD address object."""
+        if not address:
+            return None
+        parts = []
+        if 'addressLocality' in address:
+            parts.append(address['addressLocality'])
+        if 'addressRegion' in address:
+            parts.append(address['addressRegion'])
+        if 'addressCountry' in address:
+            parts.append(address['addressCountry'])
+        return ', '.join(parts) if parts else None
+    
+    def _parse_json_ld_stats(self, json_data: Dict) -> Dict[str, str]:
+        """Parse stats from JSON-LD."""
+        stats = {}
+        if 'interactionStatistic' in json_data:
+            stat = json_data['interactionStatistic']
+            if isinstance(stat, dict) and 'userInteractionCount' in stat:
+                stats['followers'] = str(stat['userInteractionCount'])
+        return stats
+    
+    def _parse_json_ld_experience(self, works_for: List) -> List[Dict]:
+        """Parse experience from JSON-LD worksFor array."""
+        if not works_for:
+            return []
+        
+        experiences = []
+        for work in works_for:
+            if not isinstance(work, dict):
+                continue
+            
+            member = work.get('member', {})
+            if not isinstance(member, dict):
+                continue
+            
+            # Clean up description (remove asterisks masking)
+            description = member.get('description', '')
+            
+            experience = {
+                'title': work.get('name', 'Position'),
+                'company': work.get('name', 'Company'),
+                'employment_type': None,
+                'duration': self._parse_json_ld_duration(member),
+                'location': work.get('location'),
+                'description': description if description else None,
+                'skills': [],
+            }
+            experiences.append(experience)
+        
+        return experiences
+    
+    def _parse_json_ld_duration(self, member: Dict) -> Optional[str]:
+        """Parse duration from member object."""
+        start = member.get('startDate')
+        end = member.get('endDate')
+        
+        if not start:
+            return None
+        
+        if end:
+            return f"{start} - {end}"
+        else:
+            return f"{start} - Present"
+    
+    def _parse_json_ld_education(self, alumni_of: List) -> List[Dict]:
+        """Parse education from JSON-LD alumniOf array."""
+        if not alumni_of:
+            return []
+        
+        education_list = []
+        for edu in alumni_of:
+            if not isinstance(edu, dict):
+                continue
+            
+            member = edu.get('member', {})
+            if not isinstance(member, dict):
+                member = {}
+            
+            education = {
+                'institution': edu.get('name', 'Institution'),
+                'degree': None,
+                'field': None,
+                'duration': self._parse_json_ld_duration(member),
+                'grade': None,
+                'activities': None,
+                'description': None,
+            }
+            education_list.append(education)
+        
+        return education_list
+    
+    def _parse_json_ld_languages(self, languages: List) -> List[Dict]:
+        """Parse languages from JSON-LD knowsLanguage array."""
+        if not languages:
+            return []
+        
+        language_list = []
+        for lang in languages:
+            if isinstance(lang, dict):
+                language_list.append({
+                    'name': lang.get('name', 'Language'),
+                    'proficiency': None,  # Not in JSON-LD
+                })
+            elif isinstance(lang, str):
+                language_list.append({
+                    'name': lang,
+                    'proficiency': None,
+                })
+        
+        return language_list
 
     def _extract_username(self, soup: BeautifulSoup) -> str:
         """Extract LinkedIn username from profile."""
