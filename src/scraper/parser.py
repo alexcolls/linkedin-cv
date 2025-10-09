@@ -955,22 +955,132 @@ class ProfileParser:
         return lang if lang else None
 
     def _extract_volunteer(self, soup: BeautifulSoup) -> List[Dict[str, str]]:
-        """Extract volunteer experience."""
+        """Extract volunteer experience with comprehensive details.
+        
+        Extracts:
+        - Role/position
+        - Organization
+        - Duration
+        - Cause (e.g., Education, Environment)
+        - Description
+        """
         volunteer = []
-        section = soup.find("section", {"id": re.compile(r".*volunteer.*")})
-
-        if section:
-            items = section.find_all("li")
-            for item in items:
-                vol = {
-                    "role": self._safe_extract(item, "div.t-bold"),
-                    "organization": self._safe_extract(item, "span.t-14.t-normal"),
-                    "duration": self._safe_extract(item, "span.t-14.t-normal.t-black--light"),
-                }
-                if vol["role"] or vol["organization"]:
-                    volunteer.append(vol)
-
+        
+        # Modern LinkedIn selectors for volunteer section
+        section_selectors = [
+            'section[id*="volunteer"]',
+            'section[data-section="volunteering"]',
+            'div#volunteering-section',
+        ]
+        
+        section = None
+        for selector in section_selectors:
+            section = soup.select_one(selector)
+            if section:
+                break
+        
+        if not section:
+            return volunteer
+        
+        # Find volunteer items
+        item_selectors = [
+            'li.pvs-list__paged-list-item',
+            'li.artdeco-list__item',
+            'li[class*="volunteer"]',
+        ]
+        
+        items = []
+        for selector in item_selectors:
+            found_items = section.select(selector)
+            if found_items:
+                items = found_items
+                break
+        
+        for item in items:
+            vol_data = self._extract_single_volunteer(item)
+            if vol_data and (vol_data.get('role') or vol_data.get('organization')):
+                volunteer.append(vol_data)
+        
         return volunteer
+    
+    def _extract_single_volunteer(self, item) -> Optional[Dict[str, str]]:
+        """Extract details from a single volunteer item.
+        
+        Args:
+            item: BeautifulSoup element containing volunteer data
+            
+        Returns:
+            Dictionary with volunteer details
+        """
+        vol = {}
+        
+        # Role/Position
+        role_selectors = [
+            'div.display-flex.align-items-center span[aria-hidden="true"]',
+            'h3 span[aria-hidden="true"]',
+            'div.t-bold span',
+        ]
+        
+        for selector in role_selectors:
+            role = self._safe_extract(item, selector)
+            if role and len(role) > 0:
+                vol['role'] = role
+                break
+        
+        # Organization
+        org_selectors = [
+            'span.t-14.t-normal span[aria-hidden="true"]',
+            'div[class*="organization"]',
+        ]
+        
+        for selector in org_selectors:
+            org = self._safe_extract(item, selector)
+            if org and len(org) > 0 and org != vol.get('role'):
+                vol['organization'] = org
+                break
+        
+        # Duration
+        duration_selectors = [
+            'span.t-14.t-normal.t-black--light span[aria-hidden="true"]',
+            'span[class*="date-range"]',
+        ]
+        
+        for selector in duration_selectors:
+            duration = self._safe_extract(item, selector)
+            if duration and len(duration) > 0:
+                vol['duration'] = duration
+                break
+        
+        # Cause (e.g., Education, Environment)
+        cause_selectors = [
+            'span[class*="cause"]',
+            'div[class*="cause"] span[aria-hidden="true"]',
+        ]
+        
+        for selector in cause_selectors:
+            cause = self._safe_extract(item, selector)
+            if cause and 'cause' in cause.lower():
+                vol['cause'] = cause.replace('Cause:', '').strip()
+                break
+        
+        # Description
+        desc_selectors = [
+            'div.pv-shared-text-with-see-more span[aria-hidden="true"]',
+            'div.inline-show-more-text span[aria-hidden="true"]',
+        ]
+        
+        for selector in desc_selectors:
+            try:
+                element = item.select_one(selector)
+                if element:
+                    desc = element.get_text(separator='\n', strip=True)
+                    if desc and len(desc) > 10:
+                        vol['description'] = desc
+                        break
+            except Exception:
+                continue
+        
+        return vol if vol else None
 
     def _extract_projects(self, soup: BeautifulSoup) -> List[Dict[str, str]]:
         """Extract projects."""

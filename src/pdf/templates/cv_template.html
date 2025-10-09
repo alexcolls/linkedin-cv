@@ -299,14 +299,25 @@
             <div class="section-content">
                 {% for vol in volunteer %}
                 <div class="volunteer-item">
-                    {% if vol.role %}
-                    <div class="volunteer-role">{{ vol.role }}</div>
-                    {% endif %}
+                    <div class="volunteer-header">
+                        <span class="volunteer-icon">❤️</span>
+                        {% if vol.role %}
+                        <div class="volunteer-role">{{ vol.role }}</div>
+                        {% endif %}
+                    </div>
                     {% if vol.organization %}
-                    <div class="volunteer-organization">{{ vol.organization }}</div>
+                    <div class="volunteer-organization">🏛️ {{ vol.organization }}</div>
                     {% endif %}
-                    {% if vol.duration %}
-                    <div class="volunteer-duration">{{ vol.duration }}</div>
+                    <div class="volunteer-meta">
+                        {% if vol.duration %}
+                        <span class="volunteer-duration">{{ vol.duration }}</span>
+                        {% endif %}
+                        {% if vol.cause %}
+                        <span class="volunteer-cause">🎯 {{ vol.cause }}</span>
+                        {% endif %}
+                    </div>
+                    {% if vol.description %}
+                    <div class="volunteer-description">{{ vol.description }}</div>
                     {% endif %}
                 </div>
                 {% endfor %}
