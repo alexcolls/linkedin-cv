@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- 🚀 **run.sh Enhanced** - Expanded to 9 menu options as comprehensive single entry point
+- 🍪 **Cookie Extraction Menu** - Direct access from interactive menu (option 3)
+- 📊 **Test Coverage Viewer** - View coverage reports from menu (option 6)
+- 🔍 **Quick Help** - Integrated help system in menu (option 8)
+- 🧪 **Test Improvements** - Added JSON-LD parser tests and fixed all failing tests
+
+### Changed
+- ⬆️ **Test Coverage** - Further improved to 40% (from 21% baseline)
+- 📝 **README Enhanced** - Emphasis on run.sh as single entry point
+- 📋 **Menu Organized** - 3 sections: Main Operations, Setup & Testing, Documentation
+- ✅ **All Tests Passing** - 34/34 tests passing (was 30/34)
+
+### Fixed
+- 🐛 **E2E Tests** - Fixed missing html_file parameter
+- 🐛 **CLI Tests** - Fixed interactive prompt test
+
 ## [0.4.0] - 2025-10-09
 
 ### Added

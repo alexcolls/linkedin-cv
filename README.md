@@ -295,7 +295,7 @@ pytest tests/ -v
 pytest tests/ --cov=src --cov-report=html
 ```
 
-**Current Coverage**: 29% (core extraction methods)
+**Current Coverage**: 40% (comprehensive test suite with JSON-LD tests)
 
 ---
 
@@ -453,9 +453,8 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/linkedin-cv/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/linkedin-cv/discussions)
-- **Email**: your-email@example.com
+- **Issues**: [GitHub Issues](https://github.com/alexcolls/linkedin-cv/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/alexcolls/linkedin-cv/discussions)
 
 ---
 
