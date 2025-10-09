@@ -255,14 +255,20 @@
             <div class="section-content">
                 {% for project in projects %}
                 <div class="project-item">
-                    {% if project.name %}
-                    <div class="project-name">{{ project.name }}</div>
+                    <div class="project-header">
+                        <span class="project-icon">💻</span>
+                        {% if project.name %}
+                        <div class="project-name">{{ project.name }}</div>
+                        {% endif %}
+                    </div>
+                    {% if project.date %}
+                    <div class="project-date">📅 {{ project.date }}</div>
                     {% endif %}
                     {% if project.description %}
                     <div class="project-description">{{ project.description }}</div>
                     {% endif %}
-                    {% if project.date %}
-                    <div class="project-date">{{ project.date }}</div>
+                    {% if project.url %}
+                    <div class="project-url">🔗 {{ project.url }}</div>
                     {% endif %}
                 </div>
                 {% endfor %}
@@ -332,14 +338,20 @@
             <div class="section-content">
                 {% for honor in honors %}
                 <div class="honor-item">
-                    {% if honor.title %}
-                    <div class="honor-title">{{ honor.title }}</div>
-                    {% endif %}
+                    <div class="honor-header">
+                        <span class="honor-icon">🏆</span>
+                        {% if honor.title %}
+                        <div class="honor-title">{{ honor.title }}</div>
+                        {% endif %}
+                    </div>
                     {% if honor.issuer %}
-                    <div class="honor-issuer">{{ honor.issuer }}</div>
+                    <div class="honor-issuer">🏛️ {{ honor.issuer }}</div>
                     {% endif %}
                     {% if honor.date %}
-                    <div class="honor-date">{{ honor.date }}</div>
+                    <div class="honor-date">📅 {{ honor.date }}</div>
+                    {% endif %}
+                    {% if honor.description %}
+                    <div class="honor-description">{{ honor.description }}</div>
                     {% endif %}
                 </div>
                 {% endfor %}

@@ -1083,57 +1083,148 @@ class ProfileParser:
         return vol if vol else None
 
     def _extract_projects(self, soup: BeautifulSoup) -> List[Dict[str, str]]:
-        """Extract projects."""
+        """Extract projects with enhanced details."""
         projects = []
-        section = soup.find("section", {"id": re.compile(r".*projects.*")})
-
-        if section:
-            items = section.find_all("li")
-            for item in items:
-                proj = {
-                    "name": self._safe_extract(item, "div.t-bold"),
-                    "description": self._safe_extract(item, "div.inline-show-more-text"),
-                    "date": self._safe_extract(item, "span.t-14.t-normal.t-black--light"),
-                }
-                if proj["name"]:
-                    projects.append(proj)
-
+        section_selectors = [
+            'section[id*="projects"]',
+            'section[data-section="projects"]',
+        ]
+        
+        section = None
+        for selector in section_selectors:
+            section = soup.select_one(selector)
+            if section:
+                break
+        
+        if not section:
+            return projects
+        
+        items = section.select('li.pvs-list__paged-list-item, li.artdeco-list__item, li')
+        for item in items:
+            # Name
+            name = self._safe_extract(item, 'div.display-flex span[aria-hidden="true"]') or \
+                   self._safe_extract(item, 'h3 span[aria-hidden="true"]') or \
+                   self._safe_extract(item, 'div.t-bold')
+            
+            if name:
+                proj = {'name': name}
+                
+                # Description with full text
+                desc_elem = item.select_one('div.pv-shared-text-with-see-more span[aria-hidden="true"]') or \
+                           item.select_one('div.inline-show-more-text')
+                if desc_elem:
+                    proj['description'] = desc_elem.get_text(separator='\n', strip=True)
+                
+                # Date
+                date = self._safe_extract(item, 'span.t-14.t-normal.t-black--light span[aria-hidden="true"]') or \
+                       self._safe_extract(item, 'span.t-14.t-normal.t-black--light')
+                if date:
+                    proj['date'] = date
+                
+                # URL
+                link = item.select_one('a[href]')
+                if link and link.get('href') and 'http' in link.get('href', ''):
+                    proj['url'] = link['href']
+                
+                projects.append(proj)
+        
         return projects
 
     def _extract_publications(self, soup: BeautifulSoup) -> List[Dict[str, str]]:
-        """Extract publications."""
+        """Extract publications with enhanced details."""
         publications = []
-        section = soup.find("section", {"id": re.compile(r".*publications.*")})
-
-        if section:
-            items = section.find_all("li")
-            for item in items:
-                pub = {
-                    "title": self._safe_extract(item, "div.t-bold"),
-                    "publisher": self._safe_extract(item, "span.t-14.t-normal"),
-                    "date": self._safe_extract(item, "span.t-14.t-normal.t-black--light"),
-                }
-                if pub["title"]:
-                    publications.append(pub)
-
+        section_selectors = [
+            'section[id*="publications"]',
+            'section[data-section="publications"]',
+        ]
+        
+        section = None
+        for selector in section_selectors:
+            section = soup.select_one(selector)
+            if section:
+                break
+        
+        if not section:
+            return publications
+        
+        items = section.select('li.pvs-list__paged-list-item, li.artdeco-list__item, li')
+        for item in items:
+            # Title
+            title = self._safe_extract(item, 'div.display-flex span[aria-hidden="true"]') or \
+                   self._safe_extract(item, 'h3 span[aria-hidden="true"]') or \
+                   self._safe_extract(item, 'div.t-bold')
+            
+            if title:
+                pub = {'title': title}
+                
+                # Publisher
+                publisher = self._safe_extract(item, 'span.t-14.t-normal span[aria-hidden="true"]') or \
+                           self._safe_extract(item, 'span.t-14.t-normal')
+                if publisher and publisher != title:
+                    pub['publisher'] = publisher
+                
+                # Date
+                date = self._safe_extract(item, 'span.t-14.t-normal.t-black--light span[aria-hidden="true"]') or \
+                       self._safe_extract(item, 'span.t-14.t-normal.t-black--light')
+                if date:
+                    pub['date'] = date
+                
+                # Description
+                desc_elem = item.select_one('div.pv-shared-text-with-see-more span[aria-hidden="true"]')
+                if desc_elem:
+                    pub['description'] = desc_elem.get_text(separator='\n', strip=True)
+                
+                publications.append(pub)
+        
         return publications
 
     def _extract_honors(self, soup: BeautifulSoup) -> List[Dict[str, str]]:
-        """Extract honors and awards."""
+        """Extract honors and awards with enhanced details."""
         honors = []
-        section = soup.find("section", {"id": re.compile(r".*honors.*|.*awards.*")})
-
-        if section:
-            items = section.find_all("li")
-            for item in items:
-                honor = {
-                    "title": self._safe_extract(item, "div.t-bold"),
-                    "issuer": self._safe_extract(item, "span.t-14.t-normal"),
-                    "date": self._safe_extract(item, "span.t-14.t-normal.t-black--light"),
-                }
-                if honor["title"]:
-                    honors.append(honor)
-
+        section_selectors = [
+            'section[id*="honors"]',
+            'section[id*="awards"]',
+            'section[data-section="honors"]',
+        ]
+        
+        section = None
+        for selector in section_selectors:
+            section = soup.select_one(selector)
+            if section:
+                break
+        
+        if not section:
+            return honors
+        
+        items = section.select('li.pvs-list__paged-list-item, li.artdeco-list__item, li')
+        for item in items:
+            # Title
+            title = self._safe_extract(item, 'div.display-flex span[aria-hidden="true"]') or \
+                   self._safe_extract(item, 'h3 span[aria-hidden="true"]') or \
+                   self._safe_extract(item, 'div.t-bold')
+            
+            if title:
+                honor = {'title': title}
+                
+                # Issuer
+                issuer = self._safe_extract(item, 'span.t-14.t-normal span[aria-hidden="true"]') or \
+                        self._safe_extract(item, 'span.t-14.t-normal')
+                if issuer and issuer != title:
+                    honor['issuer'] = issuer
+                
+                # Date
+                date = self._safe_extract(item, 'span.t-14.t-normal.t-black--light span[aria-hidden="true"]') or \
+                       self._safe_extract(item, 'span.t-14.t-normal.t-black--light')
+                if date:
+                    honor['date'] = date
+                
+                # Description
+                desc_elem = item.select_one('div.pv-shared-text-with-see-more span[aria-hidden="true"]')
+                if desc_elem:
+                    honor['description'] = desc_elem.get_text(separator='\n', strip=True)
+                
+                honors.append(honor)
+        
         return honors
 
     def _extract_courses(self, soup: BeautifulSoup) -> List[str]:
