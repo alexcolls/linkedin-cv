@@ -140,6 +140,10 @@ class LinkedInScraper:
 
                 if self.debug:
                     print(f"[DEBUG] Retrieved {len(html_content)} bytes of HTML")
+                    # Save HTML for debugging
+                    with open('last_scraped.html', 'w', encoding='utf-8') as f:
+                        f.write(html_content)
+                    print(f"[DEBUG] HTML saved to last_scraped.html")
 
                 # Save session for future use
                 await self._save_session(context)

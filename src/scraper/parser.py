@@ -208,19 +208,39 @@ class ProfileParser:
             if not isinstance(work, dict):
                 continue
             
+            # Extract the organization and role information
+            org_name = work.get('name', '')
             member = work.get('member', {})
-            if not isinstance(member, dict):
-                continue
             
-            # Clean up description (remove asterisks masking)
+            if not isinstance(member, dict):
+                member = {}
+            
+            # Parse job title and company from the organization name
+            # LinkedIn often combines them like "Senior Engineer at Company"
+            title = org_name
+            company = None
+            
+            if ' at ' in org_name:
+                parts = org_name.split(' at ', 1)
+                title = parts[0].strip()
+                company = parts[1].strip()
+            elif org_name:
+                # Sometimes it's just the company name
+                company = org_name
+                title = member.get('roleName', 'Position')
+            
+            # Clean up description
             description = member.get('description', '')
+            if description:
+                # Remove masking asterisks that LinkedIn sometimes adds
+                description = description.replace('*', '')
             
             experience = {
-                'title': work.get('name', 'Position'),
-                'company': work.get('name', 'Company'),
-                'employment_type': None,
+                'title': title,
+                'company': company or org_name or 'Company',
+                'employment_type': member.get('employmentType'),
                 'duration': self._parse_json_ld_duration(member),
-                'location': work.get('location'),
+                'location': work.get('location') or member.get('location'),
                 'description': description if description else None,
                 'skills': [],
             }
@@ -464,6 +484,8 @@ class ProfileParser:
             'section[data-section="experience"]',
             'div#experience-section',
             'section.pv-profile-section.experience-section',
+            'section[aria-label*="Experience"]',  # ARIA selector
+            'div[data-view-name*="profile-card"]',  # Modern card view
         ]
         
         section = None
@@ -472,8 +494,10 @@ class ProfileParser:
             if section:
                 break
         
+        # If no section found, try to find experience items directly
         if not section:
-            return experiences
+            # Look for experience items in the entire document
+            section = soup
         
         # Find all experience items with updated selector patterns
         item_selectors = [

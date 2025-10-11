@@ -93,6 +93,7 @@ cd linkedin-cv
 ```
 
 **The `run.sh` script is your ONLY entry point** - it handles:
+
 - ✅ Dependency installation
 - ✅ Authentication
 - ✅ CV generation
@@ -128,10 +129,12 @@ Get full, unmasked content with authentication:
 ```
 
 **Why authenticate?**
+
 - ❌ Without auth: Content is masked with asterisks (`*****`)
 - ✅ With auth: Full descriptions, complete profile data
 
 **How it works:**
+
 1. Opens Chrome browser for you to log in
 2. Saves session cookies to `~/.linkedin_session.json`
 3. Reuses session for ~30 days (no need to log in again!)
@@ -167,7 +170,7 @@ Get full, unmasked content with authentication:
   3) 🍪 Extract cookies from Chrome
 
 🔧 Setup & Testing:
-  4) ⚙️  Run installation/setup
+  4) ⚙️ Run installation/setup
   5) 🧪 Run tests
   6) 📊 View test coverage
 
