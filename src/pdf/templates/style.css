@@ -1,5 +1,8 @@
 /* LinkedIn CV Generator - Professional Stylesheet */
 
+/* Import logo color variations */
+@import url('logo_colors.css');
+
 :root {
   /* LinkedIn Brand Colors */
   --primary-color: #0a66c2;
@@ -172,24 +175,40 @@ body {
 
 /* Section Styles */
 .section {
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: 32px;
   page-break-inside: avoid;
 }
 
 .section-title {
-  font-family: var(--font-heading);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-size: 20px;
   font-weight: 600;
-  color: var(--primary-color);
-  margin-bottom: var(--spacing-md);
-  padding-bottom: var(--spacing-sm);
-  border-bottom: 2px solid var(--border-color);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: rgba(0, 0, 0, 0.9);
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .section-content {
-  padding-left: var(--spacing-sm);
+  padding-left: 0;
+}
+
+/* Experience section specific */
+.experience-section .section-content {
+  position: relative;
+}
+
+.experience-section .section-content::before {
+  content: '';
+  position: absolute;
+  left: 24px;
+  top: 52px;
+  bottom: 0;
+  width: 1px;
+  background: #e0e0e0;
+  z-index: 0;
 }
 
 /* About Section */
@@ -201,105 +220,174 @@ body {
   white-space: pre-wrap;
 }
 
-/* Experience Section */
+/* Experience Section - Enhanced LinkedIn Style */
 .experience-item {
-  margin-bottom: var(--spacing-xl);
-  padding-bottom: var(--spacing-lg);
-  border-bottom: 1px solid var(--border-light);
+  position: relative;
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid #e0e0e0;
   page-break-inside: avoid;
 }
 
 .experience-item:last-child {
   border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Company logo and container */
+.experience-container {
+  display: flex;
+  gap: 16px;
+}
+
+.company-logo {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+}
+
+.logo-placeholder {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.experience-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .experience-header {
-  margin-bottom: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
 }
 
 .job-title {
-  font-family: var(--font-heading);
-  font-size: 17px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
   font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: var(--spacing-xs);
-  line-height: 1.3;
+  color: rgba(0, 0, 0, 0.9);
+  margin-bottom: 2px;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.company-info {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 4px;
 }
 
 .company-name {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--primary-color);
-  margin-bottom: var(--spacing-xs);
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.company-separator {
+  color: rgba(0, 0, 0, 0.6);
+  font-weight: 400;
+}
+
+.employment-type {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.9);
 }
 
 .job-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-xs);
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-.employment-type {
-  background: var(--background-section);
-  padding: 2px var(--spacing-sm);
-  border-radius: 4px;
-  font-weight: 500;
-  color: var(--text-secondary);
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.6);
+  margin-bottom: 8px;
 }
 
 .job-duration {
-  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.meta-separator {
+  color: rgba(0, 0, 0, 0.4);
 }
 
 .job-location {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .job-description {
   font-size: 14px;
-  line-height: 1.7;
-  color: var(--text-secondary);
-  margin-top: var(--spacing-md);
-  padding-left: var(--spacing-md);
-  border-left: 3px solid var(--secondary-color);
+  line-height: 1.43;
+  color: rgba(0, 0, 0, 0.9);
+  margin-top: 12px;
   white-space: pre-wrap;
-  text-align: justify;
+  word-wrap: break-word;
+}
+
+.job-description ul,
+.job-description ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.job-description li {
+  margin-bottom: 4px;
+  line-height: 1.43;
 }
 
 .job-skills {
-  margin-top: var(--spacing-md);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--background-light);
-  border-radius: 6px;
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }
 
 .skills-label {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: var(--spacing-xs);
+  color: rgba(0, 0, 0, 0.9);
+  margin-right: 4px;
 }
 
 .skills-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-xs);
+  gap: 6px;
 }
 
 .skill-tag {
-  background: var(--primary-color);
-  color: var(--background-white);
-  padding: 4px var(--spacing-sm);
+  background: rgba(10, 102, 194, 0.1);
+  color: var(--primary-color);
+  padding: 2px 8px;
   border-radius: 12px;
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid rgba(10, 102, 194, 0.2);
+  transition: all 0.2s ease;
+}
+
+.skill-tag:hover {
+  background: rgba(10, 102, 194, 0.15);
+  border-color: rgba(10, 102, 194, 0.3);
 }
 
 /* Education Section */

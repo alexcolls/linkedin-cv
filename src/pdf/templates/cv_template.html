@@ -82,43 +82,71 @@
 
         <!-- Experience Section -->
         {% if experience and experience|length > 0 %}
-        <section class="section">
+        <section class="section experience-section">
             <h2 class="section-title">Experience</h2>
             <div class="section-content">
                 {% for job in experience %}
                 <div class="experience-item">
-                    <div class="experience-header">
-                        {% if job.title %}
-                        <div class="job-title">{{ job.title }}</div>
-                        {% endif %}
-                        {% if job.company %}
-                        <div class="company-name">{{ job.company }}</div>
-                        {% endif %}
-                        <div class="job-meta">
-                            {% if job.employment_type %}
-                            <span class="employment-type">{{ job.employment_type }}</span>
+                    <div class="experience-container">
+                        <!-- Company Logo Placeholder -->
+                        <div class="company-logo">
+                            <div class="logo-placeholder">
+                                {% if job.company %}
+                                {{ job.company[:2]|upper }}
+                                {% else %}
+                                CO
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Experience Content -->
+                        <div class="experience-content">
+                            <div class="experience-header">
+                                {% if job.title %}
+                                <h3 class="job-title">{{ job.title }}</h3>
+                                {% endif %}
+                                
+                                <!-- Company info line -->
+                                <div class="company-info">
+                                    {% if job.company %}
+                                    <span class="company-name">{{ job.company.split('·')[0].strip() if '·' in job.company else job.company }}</span>
+                                    {% endif %}
+                                    {% if job.employment_type %}
+                                    <span class="company-separator">·</span>
+                                    <span class="employment-type">{{ job.employment_type }}</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Meta info line -->
+                                <div class="job-meta">
+                                    {% if job.duration %}
+                                    <span class="job-duration">
+                                        {{ job.duration }}
+                                    </span>
+                                    {% endif %}
+                                    {% if job.location %}
+                                    <span class="meta-separator">·</span>
+                                    <span class="job-location">{{ job.location }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if job.description %}
+                            <div class="job-description">{{ job.description }}</div>
                             {% endif %}
-                            {% if job.duration %}
-                            <span class="job-duration">{{ job.duration }}</span>
-                            {% endif %}
-                            {% if job.location %}
-                            <span class="job-location">📍 {{ job.location }}</span>
+                            
+                            {% if job.skills and job.skills|length > 0 %}
+                            <div class="job-skills">
+                                <span class="skills-label">Skills:</span>
+                                <div class="skills-tags">
+                                    {% for skill in job.skills %}
+                                    <span class="skill-tag">{{ skill }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
                             {% endif %}
                         </div>
                     </div>
-                    {% if job.description %}
-                    <div class="job-description">{{ job.description }}</div>
-                    {% endif %}
-                    {% if job.skills and job.skills|length > 0 %}
-                    <div class="job-skills">
-                        <div class="skills-label">Skills:</div>
-                        <div class="skills-tags">
-                            {% for skill in job.skills %}
-                            <span class="skill-tag">{{ skill }}</span>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
                 </div>
                 {% endfor %}
             </div>

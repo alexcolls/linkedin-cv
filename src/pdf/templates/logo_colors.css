@@ -1,0 +1,50 @@
+/* Dynamic Logo Color Gradients */
+
+/* Default gradients for company logos */
+.logo-placeholder:nth-child(1) { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+
+/* Specific company patterns */
+.logo-tech { background: linear-gradient(135deg, #0575E6 0%, #021B79 100%); }
+.logo-startup { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+.logo-corp { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+.logo-consulting { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+.logo-finance { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+
+/* Color variations based on position in list */
+.experience-item:nth-child(odd) .logo-placeholder {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.experience-item:nth-child(even) .logo-placeholder {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.experience-item:nth-child(3n) .logo-placeholder {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.experience-item:nth-child(4n) .logo-placeholder {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.experience-item:nth-child(5n) .logo-placeholder {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.experience-item:nth-child(6n) .logo-placeholder {
+    background: linear-gradient(135deg, #0575E6 0%, #021B79 100%);
+}
+
+.experience-item:nth-child(7n) .logo-placeholder {
+    background: linear-gradient(135deg, #ff6a00 0%, #ee0979 100%);
+}
+
+/* Hover effect for interactive viewing */
+.logo-placeholder {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.logo-placeholder:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
