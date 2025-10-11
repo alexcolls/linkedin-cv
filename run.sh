@@ -31,19 +31,20 @@ show_menu() {
     
     echo -e "${CYAN}${BOLD}📋 Main Operations:${NC}"
     echo -e "  ${BOLD}1)${NC} 🚀 Generate CV (from URL or .env)"
-    echo -e "  ${BOLD}2)${NC} 🔐 Login to LinkedIn (save session)"
-    echo -e "  ${BOLD}3)${NC} 🍪 Extract cookies from Chrome"
+    echo -e "  ${BOLD}2)${NC} 📊 Export Profile to JSON (data only)"
+    echo -e "  ${BOLD}3)${NC} 🔐 Login to LinkedIn (save session)"
+    echo -e "  ${BOLD}4)${NC} 🍪 Extract cookies from Chrome"
     echo ""
     echo -e "${CYAN}${BOLD}🔧 Setup & Testing:${NC}"
-    echo -e "  ${BOLD}4)${NC} ⚙️ Run installation/setup"
-    echo -e "  ${BOLD}5)${NC} 🧪 Run tests"
-    echo -e "  ${BOLD}6)${NC} 📊 View test coverage"
+    echo -e "  ${BOLD}5)${NC} ⚙️ Run installation/setup"
+    echo -e "  ${BOLD}6)${NC} 🧪 Run tests"
+    echo -e "  ${BOLD}7)${NC} 📊 View test coverage"
     echo ""
     echo -e "${CYAN}${BOLD}📚 Documentation:${NC}"
-    echo -e "  ${BOLD}7)${NC} 📖 View documentation"
-    echo -e "  ${BOLD}8)${NC} 🔍 Quick help"
+    echo -e "  ${BOLD}8)${NC} 📖 View documentation"
+    echo -e "  ${BOLD}9)${NC} 🔍 Quick help"
     echo ""
-    echo -e "  ${BOLD}9)${NC} ❌ Exit"
+    echo -e "  ${BOLD}0)${NC} ❌ Exit"
     echo ""
 }
 
@@ -53,13 +54,72 @@ generate_cv_from_url() {
     # Check dependencies first
     if ! check_dependencies; then
         print_error "Dependencies not installed properly."
-        print_info "Please run option 3 (Installation) first."
+        print_info "Please run option 5 (Installation) first."
         press_any_key
         return 1
     fi
     
     # Run the CLI (it will handle .env and interactive prompts)
     poetry run python -m src.cli
+    
+    press_any_key
+}
+
+export_to_json() {
+    print_header "📊 Export Profile Data to JSON"
+    
+    # Check dependencies first
+    if ! check_dependencies; then
+        print_error "Dependencies not installed properly."
+        print_info "Please run option 5 (Installation) first."
+        press_any_key
+        return 1
+    fi
+    
+    echo -e "${CYAN}This will export the LinkedIn profile data to a JSON file.${NC}"
+    echo -e "${CYAN}No PDF will be generated - only raw data extraction.${NC}"
+    echo ""
+    
+    # Get profile URL or username
+    echo -e "${CYAN}Enter LinkedIn profile URL or username: ${NC}"
+    read profile_input
+    
+    if [ -z "$profile_input" ]; then
+        print_error "No profile provided"
+        press_any_key
+        return 1
+    fi
+    
+    # Get output filename
+    echo -e "${CYAN}Enter JSON filename (default: profile_data.json): ${NC}"
+    read json_file
+    
+    if [ -z "$json_file" ]; then
+        json_file="profile_data.json"
+    fi
+    
+    echo ""
+    echo -e "${YELLOW}⏳ Extracting profile data...${NC}"
+    
+    # Run the CLI with JSON export flag
+    poetry run python -m src.cli "$profile_input" --json --json-file "$json_file"
+    
+    if [ -f "$json_file" ]; then
+        echo ""
+        echo -e "${GREEN}✅ Profile data exported to: $json_file${NC}"
+        echo ""
+        echo -e "${CYAN}View the JSON file? [Y/n]: ${NC}"
+        read -n 1 view_json
+        echo ""
+        
+        if [[ ! "$view_json" =~ ^[Nn]$ ]]; then
+            if command -v jq &> /dev/null; then
+                jq . "$json_file" | less
+            else
+                less "$json_file"
+            fi
+        fi
+    fi
     
     press_any_key
 }
@@ -278,7 +338,7 @@ main() {
     while true; do
         show_menu
         
-        read -p "$(echo -e ${CYAN}Enter your choice [1-9]: ${NC})" choice
+        read -p "$(echo -e ${CYAN}Enter your choice [0-9]: ${NC})" choice
         echo ""
         
         case $choice in
@@ -286,33 +346,36 @@ main() {
                 generate_cv_from_url
                 ;;
             2)
-                login_to_linkedin
+                export_to_json
                 ;;
             3)
-                extract_cookies
+                login_to_linkedin
                 ;;
             4)
-                run_installation
+                extract_cookies
                 ;;
             5)
-                run_tests
+                run_installation
                 ;;
             6)
-                view_coverage
+                run_tests
                 ;;
             7)
-                view_documentation
+                view_coverage
                 ;;
             8)
-                show_quick_help
+                view_documentation
                 ;;
             9)
+                show_quick_help
+                ;;
+            0)
                 echo -e "${GREEN}Thank you for using LinkedIn CV Generator! 👋${NC}"
                 echo ""
                 exit 0
                 ;;
             *)
-                print_error "Invalid option. Please select 1-9."
+                print_error "Invalid option. Please select 0-9."
                 sleep 2
                 ;;
         esac

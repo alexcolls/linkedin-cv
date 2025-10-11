@@ -95,6 +95,18 @@ def normalize_profile_url(input_str: str) -> str:
     is_flag=True,
     help="Launch browser to log in to LinkedIn and save session",
 )
+@click.option(
+    "--json",
+    "export_json",
+    is_flag=True,
+    help="Export profile data to JSON instead of generating PDF",
+)
+@click.option(
+    "--json-file",
+    type=click.Path(),
+    default="profile_data.json",
+    help="JSON output filename (default: profile_data.json)",
+)
 def main(
     profile_url: Optional[str],
     output_dir: str,
@@ -103,6 +115,8 @@ def main(
     headless: bool,
     debug: bool,
     login: bool,
+    export_json: bool,
+    json_file: str,
 ):
     """Generate a professional PDF CV from a LinkedIn profile.
 
@@ -171,7 +185,7 @@ def main(
 
     try:
         # Run the async workflow
-        asyncio.run(generate_cv(profile_url, output_path, template, html_file, headless, debug))
+        asyncio.run(generate_cv(profile_url, output_path, template, html_file, headless, debug, export_json, json_file))
     except KeyboardInterrupt:
         console.print("\n[yellow]⚠️  Operation cancelled by user[/yellow]")
         sys.exit(0)
@@ -189,8 +203,10 @@ async def generate_cv(
     html_file: Optional[str],
     headless: bool,
     debug: bool,
+    export_json: bool,
+    json_file: str,
 ):
-    """Main workflow to generate CV from LinkedIn profile."""
+    """Main workflow to generate CV from LinkedIn profile or export to JSON."""
 
     with Progress(
         SpinnerColumn(),
@@ -229,6 +245,38 @@ async def generate_cv(
         console.print(
             f"   [green]✓[/green] Parsed {len(profile_data.get('sections', []))} sections!"
         )
+
+        # If JSON export is requested, save and exit
+        if export_json:
+            import json
+            from datetime import datetime
+            
+            # Add metadata
+            profile_data['_metadata'] = {
+                'extracted_at': datetime.now().isoformat(),
+                'profile_url': profile_url,
+                'sections_found': len(profile_data.get('sections', [])),
+            }
+            
+            # Save to JSON
+            json_path = Path(json_file)
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(profile_data, f, indent=2, ensure_ascii=False)
+            
+            console.print(f"\n[green]✅ Profile data exported to: {json_path}[/green]")
+            console.print(f"[dim]File size: {json_path.stat().st_size:,} bytes[/dim]")
+            
+            # Display summary
+            console.print("\n[bold]Data Summary:[/bold]")
+            for key, value in profile_data.items():
+                if key.startswith('_'):
+                    continue
+                if isinstance(value, list):
+                    console.print(f"  • {key}: {len(value)} items")
+                elif value:
+                    preview = str(value)[:50] + "..." if len(str(value)) > 50 else str(value)
+                    console.print(f"  • {key}: {preview}")
+            return
 
         # Step 3: Process profile picture (if available)
         profile_image_data = None
