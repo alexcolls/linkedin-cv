@@ -38,10 +38,10 @@ show_menu() {
     echo -e "${DIM}Transform your LinkedIn profile into a professional CV${NC}"
     echo ""
     
-    echo -e "${CYAN}${BOLD}📋 Main Workflow (in order):${NC}"
-    echo -e "  ${BOLD}1)${NC} 🌐 Extract HTML from LinkedIn profile"
-    echo -e "  ${BOLD}2)${NC} 📊 Extract JSON data from HTML"
-    echo -e "  ${BOLD}3)${NC} 📄 Generate CV PDF from JSON"
+    echo -e "${CYAN}${BOLD}📋 Main Workflow:${NC}"
+    echo -e "  ${BOLD}1)${NC} 📄 Generate CV PDF"
+    echo -e "  ${BOLD}2)${NC} 📊 Extract JSON data"
+    echo -e "  ${BOLD}3)${NC} 🌐 Extract HTML from profile"
     echo ""
     echo -e "${CYAN}${BOLD}🔐 Authentication:${NC}"
     echo -e "  ${BOLD}4)${NC} 🔐 Login to LinkedIn (save session)"
@@ -58,6 +58,95 @@ show_menu() {
     echo ""
     echo -e "  ${BOLD}0)${NC} ❌ Exit"
     echo ""
+}
+
+generate_cv_pdf() {
+    print_header "📄 Generate CV PDF"
+    
+    # Check dependencies first
+    if ! check_dependencies; then
+        print_error "Dependencies not installed properly."
+        print_info "Please run option 6 (Installation) first."
+        press_any_key
+        return 1
+    fi
+    
+    echo -e "${CYAN}This will generate a professional PDF CV from your LinkedIn profile.${NC}"
+    echo -e "${CYAN}The process will:${NC}"
+    echo -e "${CYAN}  1. Scrape all LinkedIn profile sections${NC}"
+    echo -e "${CYAN}  2. Parse and extract data${NC}"
+    echo -e "${CYAN}  3. Generate professional PDF CV${NC}"
+    echo ""
+    
+    # Run the CLI (it will handle .env and interactive prompts)
+    poetry run python -m src.cli --no-banner
+    
+    press_any_key
+}
+
+extract_json() {
+    print_header "📊 Extract JSON Data"
+    
+    # Check dependencies first
+    if ! check_dependencies; then
+        print_error "Dependencies not installed properly."
+        print_info "Please run option 6 (Installation) first."
+        press_any_key
+        return 1
+    fi
+    
+    echo -e "${CYAN}This will export the LinkedIn profile data to a JSON file.${NC}"
+    echo -e "${CYAN}No PDF will be generated - only raw data extraction.${NC}"
+    echo -e "${CYAN}Output will be saved in: output/<username>/profile_data.json${NC}"
+    echo ""
+    
+    # Get profile URL or username
+    echo -e "${CYAN}Enter LinkedIn profile URL or username: ${NC}"
+    read profile_input
+    
+    if [ -z "$profile_input" ]; then
+        print_error "No profile provided"
+        press_any_key
+        return 1
+    fi
+    
+    echo ""
+    echo -e "${YELLOW}⏳ Extracting profile data...${NC}"
+    
+    # Run the CLI with JSON export flag
+    poetry run python -m src.cli "$profile_input" --json --no-banner
+    
+    # Try to find the generated JSON file
+    # Extract username from input
+    username=$(echo "$profile_input" | sed 's|.*linkedin.com/in/||' | sed 's|/||g')
+    json_file="output/$username/profile_data.json"
+    
+    if [ -f "$json_file" ]; then
+        echo ""
+        echo -e "${GREEN}✅ Profile data exported to: $json_file${NC}"
+        echo ""
+        echo -e "${CYAN}View the JSON file? [Y/n]: ${NC}"
+        read -n 1 view_json
+        echo ""
+        
+        if [[ ! "$view_json" =~ ^[Nn]$ ]]; then
+            if command -v jq &> /dev/null; then
+                jq . "$json_file" | less
+            else
+                less "$json_file"
+            fi
+        fi
+    else
+        # Fallback: check if it was saved with default username
+        json_file="output/linkedin-profile/profile_data.json"
+        if [ -f "$json_file" ]; then
+            echo ""
+            echo -e "${GREEN}✅ Profile data exported to: $json_file${NC}"
+            echo -e "${YELLOW}Note: Username couldn't be extracted, using default directory${NC}"
+        fi
+    fi
+    
+    press_any_key
 }
 
 extract_html() {
@@ -95,116 +184,6 @@ extract_html() {
     
     # Run the scraper with HTML extraction
     poetry run python -m src.cli "$profile_input" --extract-html --no-banner
-    
-    press_any_key
-}
-
-extract_json() {
-    print_header "📊 Extract JSON Data from HTML"
-    
-    # Check dependencies first
-    if ! check_dependencies; then
-        print_error "Dependencies not installed properly."
-        print_info "Please run option 6 (Installation) first."
-        press_any_key
-        return 1
-    fi
-    
-    echo -e "${CYAN}This will parse HTML files and extract structured JSON data.${NC}"
-    echo -e "${CYAN}Make sure you've run option 1 (Extract HTML) first!${NC}"
-    echo ""
-    
-    # List available HTML directories
-    if [ -d "output" ]; then
-        echo -e "${CYAN}${BOLD}Available profiles:${NC}"
-        for profile_dir in output/*/; do
-            if [ -d "$profile_dir" ]; then
-                username=$(basename "$profile_dir")
-                echo -e "  • $username"
-            fi
-        done
-        echo ""
-    fi
-    
-    # Get username
-    echo -e "${CYAN}Enter username (or press Enter to extract from URL): ${NC}"
-    read username_input
-    
-    if [ -z "$username_input" ]; then
-        # Get profile URL
-        echo -e "${CYAN}Enter LinkedIn profile URL: ${NC}"
-        read profile_input
-        
-        if [ -z "$profile_input" ]; then
-            print_error "No username or URL provided"
-            press_any_key
-            return 1
-        fi
-        
-        # Extract username from URL
-        username_input=$(echo "$profile_input" | sed 's|.*linkedin.com/in/||' | sed 's|/||g')
-    fi
-    
-    echo ""
-    echo -e "${YELLOW}⏳ Parsing HTML and extracting JSON data...${NC}"
-    
-    # Run the parser
-    poetry run python -m src.cli --parse-html "$username_input" --no-banner
-    
-    press_any_key
-}
-
-generate_cv_pdf() {
-    print_header "📄 Generate CV PDF from JSON"
-    
-    # Check dependencies first
-    if ! check_dependencies; then
-        print_error "Dependencies not installed properly."
-        print_info "Please run option 6 (Installation) first."
-        press_any_key
-        return 1
-    fi
-    
-    echo -e "${CYAN}This will generate a professional PDF CV from JSON data.${NC}"
-    echo -e "${CYAN}Make sure you've run option 2 (Extract JSON) first!${NC}"
-    echo ""
-    
-    # List available JSON files
-    if [ -d "output" ]; then
-        echo -e "${CYAN}${BOLD}Available profiles:${NC}"
-        for profile_dir in output/*/; do
-            if [ -d "$profile_dir" ] && [ -f "$profile_dir/profile_data.json" ]; then
-                username=$(basename "$profile_dir")
-                echo -e "  • $username"
-            fi
-        done
-        echo ""
-    fi
-    
-    # Get username
-    echo -e "${CYAN}Enter username: ${NC}"
-    read username_input
-    
-    if [ -z "$username_input" ]; then
-        print_error "No username provided"
-        press_any_key
-        return 1
-    fi
-    
-    # Check if JSON exists
-    json_file="output/$username_input/profile_data.json"
-    if [ ! -f "$json_file" ]; then
-        print_error "JSON file not found: $json_file"
-        print_info "Please run option 2 (Extract JSON) first."
-        press_any_key
-        return 1
-    fi
-    
-    echo ""
-    echo -e "${YELLOW}⏳ Generating PDF CV...${NC}"
-    
-    # Run the PDF generator
-    poetry run python -m src.cli --generate-pdf "$username_input" --no-banner
     
     press_any_key
 }
@@ -369,9 +348,7 @@ show_quick_help() {
     echo -e "${CYAN}${BOLD}Quick Start:${NC}"
     echo -e "  ${BOLD}1.${NC} Run installation (option 6)"
     echo -e "  ${BOLD}2.${NC} Log in to LinkedIn (option 4)"
-    echo -e "  ${BOLD}3.${NC} Extract HTML (option 1)"
-    echo -e "  ${BOLD}4.${NC} Extract JSON (option 2)"
-    echo -e "  ${BOLD}5.${NC} Generate PDF (option 3)"
+    echo -e "  ${BOLD}3.${NC} Generate your CV (option 1)"
     echo ""
     
     echo -e "${CYAN}${BOLD}Command Line Usage:${NC}"
@@ -432,13 +409,13 @@ main() {
         
         case $choice in
             1)
-                extract_html
+                generate_cv_pdf
                 ;;
             2)
                 extract_json
                 ;;
             3)
-                generate_cv_pdf
+                extract_html
                 ;;
             4)
                 login_to_linkedin
