@@ -20,6 +20,9 @@ LinkedIn's built-in PDF export is **frankly terrible** - cluttered, poorly forma
 
 ### ✨ What Makes This Special
 
+- **🔐 🆕 Auto-Login** - First-run authentication with user consent (v0.5.2)
+- **💾 Session Persistence** - Login once, use for 30 days (v0.5.2)
+- **🧹 Clean HTML Output** - No LinkedIn header/sidebar clutter (v0.5.2)
 - **🎨 LinkedIn-Inspired Design** - Professional styling with LinkedIn brand colors
 - **📝 Complete Extraction** - ALL 11 profile sections with full descriptions
 - **🖼️ Profile Photo** - Circular 120x120px with professional border
@@ -135,18 +138,24 @@ Get full, unmasked content with authentication:
 **🆕 How auto-login works:**
 
 1. **First run**: Detects no authentication → Opens browser automatically
-2. **You log in**: Once in the browser window
-3. **Session saved**: Cookies stored in `.session/linkedin_session.json`
-4. **Future runs**: Reuses session for ~30 days - no login needed!
+2. **User consent**: Asks "Save session? [Y/n]" (you choose!)
+3. **You log in**: Once in the browser window
+4. **Session saved**: Cookies stored in `.session/linkedin_session.json` (if you said yes)
+5. **Future runs**: Reuses session for ~30 days - no login needed!
 
 **🚨 No more pre-authentication needed!** Just run and log in when prompted.
+
+**🔒 Privacy & Control:**
+- You control whether sessions are saved
+- Sessions stored locally in `.session/` (not uploaded to git)
+- Can opt out - just press 'n' when asked
 
 📚 **Full guide**: See [Authentication Guide](docs/AUTHENTICATION_GUIDE.md)
 
 #### 🍪 Method 2: Cookie Extraction (If Chrome Already Open)
 
 ```bash
-./run.sh  # Select option 3: Extract cookies
+./run.sh  # Select option 5: Extract cookies
 ```
 
 #### 🔤 Method 3: Username Input
@@ -283,12 +292,12 @@ EXPERIENCE
 
 Detailed guides available in the `docs/` directory:
 
-| Document | Description |
-|----------|-------------|
-| [WORKFLOW.md](docs/WORKFLOW.md) | **Workflow options** - Learn about the 3 different extraction methods |
-| [AUTHENTICATION_GUIDE.md](docs/AUTHENTICATION_GUIDE.md) | **Authentication setup** - How to log in and save sessions |
-| [OUTPUT_STRUCTURE.md](docs/OUTPUT_STRUCTURE.md) | **File organization** - Understanding the output directory |
-| [TROUBLESHOOTING_EMPTY_DATA.md](docs/TROUBLESHOOTING_EMPTY_DATA.md) | **Debugging guide** - Fix empty or incomplete data |
+| Document                                                            | Description                                                           |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| [WORKFLOW.md](docs/WORKFLOW.md)                                     | **Workflow options** - Learn about the 3 different extraction methods |
+| [AUTHENTICATION_GUIDE.md](docs/AUTHENTICATION_GUIDE.md)             | **Authentication setup** - How to log in and save sessions            |
+| [OUTPUT_STRUCTURE.md](docs/OUTPUT_STRUCTURE.md)                     | **File organization** - Understanding the output directory            |
+| [TROUBLESHOOTING_EMPTY_DATA.md](docs/TROUBLESHOOTING_EMPTY_DATA.md) | **Debugging guide** - Fix empty or incomplete data                    |
 
 ### Quick Links
 
@@ -318,7 +327,6 @@ python src/cli.py --html profile.html --template custom_template.html
 ```
 
 Template uses Jinja2 syntax with full access to profile data.
-
 
 **Current Coverage**: 40% (comprehensive test suite with JSON-LD tests)
 

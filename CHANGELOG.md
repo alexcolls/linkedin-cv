@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2025-10-12
+
+### Added
+- 🤝 **User Consent for Session Storage** - First-time login now asks: "Save session? [Y/n]"
+  * Clear explanation of what's stored and duration
+  * Users can opt out of session persistence
+  * Better transparency and user control
+- 📁 **Project-Local Session Storage** - Sessions stored in `.session/` directory
+  * Moved from `~/.linkedin_session.json` to `.session/linkedin_session.json`
+  * Cleaner, more predictable location
+  * Auto-created on first use
+
+### Fixed
+- 🐛 **Session Persistence Bug** - Sessions now save correctly after login!
+  * Problem: Session not being saved → asked to login every time
+  * Solution: Proper session save/load flow implemented
+  * Sessions now persist for full 30 days as intended
+- 🎨 **Clean Index.html** - Removed LinkedIn header and right sidebar
+  * No navigation bar clutter
+  * No language selector or settings panel
+  * Full-width main content for better readability
+  * Professional, focused profile view
+
+### Changed
+- 📂 **Session File Location** - `.session/linkedin_session.json` (project-local)
+- 🔒 **Security** - Added `.session/` to `.gitignore`
+- 📚 **Documentation** - Updated all session path references
+
+### Improved
+- ✅ Session persistence now works reliably
+- 🎯 Better user experience with consent prompt
+- 🧹 Cleaner HTML output without LinkedIn UI elements
+
 ## [0.5.1] - 2025-10-12
 
 ### Added
