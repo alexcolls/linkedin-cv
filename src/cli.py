@@ -694,44 +694,47 @@ def _create_index_html(html_sections: dict, username: str, css_count: int) -> st
     for elem in soup.find_all(class_=lambda c: c and 'language-selector' in str(c).lower()):
         elem.decompose()
     
-    # Remove edit buttons and action buttons
+    # Remove ONLY specific edit/action buttons (be selective!)
     for button in soup.find_all('button'):
-        # Keep only "Show details" buttons, remove all others
+        aria_label = button.get('aria-label', '').lower()
         button_text = button.get_text(strip=True).lower()
-        if 'show details' not in button_text:
+        
+        # Remove only specific action buttons
+        if any(x in aria_label or x in button_text for x in ['edit', 'add profile section', 'enhance profile', 'resources', 'open to']):
             button.decompose()
     
-    # Remove profile action sections (Open to, Add profile section, Enhance, Resources)
-    for elem in soup.find_all(class_=lambda c: c and ('pvs-profile-actions' in str(c).lower() or 'profile-actions' in str(c).lower())):
+    # Remove profile action sections (the button row at top)
+    for elem in soup.find_all(class_=lambda c: c and 'pvs-profile-actions' in str(c).lower()):
         elem.decompose()
     
-    # Remove "Open to volunteer" and similar career interest sections
-    for elem in soup.find_all(class_=lambda c: c and ('artdeco-card' in str(c).lower() or 'career-interest' in str(c).lower())):
-        elem_text = elem.get_text(strip=True).lower()
-        if 'open to' in elem_text or 'volunteer' in elem_text or 'show details' in elem_text:
-            # Check if this is the card, not just a button inside
-            if elem.name in ['section', 'div'] and len(elem_text) < 500:
-                elem.decompose()
+    # Remove "Open to volunteer" card - look for specific section
+    for section in soup.find_all('section', class_=lambda c: c and 'artdeco-card' in str(c).lower()):
+        section_text = section.get_text(strip=True)
+        # Only remove if it's the specific "Open to volunteer" card
+        if 'Open to volunteer' in section_text and 'Show details' in section_text and len(section_text) < 300:
+            section.decompose()
     
-    # Remove Analytics section ("Private to you")
-    for elem in soup.find_all('section'):
-        section_text = elem.get_text(strip=True).lower()
-        if 'analytics' in section_text and 'private to you' in section_text:
-            elem.decompose()
-    for elem in soup.find_all(class_=lambda c: c and 'analytics' in str(c).lower()):
-        elem.decompose()
+    # Remove Analytics section specifically
+    for section in soup.find_all('section'):
+        # Look for the section header
+        header = section.find(class_=lambda c: c and 'pvs-header' in str(c).lower())
+        if header:
+            header_text = header.get_text(strip=True)
+            if 'Analytics' in header_text and 'Private to you' in header_text:
+                section.decompose()
+                break
     
-    # Remove "see more" buttons and expand collapsed content
-    for elem in soup.find_all(class_=lambda c: c and 'see-more' in str(c).lower()):
-        elem.decompose()
-    for elem in soup.find_all(['button', 'a'], string=lambda s: s and 'see more' in s.lower()):
-        elem.decompose()
+    # Expand "see more" content in About section
+    for elem in soup.find_all(class_=lambda c: c and 'inline-show-more-text' in str(c).lower()):
+        # Remove the "collapsed" class to expand
+        if elem.has_attr('class'):
+            elem['class'] = [c for c in elem.get('class', []) if 'collapsed' not in c.lower()]
     
-    # Expand collapsed sections by removing inline-show-more-text spans
-    for span in soup.find_all('span', class_=lambda c: c and 'inline-show-more-text' in str(c).lower()):
-        # Replace the span with its text content
-        if span.string:
-            span.replace_with(span.string)
+    # Remove "see more" buttons
+    for button in soup.find_all('button', attrs={'aria-expanded': 'false'}):
+        button_text = button.get_text(strip=True).lower()
+        if 'see more' in button_text or 'more' in button_text:
+            button.decompose()
     
     # Find main container
     main = soup.find('main') or soup.find('body')
