@@ -27,7 +27,16 @@ cd "$PROJECT_ROOT"
 
 show_menu() {
     clear
-    print_header "🖨️ LinkedIn CV Generator - Main Menu" "Professional CV generation from LinkedIn profiles"
+    
+    # Display the ASCII banner from assets
+    if [ -f "$PROJECT_ROOT/assets/banner.txt" ]; then
+        echo -e "${CYAN}${BOLD}"
+        cat "$PROJECT_ROOT/assets/banner.txt"
+        echo -e "${NC}"
+    fi
+    
+    echo -e "${DIM}Transform your LinkedIn profile into a professional CV${NC}"
+    echo ""
     
     echo -e "${CYAN}${BOLD}📋 Main Operations:${NC}"
     echo -e "  ${BOLD}1)${NC} 🚀 Generate CV (from URL or .env)"

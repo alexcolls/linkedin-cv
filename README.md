@@ -169,10 +169,10 @@ Get full, unmasked content with authentication:
   2) 🔐 Login to LinkedIn (save session)
   3) 🍪 Extract cookies from Chrome
 
-🔧 Setup & Testing:
+🔧 Setup & Utilities:
   4) ⚙️ Run installation/setup
-  5) 🧪 Run tests
-  6) 📊 View test coverage
+  5) 📝 Export profile to JSON
+  6) 🆘 View system info
 
 📚 Documentation:
   7) 📖 View documentation
@@ -198,19 +198,25 @@ linkedin-cv/
 │   │       ├── cv_template.html  # Professional template
 │   │       └── style.css         # 800+ lines of styling
 │   └── utils/
-│       └── image_processor.py    # Image processing
-├── tests/
-│   └── test_parser.py            # Comprehensive tests
-├── docs/
-│   ├── IMPLEMENTATION_COMPLETE.md
-│   ├── IMPLEMENTATION_PROGRESS.md
-│   └── HTML_EXPORT_GUIDE.md
+│       ├── image_processor.py    # Image processing
+│       ├── extract_cookies.py    # Cookie extraction utility
+│       └── debug/               # Debug utilities
+│           ├── scrape_and_save.py    # HTML scraping debug tool
+│           └── extract_to_json.py    # Profile data extraction tool
 ├── scripts/
-│   ├── install.sh
-│   ├── test.sh
-│   └── export-and-generate.sh
-├── run.sh                         # Interactive menu
-├── pyproject.toml
+│   ├── install.sh               # Installation script
+│   ├── common.sh                # Shared bash functions
+│   └── export-helper.sh         # Export utilities
+├── assets/
+│   └── banner.txt               # ASCII art banner
+├── docs/
+│   └── AUTHENTICATION_GUIDE.md  # Authentication documentation
+├── output/                      # Generated CVs and data
+│   └── <linkedin-username>/     # User-specific output
+│       ├── profile_data.json    # Extracted profile data
+│       └── cv_*.pdf            # Generated PDF CVs
+├── run.sh                       # Interactive menu
+├── pyproject.toml              # Poetry dependencies
 └── README.md
 ```
 
@@ -283,20 +289,6 @@ python src/cli.py --html profile.html --template custom_template.html
 
 Template uses Jinja2 syntax with full access to profile data.
 
----
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-./scripts/test.sh
-
-# Or with pytest directly
-pytest tests/ -v
-
-# Check coverage
-pytest tests/ --cov=src --cov-report=html
-```
 
 **Current Coverage**: 40% (comprehensive test suite with JSON-LD tests)
 
