@@ -543,8 +543,12 @@ def _create_index_html(html_sections: dict, username: str, css_count: int) -> st
     if soup.title:
         soup.title.string = f"{username} - LinkedIn Profile"
     
-    # Add CSS links
+    # Remove cookie notices, popups, and scripts
     if soup.head:
+        # Remove all scripts (including cookie consent)
+        for script in soup.find_all('script'):
+            script.decompose()
+        
         # Clear old stylesheet links
         for link in soup.head.find_all('link', rel='stylesheet'):
             link.decompose()
@@ -554,113 +558,86 @@ def _create_index_html(html_sections: dict, username: str, css_count: int) -> st
             link = soup.new_tag('link', rel='stylesheet', href=f"css/linkedin_{i}.css")
             soup.head.append(link)
         
-        # Add custom styles for sections
+        # Add custom styles for clean continuous view
         style = soup.new_tag('style')
         style.string = """
         body { margin: 0; padding: 0; background: #f3f2ef; }
-        .section-header { 
-            background: #0a66c2; 
-            color: white; 
-            padding: 20px; 
-            margin: 20px 0; 
-            border-radius: 8px;
-            font-size: 24px;
-            font-weight: bold;
+        
+        /* Hide cookie banners and popups */
+        [role="dialog"],
+        [aria-modal="true"],
+        .artdeco-modal,
+        .msg-overlay-list-bubble,
+        .global-nav__me-content,
+        .notification-settings,
+        [data-test-modal],
+        iframe[name*="cookie"],
+        #artdeco-gen-modal,
+        .artdeco-toast-item {
+            display: none !important;
+        }
+        
+        .section-divider { 
+            height: 20px;
+            background: transparent;
         }
         .section-content {
             background: white;
-            padding: 20px;
+            padding: 0;
             margin: 10px 0;
             border-radius: 8px;
             box-shadow: 0 0 0 1px rgb(0 0 0 / 8%), 0 2px 4px rgb(0 0 0 / 16%);
         }
-        .toc {
-            background: white;
-            padding: 20px;
-            margin: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 0 1px rgb(0 0 0 / 8%), 0 2px 4px rgb(0 0 0 / 16%);
-        }
-        .toc h2 { color: #0a66c2; margin-top: 0; }
-        .toc ul { list-style: none; padding: 0; }
-        .toc li { margin: 10px 0; }
-        .toc a { 
-            color: #0a66c2; 
-            text-decoration: none; 
-            font-weight: 500;
-        }
-        .toc a:hover { text-decoration: underline; }
         """
         soup.head.append(style)
     
-    # Create table of contents
-    toc_div = soup.new_tag('div', **{'class': 'toc'})
-    toc_h2 = soup.new_tag('h2')
-    toc_h2.string = "📋 Table of Contents"
-    toc_div.append(toc_h2)
+    # Remove all scripts from body
+    for script in soup.find_all('script'):
+        script.decompose()
     
-    toc_ul = soup.new_tag('ul')
-    sections_with_data = []
-    
-    section_names = {
-        'profile': '👤 Profile',
-        'experience': '💼 Experience',
-        'education': '🎓 Education',
-        'skills': '🛠️ Skills',
-        'certifications': '🏆 Certifications',
-        'projects': '💻 Projects',
-        'languages': '🌍 Languages',
-        'volunteer': '❤️ Volunteer',
-        'honors': '🏅 Honors & Awards',
-        'publications': '📖 Publications',
-    }
-    
-    for section_key in html_sections.keys():
-        if html_sections[section_key]:  # Only include sections with data
-            sections_with_data.append(section_key)
-            li = soup.new_tag('li')
-            a = soup.new_tag('a', href=f"#{section_key}-section")
-            a.string = section_names.get(section_key, section_key.title())
-            li.append(a)
-            toc_ul.append(li)
-    
-    toc_div.append(toc_ul)
+    # Remove cookie notices and modals
+    for elem in soup.find_all(['div', 'section'], attrs={'role': 'dialog'}):
+        elem.decompose()
+    for elem in soup.find_all(['div', 'section'], attrs={'aria-modal': 'true'}):
+        elem.decompose()
+    for elem in soup.find_all(class_=lambda c: c and ('modal' in str(c).lower() or 'cookie' in str(c).lower())):
+        elem.decompose()
     
     # Find main container
     main = soup.find('main') or soup.find('body')
     if main:
-        # Clear existing content (we'll add it back organized)
-        # Actually, keep the profile main content and add sections below
+        # Keep the profile content as-is at the top
+        # Add other sections below in order
         
-        # Add TOC at top
-        if main.name == 'main':
-            main.insert(0, toc_div)
-        else:
-            main.append(toc_div)
-        
-        # Add other sections
+        sections_with_data = []
         for section_key in ['experience', 'education', 'skills', 'certifications', 
                             'projects', 'languages', 'volunteer', 'honors', 'publications']:
-            if section_key in sections_with_data and section_key != 'profile':
-                section_html = html_sections[section_key]
-                section_soup = BeautifulSoup(section_html, 'lxml')
-                
-                # Create section container
-                section_div = soup.new_tag('div', id=f"{section_key}-section", **{'class': 'section-content'})
-                
-                # Add section header
-                header = soup.new_tag('div', **{'class': 'section-header'})
-                header.string = section_names.get(section_key, section_key.title())
-                section_div.append(header)
-                
-                # Extract main content from section
-                section_main = section_soup.find('main')
-                if section_main:
-                    for child in section_main.children:
-                        if hasattr(child, 'name'):
-                            section_div.append(child)
-                
-                main.append(section_div)
+            if section_key in html_sections and html_sections[section_key]:
+                sections_with_data.append(section_key)
+        
+        # Add sections in order
+        for section_key in sections_with_data:
+            section_html = html_sections[section_key]
+            section_soup = BeautifulSoup(section_html, 'lxml')
+            
+            # Remove scripts from section
+            for script in section_soup.find_all('script'):
+                script.decompose()
+            
+            # Create section container
+            section_div = soup.new_tag('div', **{'class': 'section-content'})
+            
+            # Extract main content from section
+            section_main = section_soup.find('main')
+            if section_main:
+                for child in section_main.children:
+                    if hasattr(child, 'name'):
+                        section_div.append(child)
+            
+            # Add divider
+            divider = soup.new_tag('div', **{'class': 'section-divider'})
+            main.append(divider)
+            main.append(section_div)
     
     return str(soup)
 
