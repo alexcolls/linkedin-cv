@@ -382,6 +382,24 @@ class ProfileParser:
 
     def _extract_about(self, soup: BeautifulSoup) -> Optional[str]:
         """Extract About/Summary section with full text and paragraph preservation."""
+        # First find the about section
+        about_section = None
+        
+        # Try finding via anchor div
+        anchor = soup.select_one('div[id="about"]')
+        if anchor and anchor.parent and anchor.parent.name == 'section':
+            about_section = anchor.parent
+        
+        # If found, look for spans with substantial text
+        if about_section:
+            # Look for spans with aria-hidden that contain substantial text
+            spans = about_section.find_all('span', {'aria-hidden': 'true'})
+            for span in spans:
+                text = span.get_text(separator='\n\n', strip=True)
+                if text and len(text) > 50:  # Ensure substantial content
+                    return text
+        
+        # Fallback to original selectors
         for selector in self.SELECTORS['about']:
             try:
                 element = soup.select_one(selector)
@@ -511,41 +529,50 @@ class ProfileParser:
                 print("[DEBUG] No experience section found")
             return experiences
         
-        # Find experience list containers - LinkedIn uses different structures
-        list_containers = section.select('ul, div.pvs-list__container')
+        # Find the main experience list (not nested ones)
+        # LinkedIn structure: section > div > div > ul > li (experiences)
+        # We only want the first/main UL, not the nested ones
+        main_ul = section.find('ul')
         
-        for container in list_containers:
-            # Get all direct list items (these could be single positions or grouped positions)
-            items = container.select(':scope > li')
+        if not main_ul:
+            if self.debug:
+                print("[DEBUG] No main UL found in experience section")
+            return experiences
+        
+        # Get all direct list items from the main UL only
+        items = main_ul.select(':scope > li')
+        
+        if self.debug:
+            print(f"[DEBUG] Found {len(items)} experience items in main UL")
+        
+        for item in items:
+            # Check if this is a grouped position (multiple roles at same company)
+            # Look for nested list inside
+            nested_list = item.select_one('ul')
             
-            for item in items:
-                # Check if this is a grouped position (multiple roles at same company)
-                # Look for nested list inside
-                nested_list = item.select_one('ul')
-                
-                # LinkedIn now uses nested UL for descriptions too, so we need to check
-                # if it's actually a grouped experience or just a single role with nested content
-                is_truly_grouped = False
-                if nested_list:
-                    # Check if nested items have role titles (indicates multiple roles)
-                    nested_items = nested_list.select(':scope > li')
-                    for nested_item in nested_items:
-                        # Look for role title indicators
-                        title_elem = nested_item.select_one('div.display-flex.align-items-center span[aria-hidden="true"]')
-                        if title_elem and len(title_elem.get_text(strip=True)) > 0 and len(title_elem.get_text(strip=True)) < 200:
-                            is_truly_grouped = True
-                            break
-                
-                if is_truly_grouped:
-                    # This is a company with multiple positions
-                    exp = self._extract_grouped_experience(item)
-                    if exp:
-                        experiences.append(exp)
-                else:
-                    # This is a single position
-                    exp = self._extract_single_experience(item)
-                    if exp and exp.get("title"):
-                        experiences.append(exp)
+            # LinkedIn now uses nested UL for descriptions too, so we need to check
+            # if it's actually a grouped experience or just a single role with nested content
+            is_truly_grouped = False
+            if nested_list:
+                # Check if nested items have role titles (indicates multiple roles)
+                nested_items = nested_list.select(':scope > li')
+                for nested_item in nested_items:
+                    # Look for role title indicators
+                    title_elem = nested_item.select_one('div.display-flex.align-items-center span[aria-hidden="true"]')
+                    if title_elem and len(title_elem.get_text(strip=True)) > 0 and len(title_elem.get_text(strip=True)) < 200:
+                        is_truly_grouped = True
+                        break
+            
+            if is_truly_grouped:
+                # This is a company with multiple positions
+                exp = self._extract_grouped_experience(item)
+                if exp:
+                    experiences.append(exp)
+            else:
+                # This is a single position
+                exp = self._extract_single_experience(item)
+                if exp and exp.get("title"):
+                    experiences.append(exp)
         
         return experiences
     
