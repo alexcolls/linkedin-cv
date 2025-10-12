@@ -24,6 +24,26 @@ class LinkedInScraper:
         self.browser: Optional[Browser] = None
         self.session_file = session_file or str(Path.home() / ".linkedin_session.json")
 
+    def _is_authenticated(self) -> bool:
+        """Check if we have valid LinkedIn authentication.
+        
+        Returns:
+            True if valid li_at cookie exists
+        """
+        try:
+            if not os.path.exists(self.session_file):
+                return False
+            
+            with open(self.session_file, 'r') as f:
+                cookies = json.load(f)
+            
+            # Check for li_at cookie (main LinkedIn auth token)
+            return any(c.get('name') == 'li_at' for c in cookies)
+        except Exception as e:
+            if self.debug:
+                print(f"[DEBUG] Error checking authentication: {e}")
+            return False
+
     async def scrape_all_sections(self, profile_url: str) -> dict:
         """Scrape LinkedIn profile and all detail sections.
         
@@ -50,6 +70,15 @@ class LinkedInScraper:
             raise ValueError(
                 "Invalid LinkedIn profile URL. Must start with https://www.linkedin.com/in/"
             )
+        
+        # Check authentication and trigger login if needed
+        if not self._is_authenticated():
+            print("\n⚠️  No valid LinkedIn authentication found!")
+            print("🔐 Starting interactive login...\n")
+            success = await self.login_interactive()
+            if not success:
+                raise Exception("Authentication required. Login failed or was cancelled.")
+            print()
         
         # Normalize URL
         base_url = profile_url.rstrip('/')
@@ -186,6 +215,15 @@ class LinkedInScraper:
             raise ValueError(
                 "Invalid LinkedIn profile URL. Must start with https://www.linkedin.com/in/"
             )
+        
+        # Check authentication and trigger login if needed
+        if not self._is_authenticated():
+            print("\n⚠️  No valid LinkedIn authentication found!")
+            print("🔐 Starting interactive login...\n")
+            success = await self.login_interactive()
+            if not success:
+                raise Exception("Authentication required. Login failed or was cancelled.")
+            print()
 
         async with async_playwright() as p:
             # Launch browser

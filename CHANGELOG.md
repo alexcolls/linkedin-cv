@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2025-10-12
+
+### Added
+- 🔐 **Auto-Login on First Run** - No more pre-authentication needed!
+  * Automatically detects missing/invalid LinkedIn authentication
+  * Opens browser for login only when needed
+  * Works with all main workflow options (1, 2, 3)
+- ✅ **Smart Authentication Check** - Validates `li_at` cookie presence
+- 🎯 **Seamless User Experience** - Just run, log in when prompted, done!
+
+### Changed
+- 📋 **Menu Updated** - Options 1-3 now show "(auto-login if needed)" hint
+- 📚 **Documentation** - Updated README and run.sh help with auto-login info
+- 🔐 **Authentication Section** - Changed from required to "Optional" in menu
+- ℹ️ **Quick Start Guide** - Simplified from 3 steps to 2 steps
+
+### Improved
+- 🚀 **Developer Experience** - No need to remember to login first
+- 📖 **User Guidance** - Clear messages when authentication is needed
+- 🎨 **Menu Clarity** - Better indication of which options auto-authenticate
+
 ## [0.5.0] - 2025-10-12
 
 ### Added

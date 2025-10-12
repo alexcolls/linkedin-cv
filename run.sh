@@ -39,12 +39,12 @@ show_menu() {
     echo ""
     
     echo -e "${CYAN}${BOLD}📋 Main Workflow:${NC}"
-    echo -e "  ${BOLD}1)${NC} 📄 Generate CV PDF"
-    echo -e "  ${BOLD}2)${NC} 📊 Extract JSON data"
-    echo -e "  ${BOLD}3)${NC} 🌐 Extract HTML from profile"
+    echo -e "  ${BOLD}1)${NC} 📄 Generate CV PDF ${DIM}(auto-login if needed)${NC}"
+    echo -e "  ${BOLD}2)${NC} 📊 Extract JSON data ${DIM}(auto-login if needed)${NC}"
+    echo -e "  ${BOLD}3)${NC} 🌐 Extract HTML from profile ${DIM}(auto-login if needed)${NC}"
     echo ""
-    echo -e "${CYAN}${BOLD}🔐 Authentication:${NC}"
-    echo -e "  ${BOLD}4)${NC} 🔐 Login to LinkedIn (save session)"
+    echo -e "${CYAN}${BOLD}🔐 Authentication (Optional):${NC}"
+    echo -e "  ${BOLD}4)${NC} 🔐 Pre-login to LinkedIn (manual setup)"
     echo -e "  ${BOLD}5)${NC} 🍪 Extract cookies from Chrome"
     echo ""
     echo -e "${CYAN}${BOLD}🔧 Setup & Testing:${NC}"
@@ -73,9 +73,10 @@ generate_cv_pdf() {
     
     echo -e "${CYAN}This will generate a professional PDF CV from your LinkedIn profile.${NC}"
     echo -e "${CYAN}The process will:${NC}"
-    echo -e "${CYAN}  1. Scrape all LinkedIn profile sections${NC}"
-    echo -e "${CYAN}  2. Parse and extract data${NC}"
-    echo -e "${CYAN}  3. Generate professional PDF CV${NC}"
+    echo -e "${CYAN}  1. Check authentication (auto-login if needed)${NC}"
+    echo -e "${CYAN}  2. Scrape all LinkedIn profile sections${NC}"
+    echo -e "${CYAN}  3. Parse and extract data${NC}"
+    echo -e "${CYAN}  4. Generate professional PDF CV${NC}"
     echo ""
     
     # Run the CLI (it will handle .env and interactive prompts)
@@ -347,8 +348,8 @@ show_quick_help() {
     
     echo -e "${CYAN}${BOLD}Quick Start:${NC}"
     echo -e "  ${BOLD}1.${NC} Run installation (option 6)"
-    echo -e "  ${BOLD}2.${NC} Log in to LinkedIn (option 4)"
-    echo -e "  ${BOLD}3.${NC} Generate your CV (option 1)"
+    echo -e "  ${BOLD}2.${NC} Generate your CV (option 1)"
+    echo -e "  ${DIM}→ Login happens automatically if needed!${NC}"
     echo ""
     
     echo -e "${CYAN}${BOLD}Command Line Usage:${NC}"
@@ -365,10 +366,11 @@ show_quick_help() {
     echo ""
     
     echo -e "${CYAN}${BOLD}Authentication:${NC}"
-    echo -e "  • First time: Use option 4 to log in"
-    echo -e "  • Session lasts ~30 days"
+    echo -e "  • 🆕 NEW: Auto-login on first run!"
+    echo -e "  • No need to pre-authenticate"
+    echo -e "  • Session saved automatically (~30 days)"
     echo -e "  • Stored in: ~/.linkedin_session.json"
-    echo -e "  • Alternative: Use option 5 to extract from Chrome"
+    echo -e "  • Manual setup: Use option 4 if preferred"
     echo ""
     
     echo -e "${CYAN}${BOLD}Troubleshooting:${NC}"

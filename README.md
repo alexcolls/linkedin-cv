@@ -119,13 +119,12 @@ cd linkedin-cv
 Get full, unmasked content with authentication:
 
 ```bash
-# Interactive (recommended)
+# 🆕 NEW: Auto-login on first run!
 ./run.sh
-# Then: 2 → Login, then 1 → Generate CV
+# Then: 1 → Generate CV (login happens automatically if needed)
 
 # Or command line
-./run.sh --login  # Step 1: Login
-./run.sh alex-colls-outumuro  # Step 2: Generate
+./run.sh alex-colls-outumuro  # Auto-login if not authenticated!
 ```
 
 **Why authenticate?**
@@ -133,11 +132,14 @@ Get full, unmasked content with authentication:
 - ❌ Without auth: Content is masked with asterisks (`*****`)
 - ✅ With auth: Full descriptions, complete profile data
 
-**How it works:**
+**🆕 How auto-login works:**
 
-1. Opens Chrome browser for you to log in
-2. Saves session cookies to `~/.linkedin_session.json`
-3. Reuses session for ~30 days (no need to log in again!)
+1. **First run**: Detects no authentication → Opens browser automatically
+2. **You log in**: Once in the browser window
+3. **Session saved**: Cookies stored in `~/.linkedin_session.json`
+4. **Future runs**: Reuses session for ~30 days - no login needed!
+
+**🚨 No more pre-authentication needed!** Just run and log in when prompted.
 
 📚 **Full guide**: See [Authentication Guide](docs/AUTHENTICATION_GUIDE.md)
 
@@ -165,12 +167,12 @@ Get full, unmasked content with authentication:
 
 ```
 📋 Main Workflow:
-  1) 📄 Generate CV PDF
-  2) 📊 Extract JSON data
-  3) 🌐 Extract HTML from profile
+  1) 📄 Generate CV PDF (auto-login if needed)
+  2) 📊 Extract JSON data (auto-login if needed)
+  3) 🌐 Extract HTML from profile (auto-login if needed)
 
-🔐 Authentication:
-  4) 🔐 Login to LinkedIn (save session)
+🔐 Authentication (Optional):
+  4) 🔐 Pre-login to LinkedIn (manual setup)
   5) 🍪 Extract cookies from Chrome
 
 🔧 Setup & Testing:
