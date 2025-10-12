@@ -563,6 +563,27 @@ def _create_index_html(html_sections: dict, username: str, css_count: int) -> st
         style.string = """
         body { margin: 0; padding: 0; background: #f3f2ef; }
         
+        /* Hide header and navigation */
+        header,
+        nav,
+        .global-nav,
+        .nav-bar,
+        [class*="global-nav"],
+        [class*="navigation"] {
+            display: none !important;
+        }
+        
+        /* Hide right sidebar and language selector */
+        aside,
+        .right-rail,
+        .sidebar,
+        [class*="right-rail"],
+        [class*="aside"],
+        [class*="sidebar"],
+        [class*="language-selector"] {
+            display: none !important;
+        }
+        
         /* Hide cookie banners and popups */
         [role="dialog"],
         [aria-modal="true"],
@@ -575,6 +596,14 @@ def _create_index_html(html_sections: dict, username: str, css_count: int) -> st
         #artdeco-gen-modal,
         .artdeco-toast-item {
             display: none !important;
+        }
+        
+        /* Main content full width */
+        main {
+            max-width: 100%;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
         }
         
         .section-divider { 
@@ -601,6 +630,25 @@ def _create_index_html(html_sections: dict, username: str, css_count: int) -> st
     for elem in soup.find_all(['div', 'section'], attrs={'aria-modal': 'true'}):
         elem.decompose()
     for elem in soup.find_all(class_=lambda c: c and ('modal' in str(c).lower() or 'cookie' in str(c).lower())):
+        elem.decompose()
+    
+    # Remove LinkedIn header/navigation
+    for header in soup.find_all('header'):
+        header.decompose()
+    for nav in soup.find_all('nav'):
+        nav.decompose()
+    # Remove top nav by class
+    for elem in soup.find_all(class_=lambda c: c and ('global-nav' in str(c).lower() or 'nav-bar' in str(c).lower())):
+        elem.decompose()
+    
+    # Remove right sidebar (language selector, profile settings, etc.)
+    # Common LinkedIn sidebar patterns
+    for aside in soup.find_all('aside'):
+        aside.decompose()
+    for elem in soup.find_all(class_=lambda c: c and ('right-rail' in str(c).lower() or 'aside' in str(c).lower() or 'sidebar' in str(c).lower())):
+        elem.decompose()
+    # Remove language selector specifically
+    for elem in soup.find_all(class_=lambda c: c and 'language-selector' in str(c).lower()):
         elem.decompose()
     
     # Find main container
