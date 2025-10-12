@@ -7,22 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2025-10-12
+
 ### Added
-- 🚀 **run.sh Enhanced** - Expanded to 9 menu options as comprehensive single entry point
-- 🍪 **Cookie Extraction Menu** - Direct access from interactive menu (option 3)
-- 📊 **Test Coverage Viewer** - View coverage reports from menu (option 6)
-- 🔍 **Quick Help** - Integrated help system in menu (option 8)
-- 🧪 **Test Improvements** - Added JSON-LD parser tests and fixed all failing tests
+- 🎨 **ASCII Banner** - Beautiful ASCII art banner from assets/banner.txt displayed in main menu
+- 📁 **User-Specific Output** - Output files now organized in `output/<linkedin-username>/` directories
+- 🛠️ **Debug Utilities** - Moved debug scripts to `src/utils/debug/` for better organization
 
 ### Changed
-- ⬆️ **Test Coverage** - Further improved to 40% (from 21% baseline)
-- 📝 **README Enhanced** - Emphasis on run.sh as single entry point
-- 📋 **Menu Organized** - 3 sections: Main Operations, Setup & Testing, Documentation
-- ✅ **All Tests Passing** - 34/34 tests passing (was 30/34)
+- 🗂️ **Project Reorganization** - Cleaner structure with all Python files properly placed
+- 📝 **Output Structure** - JSON saved as `profile_data.json`, PDFs as `cv_<timestamp>.pdf` per user
+- 🚀 **Menu Enhanced** - Improved visual presentation with ASCII banner
+- 📋 **Scripts Consolidated** - Removed test.sh, keeping only essential scripts
 
 ### Fixed
-- 🐛 **E2E Tests** - Fixed missing html_file parameter
-- 🐛 **CLI Tests** - Fixed interactive prompt test
+- 🐛 **Banner Display** - Now reads from external file instead of inline ASCII
+- 🔧 **File Organization** - All utility scripts properly categorized
+
+### Removed
+- 🧪 **Test Files** - Temporarily removed tests directory for complete rewrite later
+- 📊 **Test Coverage** - Removed coverage-related files (.coverage, .pytest_cache)
 
 ## [0.4.0] - 2025-10-09
 

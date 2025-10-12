@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "linkedin-cv"
-version = "0.1.0"
+version = "0.4.1"
 description = "Generate beautiful, professional PDF CVs from LinkedIn profiles"
 authors = ["Alex Colls <alex@example.com>"]
 license = "MIT"
