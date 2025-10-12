@@ -584,6 +584,49 @@ def _create_index_html(html_sections: dict, username: str, css_count: int) -> st
             display: none !important;
         }
         
+        /* Hide all edit buttons and action buttons */
+        button[aria-label*="Edit"],
+        button[aria-label*="Add"],
+        button[aria-label*="Enhance"],
+        .artdeco-button--secondary,
+        .pvs-profile-actions,
+        [class*="profile-actions"],
+        [class*="edit-button"] {
+            display: none !important;
+        }
+        
+        /* Hide Analytics section */
+        section:has(.pvs-header__subtitle:contains("Private to you")),
+        [class*="analytics"],
+        .pvs-list__container:has([class*="analytics"]) {
+            display: none !important;
+        }
+        
+        /* Hide "Open to volunteer" and career interests */
+        .artdeco-card:has([class*="career-interest"]),
+        section:has(.pvs-list__item--action-needed) {
+            display: none !important;
+        }
+        
+        /* Hide "see more" buttons and expand content */
+        .inline-show-more-text__button,
+        button:has([aria-label*="more"]),
+        [class*="see-more"],
+        .visually-hidden {
+            display: none !important;
+        }
+        
+        /* Ensure full content is visible */
+        .inline-show-more-text--collapsed {
+            max-height: none !important;
+            -webkit-line-clamp: unset !important;
+        }
+        
+        /* Show all "Show details" expanded content */
+        [class*="collapsed"] {
+            max-height: none !important;
+        }
+        
         /* Hide cookie banners and popups */
         [role="dialog"],
         [aria-modal="true"],
@@ -650,6 +693,45 @@ def _create_index_html(html_sections: dict, username: str, css_count: int) -> st
     # Remove language selector specifically
     for elem in soup.find_all(class_=lambda c: c and 'language-selector' in str(c).lower()):
         elem.decompose()
+    
+    # Remove edit buttons and action buttons
+    for button in soup.find_all('button'):
+        # Keep only "Show details" buttons, remove all others
+        button_text = button.get_text(strip=True).lower()
+        if 'show details' not in button_text:
+            button.decompose()
+    
+    # Remove profile action sections (Open to, Add profile section, Enhance, Resources)
+    for elem in soup.find_all(class_=lambda c: c and ('pvs-profile-actions' in str(c).lower() or 'profile-actions' in str(c).lower())):
+        elem.decompose()
+    
+    # Remove "Open to volunteer" and similar career interest sections
+    for elem in soup.find_all(class_=lambda c: c and ('artdeco-card' in str(c).lower() or 'career-interest' in str(c).lower())):
+        elem_text = elem.get_text(strip=True).lower()
+        if 'open to' in elem_text or 'volunteer' in elem_text or 'show details' in elem_text:
+            # Check if this is the card, not just a button inside
+            if elem.name in ['section', 'div'] and len(elem_text) < 500:
+                elem.decompose()
+    
+    # Remove Analytics section ("Private to you")
+    for elem in soup.find_all('section'):
+        section_text = elem.get_text(strip=True).lower()
+        if 'analytics' in section_text and 'private to you' in section_text:
+            elem.decompose()
+    for elem in soup.find_all(class_=lambda c: c and 'analytics' in str(c).lower()):
+        elem.decompose()
+    
+    # Remove "see more" buttons and expand collapsed content
+    for elem in soup.find_all(class_=lambda c: c and 'see-more' in str(c).lower()):
+        elem.decompose()
+    for elem in soup.find_all(['button', 'a'], string=lambda s: s and 'see more' in s.lower()):
+        elem.decompose()
+    
+    # Expand collapsed sections by removing inline-show-more-text spans
+    for span in soup.find_all('span', class_=lambda c: c and 'inline-show-more-text' in str(c).lower()):
+        # Replace the span with its text content
+        if span.string:
+            span.replace_with(span.string)
     
     # Find main container
     main = soup.find('main') or soup.find('body')
