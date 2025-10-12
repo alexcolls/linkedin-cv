@@ -132,6 +132,9 @@ class LinkedInScraper:
                 #         "LinkedIn authentication required. Please run with --login flag first to authenticate."
                 #     )
 
+                # Click "Show all experiences" button if present
+                await self._expand_all_experiences(page)
+                
                 # Scroll to load lazy-loaded content
                 await self._scroll_page(page)
 
@@ -159,6 +162,73 @@ class LinkedInScraper:
                 await context.close()
                 await self.browser.close()
 
+    async def _expand_all_experiences(self, page: Page):
+        """Click 'Show all experiences' button if present to expand all work experiences.
+        
+        Args:
+            page: Playwright page object
+        """
+        try:
+            # Different selectors for the "Show all X experiences" button
+            show_all_selectors = [
+                'button[aria-label*="Show all"][aria-label*="experience"]',
+                'button:has-text("Show all")',
+                'button.pvs-profile-actions__action',
+                'button[data-control-name="see_more_positions"]',
+                'a[aria-label*="Show all"][aria-label*="experience"]',
+                'a[data-control-name="background_details_see_more"]',
+                # LinkedIn 2024 patterns
+                'button.inline-show-more-text__button',
+                'button[aria-expanded="false"]:has-text("Show")',
+            ]
+            
+            for selector in show_all_selectors:
+                try:
+                    # Look for the button in the experience section specifically
+                    button = await page.query_selector(f'section#experience {selector}')
+                    if not button:
+                        # Try without section constraint
+                        button = await page.query_selector(selector)
+                    
+                    if button:
+                        # Check if button is visible
+                        is_visible = await button.is_visible()
+                        if is_visible:
+                            if self.debug:
+                                button_text = await button.text_content()
+                                print(f"[DEBUG] Found 'Show all' button: {button_text}")
+                            
+                            # Click the button
+                            await button.click()
+                            
+                            # Wait for content to load
+                            await asyncio.sleep(2)
+                            
+                            if self.debug:
+                                print("[DEBUG] Clicked 'Show all experiences' button")
+                            break
+                except Exception as e:
+                    if self.debug:
+                        print(f"[DEBUG] Error with selector {selector}: {e}")
+                    continue
+            
+            # Also try to expand individual experience items that might be collapsed
+            expand_buttons = await page.query_selector_all('button[aria-label*="Show more"]')
+            for button in expand_buttons:
+                try:
+                    is_visible = await button.is_visible()
+                    if is_visible:
+                        await button.click()
+                        await asyncio.sleep(0.5)
+                        if self.debug:
+                            print("[DEBUG] Expanded a 'Show more' section")
+                except Exception:
+                    continue
+                    
+        except Exception as e:
+            if self.debug:
+                print(f"[DEBUG] Error expanding experiences: {str(e)}")
+    
     async def _scroll_page(self, page: Page):
         """Scroll the page to load lazy-loaded content.
 

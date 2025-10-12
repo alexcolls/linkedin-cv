@@ -9,6 +9,14 @@ from bs4 import BeautifulSoup
 class ProfileParser:
     """Parses LinkedIn profile HTML to extract structured data."""
     
+    def __init__(self, debug: bool = False):
+        """Initialize the parser.
+        
+        Args:
+            debug: Enable debug output
+        """
+        self.debug = debug
+    
     # Modern LinkedIn selectors (2024) with fallbacks
     SELECTORS = {
         'name': [
@@ -464,64 +472,148 @@ class ProfileParser:
         
         return stats
 
-    def _extract_experience(self, soup: BeautifulSoup) -> List[Dict[str, str]]:
-        """Extract work experience with full details.
+    def _extract_experience(self, soup: BeautifulSoup) -> List[Dict[str, Any]]:
+        """Extract work experience with full details including nested roles.
         
-        Extracts comprehensive job information including:
-        - Job title and company
-        - Employment type (Full-time, Part-time, etc.)
-        - Duration and location
-        - Full job description with proper text formatting
-        - Skills used in each role
-        - Media/attachments if present
+        Handles:
+        - Single positions
+        - Nested positions (multiple roles at same company)
+        - Full job descriptions
+        - Skills, media attachments
         """
         experiences = []
         
-        # Modern LinkedIn selectors for experience section (2024)
+        # Find the experience section
+        section = None
         section_selectors = [
-            'section#experience',  # Primary selector
-            'section[id*="experience"]',
+            'section#experience',
+            'section[id="experience"]',
+            'div[id="experience"]',
             'section[data-section="experience"]',
-            'div#experience-section',
-            'section.pv-profile-section.experience-section',
-            'section[aria-label*="Experience"]',  # ARIA selector
-            'div[data-view-name*="profile-card"]',  # Modern card view
         ]
         
-        section = None
         for selector in section_selectors:
             section = soup.select_one(selector)
             if section:
+                if self.debug:
+                    print(f"[DEBUG] Found experience section with selector: {selector}")
                 break
         
-        # If no section found, try to find experience items directly
         if not section:
-            # Look for experience items in the entire document
-            section = soup
+            if self.debug:
+                print("[DEBUG] No experience section found")
+            return experiences
         
-        # Find all experience items with updated selector patterns
-        item_selectors = [
-            'li.pvs-list__paged-list-item.artdeco-list__item',  # Combined pattern
-            'li.pvs-list__paged-list-item',
-            'li.artdeco-list__item',
-            'li[class*="profile"]',
-            'div.pv-entity__position-group-pager',
-            'li.pv-entity__position-group-pager',
-        ]
+        # Find experience list containers - LinkedIn uses different structures
+        list_containers = section.select('ul, div.pvs-list__container')
         
-        items = []
-        for selector in item_selectors:
-            found_items = section.select(selector)
-            if found_items:
-                items = found_items
-                break
-        
-        for item in items:
-            exp = self._extract_single_experience(item)
-            if exp and (exp.get("title") or exp.get("company")):
-                experiences.append(exp)
+        for container in list_containers:
+            # Get all direct list items (these could be single positions or grouped positions)
+            items = container.select(':scope > li')
+            
+            for item in items:
+                # Check if this is a grouped position (multiple roles at same company)
+                # Look for nested list inside
+                nested_list = item.select_one('ul')
+                
+                if nested_list:
+                    # This is a company with multiple positions
+                    exp = self._extract_grouped_experience(item)
+                    if exp:
+                        experiences.append(exp)
+                else:
+                    # This is a single position
+                    exp = self._extract_single_experience(item)
+                    if exp and exp.get("title"):
+                        experiences.append(exp)
         
         return experiences
+    
+    def _extract_grouped_experience(self, item) -> Optional[Dict[str, Any]]:
+        """Extract a grouped experience (multiple roles at same company).
+        
+        Args:
+            item: BeautifulSoup element containing grouped experience data
+            
+        Returns:
+            Dictionary with company info and nested roles
+        """
+        exp = {}
+        
+        # Extract company information from the parent item
+        company_elem = item.select_one('div.display-flex span[aria-hidden="true"]')
+        if company_elem:
+            exp["company"] = company_elem.get_text(strip=True)
+        
+        # Extract total duration at company
+        duration_elem = item.select_one('span.t-14.t-normal.t-black--light span[aria-hidden="true"]')
+        if duration_elem:
+            exp["total_duration"] = duration_elem.get_text(strip=True)
+        
+        # Extract company location if available
+        location_elem = item.select_one('span.t-14.t-normal.t-black--light:nth-of-type(2) span[aria-hidden="true"]')
+        if location_elem:
+            exp["location"] = location_elem.get_text(strip=True)
+        
+        # Extract nested positions
+        roles = []
+        nested_items = item.select('ul > li')
+        
+        for nested_item in nested_items:
+            role = {}
+            
+            # Extract role title
+            title_elem = nested_item.select_one('div.display-flex span[aria-hidden="true"]')
+            if title_elem:
+                role["title"] = title_elem.get_text(strip=True)
+            
+            # Extract employment type
+            emp_type_elem = nested_item.select_one('span.t-14.t-normal span[aria-hidden="true"]')
+            if emp_type_elem:
+                text = emp_type_elem.get_text(strip=True)
+                if any(t in text for t in ['Full-time', 'Part-time', 'Contract', 'Freelance', 'Internship']):
+                    role["employment_type"] = text
+            
+            # Extract role duration
+            duration_spans = nested_item.select('span.t-14.t-normal.t-black--light span[aria-hidden="true"]')
+            for span in duration_spans:
+                text = span.get_text(strip=True)
+                if any(marker in text for marker in ['-', 'Present', 'mo', 'yr']):
+                    role["duration"] = text
+                    break
+            
+            # Extract role location
+            location_spans = nested_item.select('span.t-14.t-normal.t-black--light')
+            for span in location_spans:
+                text = span.get_text(strip=True)
+                if text and text != role.get("duration") and '·' not in text:
+                    role["location"] = text
+                    break
+            
+            # Extract role description
+            desc_elem = nested_item.select_one('div.pv-shared-text-with-see-more span[aria-hidden="true"]')
+            if not desc_elem:
+                desc_elem = nested_item.select_one('div.inline-show-more-text span[aria-hidden="true"]')
+            if desc_elem:
+                role["description"] = desc_elem.get_text(separator='\n', strip=True)
+            
+            # Extract skills if present
+            skills_elem = nested_item.select_one('span.t-14.t-normal:contains("Skills:")')
+            if skills_elem:
+                skills_text = skills_elem.get_text(strip=True)
+                if 'Skills:' in skills_text:
+                    skills_list = skills_text.split('Skills:')[1].strip().split('·')
+                    role["skills"] = [s.strip() for s in skills_list if s.strip()]
+            
+            if role.get("title"):
+                roles.append(role)
+        
+        if roles:
+            exp["roles"] = roles
+            exp["is_grouped"] = True
+            return exp
+        
+        return None
     
     def _extract_single_experience(self, item) -> Optional[Dict[str, str]]:
         """Extract details from a single experience item.

@@ -238,7 +238,7 @@ async def generate_cv(
         # Step 2: Parse profile data
         task2 = progress.add_task("📋 Parsing profile data...", total=None)
 
-        parser = ProfileParser()
+        parser = ProfileParser(debug=debug)
         profile_data = parser.parse(html_content)
 
         progress.update(task2, completed=True)
