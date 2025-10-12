@@ -107,6 +107,11 @@ def normalize_profile_url(input_str: str) -> str:
     default="profile_data.json",
     help="JSON output filename (default: profile_data.json)",
 )
+@click.option(
+    "--no-banner",
+    is_flag=True,
+    help="Suppress banner display (used when called from menu)",
+)
 def main(
     profile_url: Optional[str],
     output_dir: str,
@@ -117,13 +122,15 @@ def main(
     login: bool,
     export_json: bool,
     json_file: str,
+    no_banner: bool,
 ):
     """Generate a professional PDF CV from a LinkedIn profile.
 
     PROFILE_URL: LinkedIn profile URL (e.g., https://www.linkedin.com/in/username/)
                  Not required if --html-file is provided.
     """
-    display_banner()
+    if not no_banner:
+        display_banner()
     
     # Handle login mode
     if login:
@@ -245,6 +252,14 @@ async def generate_cv(
         console.print(
             f"   [green]✓[/green] Parsed {len(profile_data.get('sections', []))} sections!"
         )
+        
+        # Check if we got meaningful data
+        has_meaningful_data = (
+            len(profile_data.get('experience', [])) > 0 or
+            len(profile_data.get('education', [])) > 0 or
+            len(profile_data.get('skills', [])) > 0 or
+            profile_data.get('about')
+        )
 
         # If JSON export is requested, save and exit
         if export_json:
@@ -256,6 +271,7 @@ async def generate_cv(
                 'extracted_at': datetime.now().isoformat(),
                 'profile_url': profile_url,
                 'sections_found': len(profile_data.get('sections', [])),
+                'has_meaningful_data': has_meaningful_data,
             }
             
             # Get username from profile data or URL
@@ -289,6 +305,16 @@ async def generate_cv(
                 elif value:
                     preview = str(value)[:50] + "..." if len(str(value)) > 50 else str(value)
                     console.print(f"  • {key}: {preview}")
+            
+            # Warning if minimal data
+            if not has_meaningful_data:
+                console.print("\n[yellow]⚠️  WARNING: Only basic profile data was extracted![/yellow]")
+                console.print("[yellow]   This usually means you're not logged in to LinkedIn.[/yellow]")
+                console.print("\n[cyan]To fix this:[/cyan]")
+                console.print("  1. Run the login command: [bold]./run.sh[/bold] → option 3")
+                console.print("  2. Or extract cookies: [bold]./run.sh[/bold] → option 4")
+                console.print("  3. Then try exporting again")
+                console.print("\n[dim]See docs/AUTHENTICATION_GUIDE.md for more details[/dim]")
             return
 
         # Step 3: Process profile picture (if available)
@@ -342,6 +368,26 @@ async def generate_cv(
 
     # Success message
     console.print()
+    
+    # Warning if minimal data
+    if not has_meaningful_data:
+        console.print(
+            Panel(
+                f"[bold yellow]⚠️  Warning: Limited Data Extracted[/bold yellow]\n\n"
+                f"The generated CV only contains basic information (name, headline, location).\n"
+                f"Experience, education, and skills are missing.\n\n"
+                f"[bold]This usually means you're not logged in to LinkedIn.[/bold]\n\n"
+                f"[cyan]To fix this:[/cyan]\n"
+                f"  1. Run: [bold]./run.sh[/bold] → option 3 (Login)\n"
+                f"  2. Or: [bold]./run.sh[/bold] → option 4 (Extract cookies)\n"
+                f"  3. Then regenerate the CV\n\n"
+                f"[dim]See: docs/AUTHENTICATION_GUIDE.md for details[/dim]",
+                border_style="yellow",
+                padding=(1, 2),
+            )
+        )
+        console.print()
+    
     console.print(
         Panel(
             f"[bold green]✅ Done![/bold green]\n\n"

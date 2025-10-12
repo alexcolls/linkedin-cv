@@ -69,7 +69,7 @@ generate_cv_from_url() {
     fi
     
     # Run the CLI (it will handle .env and interactive prompts)
-    poetry run python -m src.cli
+    poetry run python -m src.cli --no-banner
     
     press_any_key
 }
@@ -104,7 +104,7 @@ export_to_json() {
     echo -e "${YELLOW}⏳ Extracting profile data...${NC}"
     
     # Run the CLI with JSON export flag
-    poetry run python -m src.cli "$profile_input" --json
+    poetry run python -m src.cli "$profile_input" --json --no-banner
     
     # Try to find the generated JSON file
     # Extract username from input
@@ -158,7 +158,7 @@ login_to_linkedin() {
     echo ""
     read -p "$(echo -e ${CYAN}Press Enter to continue...${NC})"
     
-    poetry run python -m src.cli --login
+    poetry run python -m src.cli --login --no-banner
     
     press_any_key
 }
