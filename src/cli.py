@@ -417,9 +417,9 @@ async def generate_cv(
         user_output_dir = output_path / username
         user_output_dir.mkdir(parents=True, exist_ok=True)
         
-        # Generate filename with cv_ prefix and timestamp
+        # Generate filename with username and timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_filename = f"cv_{timestamp}.pdf"
+        output_filename = f"{username}_{timestamp}.pdf"
         output_file = user_output_dir / output_filename
 
         generator.generate(profile_data, str(output_file))
@@ -439,8 +439,8 @@ async def generate_cv(
                 f"Experience, education, and skills are missing.\n\n"
                 f"[bold]This usually means you're not logged in to LinkedIn.[/bold]\n\n"
                 f"[cyan]To fix this:[/cyan]\n"
-                f"  1. Run: [bold]./run.sh[/bold] → option 3 (Login)\n"
-                f"  2. Or: [bold]./run.sh[/bold] → option 4 (Extract cookies)\n"
+                f"  1. Run: [bold]./run.sh[/bold] → option 4 (Login)\n"
+                f"  2. Or: [bold]./run.sh[/bold] → option 5 (Extract cookies)\n"
                 f"  3. Then regenerate the CV\n\n"
                 f"[dim]See: docs/AUTHENTICATION_GUIDE.md for details[/dim]",
                 border_style="yellow",
@@ -452,9 +452,8 @@ async def generate_cv(
     console.print(
         Panel(
             f"[bold green]✅ Done![/bold green]\n\n"
-            f"Files saved in: [cyan]output/{username}/[/cyan]\n\n"
-            f"📄 PDF: [cyan]{output_file.name}[/cyan]\n"
-            f"📊 JSON: [cyan]profile_data.json[/cyan]\n\n"
+            f"PDF saved: [cyan]{output_file}[/cyan]\n"
+            f"File size: [dim]{output_file.stat().st_size:,} bytes[/dim]\n\n"
             f"[dim]Ready to send to any company![/dim]",
             border_style="green",
             padding=(1, 2),
@@ -517,7 +516,7 @@ async def extract_all_html(profile_url: str, output_dir: str, headless: bool, de
     
     console.print(f"\n[green]✅ HTML extraction complete![/green]")
     console.print(f"[cyan]Files saved in: {user_output_dir}[/cyan]")
-    console.print(f"\n[dim]Next step: Run option 2 to extract JSON data[/dim]")
+    console.print(f"\n[dim]Next step: Use option 2 to extract JSON or option 1 to generate PDF[/dim]")
 
 
 async def parse_html_to_json(username: str, output_dir: str, debug: bool):
@@ -626,7 +625,14 @@ async def parse_html_to_json(username: str, output_dir: str, debug: bool):
             preview = str(value)[:50] + "..." if len(str(value)) > 50 else str(value)
             console.print(f"  • {key}: {preview}")
     
-    console.print(f"\n[dim]Next step: Run option 3 to generate PDF[/dim]")
+    # Clean up HTML files
+    import shutil
+    if html_dir.exists():
+        console.print(f"\n[dim]🧹 Cleaning up HTML files...[/dim]")
+        shutil.rmtree(html_dir)
+        console.print(f"[dim]✓ HTML files removed[/dim]")
+    
+    console.print(f"\n[cyan]💾 JSON data ready for PDF generation (option 1)[/cyan]")
 
 
 async def generate_pdf_from_json(username: str, output_dir: str, template: Optional[str], debug: bool):
@@ -679,15 +685,29 @@ async def generate_pdf_from_json(username: str, output_dir: str, template: Optio
         
         generator = PDFGenerator(template_path=template)
         
-        # Generate filename with cv_ prefix and timestamp
+        # Generate filename with username and timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_filename = f"cv_{timestamp}.pdf"
+        output_filename = f"{username}_{timestamp}.pdf"
         output_file = user_output_dir / output_filename
         
         generator.generate(profile_data, str(output_file))
         
         progress.update(task2, completed=True)
         console.print("   [green]✓[/green] Professional PDF CV generated successfully!")
+    
+    # Clean up intermediate files (HTML and JSON)
+    import shutil
+    
+    # Remove HTML directory if it exists
+    html_dir = user_output_dir / "html"
+    if html_dir.exists():
+        console.print(f"\n[dim]🧹 Cleaning up HTML files...[/dim]")
+        shutil.rmtree(html_dir)
+    
+    # Remove JSON file if it exists
+    if json_file.exists():
+        console.print(f"[dim]🧹 Cleaning up JSON file...[/dim]")
+        json_file.unlink()
     
     # Success message
     console.print()
