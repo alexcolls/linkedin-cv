@@ -488,7 +488,6 @@ class ProfileParser:
         section_selectors = [
             'section#experience',
             'section[id="experience"]',
-            'div[id="experience"]',
             'section[data-section="experience"]',
         ]
         
@@ -498,6 +497,14 @@ class ProfileParser:
                 if self.debug:
                     print(f"[DEBUG] Found experience section with selector: {selector}")
                 break
+        
+        # If not found, try finding the anchor div and get its parent section
+        if not section:
+            anchor = soup.select_one('div[id="experience"]')
+            if anchor and anchor.parent and anchor.parent.name == 'section':
+                section = anchor.parent
+                if self.debug:
+                    print("[DEBUG] Found experience section via anchor div parent")
         
         if not section:
             if self.debug:
@@ -516,7 +523,20 @@ class ProfileParser:
                 # Look for nested list inside
                 nested_list = item.select_one('ul')
                 
+                # LinkedIn now uses nested UL for descriptions too, so we need to check
+                # if it's actually a grouped experience or just a single role with nested content
+                is_truly_grouped = False
                 if nested_list:
+                    # Check if nested items have role titles (indicates multiple roles)
+                    nested_items = nested_list.select(':scope > li')
+                    for nested_item in nested_items:
+                        # Look for role title indicators
+                        title_elem = nested_item.select_one('div.display-flex.align-items-center span[aria-hidden="true"]')
+                        if title_elem and len(title_elem.get_text(strip=True)) > 0 and len(title_elem.get_text(strip=True)) < 200:
+                            is_truly_grouped = True
+                            break
+                
+                if is_truly_grouped:
                     # This is a company with multiple positions
                     exp = self._extract_grouped_experience(item)
                     if exp:
@@ -772,6 +792,12 @@ class ProfileParser:
             if section:
                 break
         
+        # If not found, try finding the anchor div and get its parent section
+        if not section:
+            anchor = soup.select_one('div[id="education"]')
+            if anchor and anchor.parent and anchor.parent.name == 'section':
+                section = anchor.parent
+        
         if not section:
             return education
         
@@ -940,6 +966,12 @@ class ProfileParser:
             if section:
                 break
         
+        # If not found, try finding the anchor div and get its parent section
+        if not section:
+            anchor = soup.select_one('div[id="skills"]')
+            if anchor and anchor.parent and anchor.parent.name == 'section':
+                section = anchor.parent
+        
         if not section:
             return skills
         
@@ -1048,6 +1080,14 @@ class ProfileParser:
             section = soup.select_one(selector)
             if section:
                 break
+        
+        # If not found, try finding the anchor div and get its parent section
+        if not section:
+            for anchor_id in ['licenses', 'certifications', 'licenses_and_certifications']:
+                anchor = soup.select_one(f'div[id="{anchor_id}"]')
+                if anchor and anchor.parent and anchor.parent.name == 'section':
+                    section = anchor.parent
+                    break
         
         if not section:
             return certifications
