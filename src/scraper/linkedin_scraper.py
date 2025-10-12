@@ -145,15 +145,6 @@ class LinkedInScraper:
                         
                         if self.debug:
                             print(f"[DEBUG] {section_name}: {len(html_content)} bytes")
-                        
-                        # Save each section's HTML for debugging
-                        debug_path = Path(f'last_scraped_{section_name}.html')
-                        try:
-                            with open(debug_path, 'w', encoding='utf-8') as f:
-                                f.write(html_content)
-                        except Exception as e:
-                            if self.debug:
-                                print(f"[DEBUG] Failed to save {section_name} HTML: {e}")
                                 
                     except Exception as e:
                         if self.debug:
@@ -297,17 +288,6 @@ class LinkedInScraper:
 
                 if self.debug:
                     print(f"[DEBUG] Retrieved {len(html_content)} bytes of HTML")
-                
-                # Always save HTML for debugging (helps diagnose auth issues)
-                debug_html_path = Path('last_scraped.html')
-                try:
-                    with open(debug_html_path, 'w', encoding='utf-8') as f:
-                        f.write(html_content)
-                    if self.debug:
-                        print(f"[DEBUG] HTML saved to {debug_html_path}")
-                except Exception as e:
-                    if self.debug:
-                        print(f"[DEBUG] Failed to save HTML: {e}")
 
                 # Save session for future use
                 await self._save_session(context)

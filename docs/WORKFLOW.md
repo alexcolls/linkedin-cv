@@ -168,8 +168,6 @@ output/
         └── metadata.json
 ```
 
-Also saves debug copies in project root: `last_scraped_<section>.html`
-
 **Best for:**
 - Debugging parsing issues
 - Inspecting raw LinkedIn HTML
@@ -224,13 +222,13 @@ See [AUTHENTICATION_GUIDE.md](./AUTHENTICATION_GUIDE.md) for details.
 
 - **Cause**: Not authenticated to LinkedIn
 - **Solution**: Run option 4 (Login to LinkedIn) first
-- Check `last_scraped_profile.html` - if you see masked content (**\***), authentication failed
+- Check the HTML files in output directory - if you see masked content (**\***), authentication failed
 
 ### Parsing Issues
 
 - Check the HTML files in `output/<username>/html/`
-- Look at `last_scraped_<section>.html` files for debugging
-- Enable debug mode: `--debug` flag or set in menu
+- Enable debug mode: `--debug` flag for detailed logging
+- Verify authentication by checking if HTML contains asterisks (*****)
 
 ---
 
