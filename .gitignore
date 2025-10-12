@@ -209,3 +209,4 @@ __marimo__/
 # LinkedIn CV Generator
 output/
 *.pdf
+last_scraped.html  # Debug HTML saved during scraping
