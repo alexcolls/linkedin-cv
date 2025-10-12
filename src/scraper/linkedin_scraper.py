@@ -24,8 +24,162 @@ class LinkedInScraper:
         self.browser: Optional[Browser] = None
         self.session_file = session_file or str(Path.home() / ".linkedin_session.json")
 
+    async def scrape_all_sections(self, profile_url: str) -> dict:
+        """Scrape LinkedIn profile and all detail sections.
+        
+        This scrapes multiple pages to get complete data:
+        - Main profile page
+        - /details/experience/ - Full experience list
+        - /details/education/ - Full education list  
+        - /details/skills/ - Full skills list
+        - /details/certifications/ - Full certifications
+        - /details/projects/ - Projects
+        - /details/languages/ - Languages
+        
+        Args:
+            profile_url: The LinkedIn profile URL
+            
+        Returns:
+            Dictionary with HTML content for each section
+            
+        Raises:
+            ValueError: If the URL is invalid
+            Exception: If scraping fails
+        """
+        if not profile_url.startswith("https://www.linkedin.com/in/"):
+            raise ValueError(
+                "Invalid LinkedIn profile URL. Must start with https://www.linkedin.com/in/"
+            )
+        
+        # Normalize URL
+        base_url = profile_url.rstrip('/')
+        
+        # Define all sections to scrape
+        sections_to_scrape = {
+            'profile': base_url,
+            'experience': f"{base_url}/details/experience/",
+            'education': f"{base_url}/details/education/",
+            'skills': f"{base_url}/details/skills/",
+            'certifications': f"{base_url}/details/certifications/",
+            'projects': f"{base_url}/details/projects/",
+            'languages': f"{base_url}/details/languages/",
+            'volunteer': f"{base_url}/details/volunteering/",
+            'honors': f"{base_url}/details/honors/",
+            'publications': f"{base_url}/details/publications/",
+        }
+        
+        html_sections = {}
+        
+        async with async_playwright() as p:
+            # Launch browser (same as before)
+            if self.debug:
+                print(f"[DEBUG] Launching browser (headless={self.headless})...")
+
+            chrome_user_data = str(Path.home() / ".config" / "google-chrome")
+            
+            try:
+                context = await p.chromium.launch_persistent_context(
+                    chrome_user_data,
+                    headless=self.headless,
+                    channel="chrome",
+                    user_agent=(
+                        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                        "(KHTML, like Gecko) Chrome/********* Safari/537.36"
+                    ),
+                    viewport={"width": 1920, "height": 1080},
+                    locale="en-US",
+                )
+            except Exception as e:
+                if self.debug:
+                    print(f"[DEBUG] Failed to use Chrome profile: {e}")
+                    print("[DEBUG] Falling back to session file method...")
+                
+                self.browser = await p.chromium.launch(headless=self.headless, channel="chrome")
+                context = await self.browser.new_context(
+                    user_agent=(
+                        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                        "(KHTML, like Gecko) Chrome/********* Safari/537.36"
+                    ),
+                    viewport={"width": 1920, "height": 1080},
+                    locale="en-US",
+                )
+                
+                if os.path.exists(self.session_file):
+                    if self.debug:
+                        print(f"[DEBUG] Loading session from {self.session_file}...")
+                    try:
+                        with open(self.session_file, 'r') as f:
+                            cookies = json.load(f)
+                        await context.add_cookies(cookies)
+                        if self.debug:
+                            print(f"[DEBUG] Loaded {len(cookies)} cookies")
+                    except Exception as e:
+                        if self.debug:
+                            print(f"[DEBUG] Failed to load session: {e}")
+
+            page = await context.new_page()
+            
+            try:
+                # Scrape each section
+                for section_name, url in sections_to_scrape.items():
+                    if self.debug:
+                        print(f"[DEBUG] Scraping {section_name} from {url}...")
+                    
+                    try:
+                        await page.goto(url, wait_until="domcontentloaded", timeout=60000)
+                        await asyncio.sleep(2)  # Wait for content
+                        
+                        # Wait for main content
+                        try:
+                            await page.wait_for_selector("main.scaffold-layout__main", timeout=10000)
+                        except TimeoutError:
+                            if self.debug:
+                                print(f"[DEBUG] Main content not found for {section_name}")
+                        
+                        # Scroll to load lazy content
+                        await self._scroll_page(page)
+                        
+                        # Get HTML
+                        html_content = await page.content()
+                        html_sections[section_name] = html_content
+                        
+                        if self.debug:
+                            print(f"[DEBUG] {section_name}: {len(html_content)} bytes")
+                        
+                        # Save each section's HTML for debugging
+                        debug_path = Path(f'last_scraped_{section_name}.html')
+                        try:
+                            with open(debug_path, 'w', encoding='utf-8') as f:
+                                f.write(html_content)
+                        except Exception as e:
+                            if self.debug:
+                                print(f"[DEBUG] Failed to save {section_name} HTML: {e}")
+                                
+                    except Exception as e:
+                        if self.debug:
+                            print(f"[DEBUG] Error scraping {section_name}: {str(e)}")
+                        # Store empty content if section fails
+                        html_sections[section_name] = ""
+                
+                # Save session
+                await self._save_session(context)
+                
+                return html_sections
+                
+            except Exception as e:
+                if self.debug:
+                    print(f"[DEBUG] Error during scraping: {str(e)}")
+                raise Exception(f"Failed to scrape profile: {str(e)}")
+            
+            finally:
+                await context.close()
+                if self.browser:
+                    await self.browser.close()
+    
     async def scrape_profile(self, profile_url: str) -> str:
         """Scrape a LinkedIn profile and return the HTML content.
+        
+        DEPRECATED: Use scrape_all_sections() for complete data.
 
         Args:
             profile_url: The LinkedIn profile URL

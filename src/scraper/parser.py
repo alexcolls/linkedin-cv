@@ -1627,3 +1627,184 @@ class ProfileParser:
         except:
             pass
         return None
+    
+    # ==========================================
+    # Detail Page Parsers
+    # ==========================================
+    
+    def parse_experience_detail(self, html_content: str) -> List[Dict[str, Any]]:
+        """Parse experience from the dedicated /details/experience/ page.
+        
+        This page has a different structure than the main profile page and
+        contains the complete experience history without truncation.
+        
+        Args:
+            html_content: HTML from the experience detail page
+            
+        Returns:
+            List of experience entries with full details
+        """
+        soup = BeautifulSoup(html_content, "lxml")
+        experiences = []
+        
+        if self.debug:
+            print("[DEBUG] Parsing experience detail page...")
+        
+        # Look for the main content container
+        main_selectors = [
+            'main.scaffold-layout__main',
+            'main',
+            'div.scaffold-finite-scroll__content',
+        ]
+        
+        main = None
+        for selector in main_selectors:
+            main = soup.select_one(selector)
+            if main:
+                break
+        
+        if not main:
+            if self.debug:
+                print("[DEBUG] No main content found in experience detail page")
+            return experiences
+        
+        # Find all experience items - they are direct list items
+        item_selectors = [
+            'li.pvs-list__paged-list-item',
+            'ul.pvs-list > li',
+            'li[class*="pvs-list"]',
+        ]
+        
+        items = []
+        for selector in item_selectors:
+            items = main.select(selector)
+            if items:
+                if self.debug:
+                    print(f"[DEBUG] Found {len(items)} experience items with selector: {selector}")
+                break
+        
+        for idx, item in enumerate(items):
+            exp_data = self._extract_single_experience(item)
+            if exp_data and exp_data.get('title'):
+                experiences.append(exp_data)
+                if self.debug:
+                    print(f"[DEBUG] Experience {idx+1}: {exp_data.get('title')} at {exp_data.get('company', 'N/A')}")
+        
+        return experiences
+    
+    def parse_education_detail(self, html_content: str) -> List[Dict[str, Any]]:
+        """Parse education from the dedicated /details/education/ page.
+        
+        Args:
+            html_content: HTML from the education detail page
+            
+        Returns:
+            List of education entries with full details
+        """
+        soup = BeautifulSoup(html_content, "lxml")
+        education = []
+        
+        if self.debug:
+            print("[DEBUG] Parsing education detail page...")
+        
+        # Look for the main content container
+        main_selectors = [
+            'main.scaffold-layout__main',
+            'main',
+            'div.scaffold-finite-scroll__content',
+        ]
+        
+        main = None
+        for selector in main_selectors:
+            main = soup.select_one(selector)
+            if main:
+                break
+        
+        if not main:
+            if self.debug:
+                print("[DEBUG] No main content found in education detail page")
+            return education
+        
+        # Find all education items
+        item_selectors = [
+            'li.pvs-list__paged-list-item',
+            'ul.pvs-list > li',
+            'li[class*="pvs-list"]',
+        ]
+        
+        items = []
+        for selector in item_selectors:
+            items = main.select(selector)
+            if items:
+                if self.debug:
+                    print(f"[DEBUG] Found {len(items)} education items with selector: {selector}")
+                break
+        
+        for idx, item in enumerate(items):
+            edu_data = self._extract_single_education(item)
+            if edu_data and edu_data.get('institution'):
+                education.append(edu_data)
+                if self.debug:
+                    print(f"[DEBUG] Education {idx+1}: {edu_data.get('degree', 'N/A')} at {edu_data.get('institution')}")
+        
+        return education
+    
+    def parse_skills_detail(self, html_content: str) -> List[Dict[str, Any]]:
+        """Parse skills from the dedicated /details/skills/ page.
+        
+        This page shows all skills with endorsement counts, not just the top ones.
+        
+        Args:
+            html_content: HTML from the skills detail page
+            
+        Returns:
+            List of skills with endorsement counts
+        """
+        soup = BeautifulSoup(html_content, "lxml")
+        skills = []
+        
+        if self.debug:
+            print("[DEBUG] Parsing skills detail page...")
+        
+        # Look for the main content container
+        main_selectors = [
+            'main.scaffold-layout__main',
+            'main',
+            'div.scaffold-finite-scroll__content',
+        ]
+        
+        main = None
+        for selector in main_selectors:
+            main = soup.select_one(selector)
+            if main:
+                break
+        
+        if not main:
+            if self.debug:
+                print("[DEBUG] No main content found in skills detail page")
+            return skills
+        
+        # Find all skill items
+        item_selectors = [
+            'li.pvs-list__paged-list-item',
+            'ul.pvs-list > li',
+            'li[class*="pvs-list"]',
+        ]
+        
+        items = []
+        for selector in item_selectors:
+            items = main.select(selector)
+            if items:
+                if self.debug:
+                    print(f"[DEBUG] Found {len(items)} skill items with selector: {selector}")
+                break
+        
+        for idx, item in enumerate(items):
+            skill_data = self._extract_single_skill(item)
+            if skill_data and skill_data.get('name'):
+                skills.append(skill_data)
+                if self.debug:
+                    endorsements = skill_data.get('endorsements', 0)
+                    print(f"[DEBUG] Skill {idx+1}: {skill_data.get('name')} ({endorsements} endorsements)")
+        
+        return skills

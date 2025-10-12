@@ -38,56 +38,46 @@ show_menu() {
     echo -e "${DIM}Transform your LinkedIn profile into a professional CV${NC}"
     echo ""
     
-    echo -e "${CYAN}${BOLD}📋 Main Operations:${NC}"
-    echo -e "  ${BOLD}1)${NC} 🚀 Generate CV (from URL or .env)"
-    echo -e "  ${BOLD}2)${NC} 📊 Export Profile to JSON (data only)"
-    echo -e "  ${BOLD}3)${NC} 🔐 Login to LinkedIn (save session)"
-    echo -e "  ${BOLD}4)${NC} 🍪 Extract cookies from Chrome"
+    echo -e "${CYAN}${BOLD}📋 Main Workflow (in order):${NC}"
+    echo -e "  ${BOLD}1)${NC} 🌐 Extract HTML from LinkedIn profile"
+    echo -e "  ${BOLD}2)${NC} 📊 Extract JSON data from HTML"
+    echo -e "  ${BOLD}3)${NC} 📄 Generate CV PDF from JSON"
+    echo ""
+    echo -e "${CYAN}${BOLD}🔐 Authentication:${NC}"
+    echo -e "  ${BOLD}4)${NC} 🔐 Login to LinkedIn (save session)"
+    echo -e "  ${BOLD}5)${NC} 🍪 Extract cookies from Chrome"
     echo ""
     echo -e "${CYAN}${BOLD}🔧 Setup & Testing:${NC}"
-    echo -e "  ${BOLD}5)${NC} ⚙️ Run installation/setup"
-    echo -e "  ${BOLD}6)${NC} 🧪 Run tests"
-    echo -e "  ${BOLD}7)${NC} 📊 View test coverage"
+    echo -e "  ${BOLD}6)${NC} ⚙️ Run installation/setup"
+    echo -e "  ${BOLD}7)${NC} 🧪 Run tests"
+    echo -e "  ${BOLD}8)${NC} 📊 View test coverage"
     echo ""
     echo -e "${CYAN}${BOLD}📚 Documentation:${NC}"
-    echo -e "  ${BOLD}8)${NC} 📖 View documentation"
-    echo -e "  ${BOLD}9)${NC} 🔍 Quick help"
+    echo -e "  ${BOLD}9)${NC} 📖 View documentation"
+    echo -e "  ${BOLD}h)${NC} 🔍 Quick help"
     echo ""
     echo -e "  ${BOLD}0)${NC} ❌ Exit"
     echo ""
 }
 
-generate_cv_from_url() {
-    print_header "🚀 Generate CV from LinkedIn URL"
+extract_html() {
+    print_header "🌐 Extract HTML from LinkedIn Profile"
     
     # Check dependencies first
     if ! check_dependencies; then
         print_error "Dependencies not installed properly."
-        print_info "Please run option 5 (Installation) first."
+        print_info "Please run option 6 (Installation) first."
         press_any_key
         return 1
     fi
     
-    # Run the CLI (it will handle .env and interactive prompts)
-    poetry run python -m src.cli --no-banner
-    
-    press_any_key
-}
-
-export_to_json() {
-    print_header "📊 Export Profile Data to JSON"
-    
-    # Check dependencies first
-    if ! check_dependencies; then
-        print_error "Dependencies not installed properly."
-        print_info "Please run option 5 (Installation) first."
-        press_any_key
-        return 1
-    fi
-    
-    echo -e "${CYAN}This will export the LinkedIn profile data to a JSON file.${NC}"
-    echo -e "${CYAN}No PDF will be generated - only raw data extraction.${NC}"
-    echo -e "${CYAN}Output will be saved in: output/<username>/profile_data.json${NC}"
+    echo -e "${CYAN}This will scrape all LinkedIn profile sections:${NC}"
+    echo -e "${CYAN}  • Main profile page${NC}"
+    echo -e "${CYAN}  • Experience details${NC}"
+    echo -e "${CYAN}  • Education details${NC}"
+    echo -e "${CYAN}  • Skills, Certifications, Projects, etc.${NC}"
+    echo ""
+    echo -e "${CYAN}HTML files will be saved in: output/<username>/html/${NC}"
     echo ""
     
     # Get profile URL or username
@@ -101,43 +91,124 @@ export_to_json() {
     fi
     
     echo ""
-    echo -e "${YELLOW}⏳ Extracting profile data...${NC}"
+    echo -e "${YELLOW}⏳ Extracting HTML from all sections...${NC}"
     
-    # Run the CLI with JSON export flag
-    poetry run python -m src.cli "$profile_input" --json --no-banner
-    
-    # Try to find the generated JSON file
-    # Extract username from input
-    username=$(echo "$profile_input" | sed 's|.*linkedin.com/in/||' | sed 's|/||g')
-    json_file="output/$username/profile_data.json"
-    
-    if [ -f "$json_file" ]; then
-        echo ""
-        echo -e "${GREEN}✅ Profile data exported to: $json_file${NC}"
-        echo ""
-        echo -e "${CYAN}View the JSON file? [Y/n]: ${NC}"
-        read -n 1 view_json
-        echo ""
-        
-        if [[ ! "$view_json" =~ ^[Nn]$ ]]; then
-            if command -v jq &> /dev/null; then
-                jq . "$json_file" | less
-            else
-                less "$json_file"
-            fi
-        fi
-    else
-        # Fallback: check if it was saved with default username
-        json_file="output/linkedin-profile/profile_data.json"
-        if [ -f "$json_file" ]; then
-            echo ""
-            echo -e "${GREEN}✅ Profile data exported to: $json_file${NC}"
-            echo -e "${YELLOW}Note: Username couldn't be extracted, using default directory${NC}"
-        fi
-    fi
+    # Run the scraper with HTML extraction
+    poetry run python -m src.cli "$profile_input" --extract-html --no-banner
     
     press_any_key
 }
+
+extract_json() {
+    print_header "📊 Extract JSON Data from HTML"
+    
+    # Check dependencies first
+    if ! check_dependencies; then
+        print_error "Dependencies not installed properly."
+        print_info "Please run option 6 (Installation) first."
+        press_any_key
+        return 1
+    fi
+    
+    echo -e "${CYAN}This will parse HTML files and extract structured JSON data.${NC}"
+    echo -e "${CYAN}Make sure you've run option 1 (Extract HTML) first!${NC}"
+    echo ""
+    
+    # List available HTML directories
+    if [ -d "output" ]; then
+        echo -e "${CYAN}${BOLD}Available profiles:${NC}"
+        for profile_dir in output/*/; do
+            if [ -d "$profile_dir" ]; then
+                username=$(basename "$profile_dir")
+                echo -e "  • $username"
+            fi
+        done
+        echo ""
+    fi
+    
+    # Get username
+    echo -e "${CYAN}Enter username (or press Enter to extract from URL): ${NC}"
+    read username_input
+    
+    if [ -z "$username_input" ]; then
+        # Get profile URL
+        echo -e "${CYAN}Enter LinkedIn profile URL: ${NC}"
+        read profile_input
+        
+        if [ -z "$profile_input" ]; then
+            print_error "No username or URL provided"
+            press_any_key
+            return 1
+        fi
+        
+        # Extract username from URL
+        username_input=$(echo "$profile_input" | sed 's|.*linkedin.com/in/||' | sed 's|/||g')
+    fi
+    
+    echo ""
+    echo -e "${YELLOW}⏳ Parsing HTML and extracting JSON data...${NC}"
+    
+    # Run the parser
+    poetry run python -m src.cli --parse-html "$username_input" --no-banner
+    
+    press_any_key
+}
+
+generate_cv_pdf() {
+    print_header "📄 Generate CV PDF from JSON"
+    
+    # Check dependencies first
+    if ! check_dependencies; then
+        print_error "Dependencies not installed properly."
+        print_info "Please run option 6 (Installation) first."
+        press_any_key
+        return 1
+    fi
+    
+    echo -e "${CYAN}This will generate a professional PDF CV from JSON data.${NC}"
+    echo -e "${CYAN}Make sure you've run option 2 (Extract JSON) first!${NC}"
+    echo ""
+    
+    # List available JSON files
+    if [ -d "output" ]; then
+        echo -e "${CYAN}${BOLD}Available profiles:${NC}"
+        for profile_dir in output/*/; do
+            if [ -d "$profile_dir" ] && [ -f "$profile_dir/profile_data.json" ]; then
+                username=$(basename "$profile_dir")
+                echo -e "  • $username"
+            fi
+        done
+        echo ""
+    fi
+    
+    # Get username
+    echo -e "${CYAN}Enter username: ${NC}"
+    read username_input
+    
+    if [ -z "$username_input" ]; then
+        print_error "No username provided"
+        press_any_key
+        return 1
+    fi
+    
+    # Check if JSON exists
+    json_file="output/$username_input/profile_data.json"
+    if [ ! -f "$json_file" ]; then
+        print_error "JSON file not found: $json_file"
+        print_info "Please run option 2 (Extract JSON) first."
+        press_any_key
+        return 1
+    fi
+    
+    echo ""
+    echo -e "${YELLOW}⏳ Generating PDF CV...${NC}"
+    
+    # Run the PDF generator
+    poetry run python -m src.cli --generate-pdf "$username_input" --no-banner
+    
+    press_any_key
+}
+
 
 login_to_linkedin() {
     print_header "🔐 Login to LinkedIn"
@@ -145,7 +216,7 @@ login_to_linkedin() {
     # Check dependencies first
     if ! check_dependencies; then
         print_error "Dependencies not installed properly."
-        print_info "Please run option 4 (Installation) first."
+        print_info "Please run option 6 (Installation) first."
         press_any_key
         return 1
     fi
@@ -169,7 +240,7 @@ extract_cookies() {
     # Check dependencies first
     if ! check_dependencies; then
         print_error "Dependencies not installed properly."
-        print_info "Please run option 4 (Installation) first."
+        print_info "Please run option 6 (Installation) first."
         press_any_key
         return 1
     fi
@@ -189,6 +260,7 @@ extract_cookies() {
 
 
 run_installation() {
+    print_header "⚙️ Installation & Setup"
     # Run the installation script
     bash "$SCRIPT_DIR/scripts/install.sh"
     press_any_key
@@ -295,9 +367,11 @@ show_quick_help() {
     print_header "🔍 Quick Help"
     
     echo -e "${CYAN}${BOLD}Quick Start:${NC}"
-    echo -e "  ${BOLD}1.${NC} Run installation (option 4)"
-    echo -e "  ${BOLD}2.${NC} Log in to LinkedIn (option 2)"
-    echo -e "  ${BOLD}3.${NC} Generate your CV (option 1)"
+    echo -e "  ${BOLD}1.${NC} Run installation (option 6)"
+    echo -e "  ${BOLD}2.${NC} Log in to LinkedIn (option 4)"
+    echo -e "  ${BOLD}3.${NC} Extract HTML (option 1)"
+    echo -e "  ${BOLD}4.${NC} Extract JSON (option 2)"
+    echo -e "  ${BOLD}5.${NC} Generate PDF (option 3)"
     echo ""
     
     echo -e "${CYAN}${BOLD}Command Line Usage:${NC}"
@@ -314,16 +388,16 @@ show_quick_help() {
     echo ""
     
     echo -e "${CYAN}${BOLD}Authentication:${NC}"
-    echo -e "  • First time: Use option 2 to log in"
+    echo -e "  • First time: Use option 4 to log in"
     echo -e "  • Session lasts ~30 days"
     echo -e "  • Stored in: ~/.linkedin_session.json"
-    echo -e "  • Alternative: Use option 3 to extract from Chrome"
+    echo -e "  • Alternative: Use option 5 to extract from Chrome"
     echo ""
     
     echo -e "${CYAN}${BOLD}Troubleshooting:${NC}"
-    echo -e "  • Content masked (*****)? → Log in first (option 2)"
-    echo -e "  • Chrome locked? → Try option 3 to extract cookies"
-    echo -e "  • Tests failing? → Run option 4 to reinstall"
+    echo -e "  • Content masked (*****)? → Log in first (option 4)"
+    echo -e "  • Chrome locked? → Try option 5 to extract cookies"
+    echo -e "  • Tests failing? → Run option 6 to reinstall"
     echo -e "  • More help: docs/AUTHENTICATION_GUIDE.md"
     echo ""
     
@@ -340,7 +414,7 @@ main() {
         # Check dependencies
         if ! check_dependencies; then
             print_error "Dependencies not installed."
-            print_info "Please run: ./run.sh and select option 4 (Installation)"
+            print_info "Please run: ./run.sh and select option 6 (Installation)"
             exit 1
         fi
         
@@ -353,35 +427,38 @@ main() {
     while true; do
         show_menu
         
-        read -p "$(echo -e ${CYAN}Enter your choice [0-9]: ${NC})" choice
+        read -p "$(echo -e ${CYAN}Enter your choice [0-9/h]: ${NC})" choice
         echo ""
         
         case $choice in
             1)
-                generate_cv_from_url
+                extract_html
                 ;;
             2)
-                export_to_json
+                extract_json
                 ;;
             3)
-                login_to_linkedin
+                generate_cv_pdf
                 ;;
             4)
-                extract_cookies
+                login_to_linkedin
                 ;;
             5)
-                run_installation
+                extract_cookies
                 ;;
             6)
-                run_tests
+                run_installation
                 ;;
             7)
-                view_coverage
+                run_tests
                 ;;
             8)
-                view_documentation
+                view_coverage
                 ;;
             9)
+                view_documentation
+                ;;
+            h|H)
                 show_quick_help
                 ;;
             0)
@@ -390,7 +467,7 @@ main() {
                 exit 0
                 ;;
             *)
-                print_error "Invalid option. Please select 0-9."
+                print_error "Invalid option. Please select 0-9 or h."
                 sleep 2
                 ;;
         esac
