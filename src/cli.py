@@ -322,10 +322,80 @@ async def generate_cv(
             profile_data.get('about')
         )
 
-        # If JSON export is requested, save and exit
+        # If JSON export is requested, check for existing HTML first
         if export_json:
             import json
             from datetime import datetime
+            import re
+            
+            # Get username from profile data or URL
+            username = profile_data.get('username', 'linkedin-profile')
+            if username == 'linkedin-profile' and profile_url:
+                # Try to extract from URL
+                match = re.search(r'linkedin\.com/in/([^/]+)', profile_url)
+                if match:
+                    username = match.group(1)
+            
+            # Check if HTML files already exist
+            user_output_dir = output_path / username
+            html_dir = user_output_dir / "html"
+            
+            if html_dir.exists() and any(html_dir.glob("*.html")):
+                # HTML files exist, use them instead
+                console.print(f"\n[cyan]📂 Found existing HTML files for {username}[/cyan]")
+                console.print("[dim]Using saved HTML files instead of re-scraping...[/dim]\n")
+                
+                # Parse from existing HTML files
+                progress.update(task2, description="📊 Parsing existing HTML files...")
+                
+                # Re-parse using the detailed HTML files
+                parser = ProfileParser(debug=debug)
+                profile_data = {}
+                
+                # Parse main profile
+                profile_html_file = html_dir / 'profile.html'
+                if profile_html_file.exists():
+                    with open(profile_html_file, 'r', encoding='utf-8') as f:
+                        profile_html = f.read()
+                    profile_data = parser.parse(profile_html)
+                
+                # Parse experience section
+                experience_html_file = html_dir / 'experience.html'
+                if experience_html_file.exists():
+                    with open(experience_html_file, 'r', encoding='utf-8') as f:
+                        experience_html = f.read()
+                    experience_data = parser.parse_experience_detail(experience_html)
+                    if experience_data:
+                        profile_data['experience'] = experience_data
+                
+                # Parse education section
+                education_html_file = html_dir / 'education.html'
+                if education_html_file.exists():
+                    with open(education_html_file, 'r', encoding='utf-8') as f:
+                        education_html = f.read()
+                    education_data = parser.parse_education_detail(education_html)
+                    if education_data:
+                        profile_data['education'] = education_data
+                
+                # Parse skills section
+                skills_html_file = html_dir / 'skills.html'
+                if skills_html_file.exists():
+                    with open(skills_html_file, 'r', encoding='utf-8') as f:
+                        skills_html = f.read()
+                    skills_data = parser.parse_skills_detail(skills_html)
+                    if skills_data:
+                        profile_data['skills'] = skills_data
+                
+                progress.update(task2, completed=True)
+                console.print("   [green]✓[/green] Parsed from existing HTML files!")
+                
+                # Check if we got meaningful data
+                has_meaningful_data = (
+                    len(profile_data.get('experience', [])) > 0 or
+                    len(profile_data.get('education', [])) > 0 or
+                    len(profile_data.get('skills', [])) > 0 or
+                    profile_data.get('about')
+                )
             
             # Add metadata
             profile_data['_metadata'] = {
@@ -334,15 +404,6 @@ async def generate_cv(
                 'sections_found': len(profile_data.get('sections', [])),
                 'has_meaningful_data': has_meaningful_data,
             }
-            
-            # Get username from profile data or URL
-            username = profile_data.get('username', 'linkedin-profile')
-            if username == 'linkedin-profile' and profile_url:
-                # Try to extract from URL
-                import re
-                match = re.search(r'linkedin\.com/in/([^/]+)', profile_url)
-                if match:
-                    username = match.group(1)
             
             # Create user-specific output directory
             user_output_dir = output_path / username
