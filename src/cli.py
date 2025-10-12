@@ -258,8 +258,21 @@ async def generate_cv(
                 'sections_found': len(profile_data.get('sections', [])),
             }
             
-            # Save to JSON
-            json_path = Path(json_file)
+            # Get username from profile data or URL
+            username = profile_data.get('username', 'linkedin-profile')
+            if username == 'linkedin-profile' and profile_url:
+                # Try to extract from URL
+                import re
+                match = re.search(r'linkedin\.com/in/([^/]+)', profile_url)
+                if match:
+                    username = match.group(1)
+            
+            # Create user-specific output directory
+            user_output_dir = output_path / username
+            user_output_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Save to JSON in user directory
+            json_path = user_output_dir / 'profile_data.json'
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(profile_data, f, indent=2, ensure_ascii=False)
             
@@ -303,10 +316,24 @@ async def generate_cv(
         task4 = progress.add_task("📄 Generating professional PDF CV...", total=None)
 
         generator = PDFGenerator(template_path=template)
+        
+        # Get username from profile data or URL
         username = profile_data.get("username", "linkedin-profile")
-        timestamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")
-        output_filename = f"{username}_{timestamp}.pdf"
-        output_file = output_path / output_filename
+        if username == 'linkedin-profile' and profile_url:
+            # Try to extract from URL
+            import re
+            match = re.search(r'linkedin\.com/in/([^/]+)', profile_url)
+            if match:
+                username = match.group(1)
+        
+        # Create user-specific output directory
+        user_output_dir = output_path / username
+        user_output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Generate filename with cv_ prefix and timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_filename = f"cv_{timestamp}.pdf"
+        output_file = user_output_dir / output_filename
 
         generator.generate(profile_data, str(output_file))
 
@@ -318,8 +345,9 @@ async def generate_cv(
     console.print(
         Panel(
             f"[bold green]✅ Done![/bold green]\n\n"
-            f"Your professional CV is ready at:\n"
-            f"📄 [cyan]{output_file}[/cyan]\n\n"
+            f"Files saved in: [cyan]output/{username}/[/cyan]\n\n"
+            f"📄 PDF: [cyan]{output_file.name}[/cyan]\n"
+            f"📊 JSON: [cyan]profile_data.json[/cyan]\n\n"
             f"[dim]Ready to send to any company![/dim]",
             border_style="green",
             padding=(1, 2),

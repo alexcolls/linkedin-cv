@@ -78,6 +78,7 @@ export_to_json() {
     
     echo -e "${CYAN}This will export the LinkedIn profile data to a JSON file.${NC}"
     echo -e "${CYAN}No PDF will be generated - only raw data extraction.${NC}"
+    echo -e "${CYAN}Output will be saved in: output/<username>/profile_data.json${NC}"
     echo ""
     
     # Get profile URL or username
@@ -90,19 +91,16 @@ export_to_json() {
         return 1
     fi
     
-    # Get output filename
-    echo -e "${CYAN}Enter JSON filename (default: profile_data.json): ${NC}"
-    read json_file
-    
-    if [ -z "$json_file" ]; then
-        json_file="profile_data.json"
-    fi
-    
     echo ""
     echo -e "${YELLOW}⏳ Extracting profile data...${NC}"
     
     # Run the CLI with JSON export flag
-    poetry run python -m src.cli "$profile_input" --json --json-file "$json_file"
+    poetry run python -m src.cli "$profile_input" --json
+    
+    # Try to find the generated JSON file
+    # Extract username from input
+    username=$(echo "$profile_input" | sed 's|.*linkedin.com/in/||' | sed 's|/||g')
+    json_file="output/$username/profile_data.json"
     
     if [ -f "$json_file" ]; then
         echo ""
@@ -118,6 +116,14 @@ export_to_json() {
             else
                 less "$json_file"
             fi
+        fi
+    else
+        # Fallback: check if it was saved with default username
+        json_file="output/linkedin-profile/profile_data.json"
+        if [ -f "$json_file" ]; then
+            echo ""
+            echo -e "${GREEN}✅ Profile data exported to: $json_file${NC}"
+            echo -e "${YELLOW}Note: Username couldn't be extracted, using default directory${NC}"
         fi
     fi
     
