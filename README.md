@@ -139,7 +139,7 @@ Get full, unmasked content with authentication:
 2. Saves session cookies to `~/.linkedin_session.json`
 3. Reuses session for ~30 days (no need to log in again!)
 
-📚 **Full guide**: See `docs/AUTHENTICATION_GUIDE.md`
+📚 **Full guide**: See [Authentication Guide](docs/AUTHENTICATION_GUIDE.md)
 
 #### 🍪 Method 2: Cookie Extraction (If Chrome Already Open)
 
@@ -164,21 +164,25 @@ Get full, unmasked content with authentication:
 ```
 
 ```
-📋 Main Operations:
-  1) 🚀 Generate CV (from URL or .env)
-  2) 🔐 Login to LinkedIn (save session)
-  3) 🍪 Extract cookies from Chrome
+📋 Main Workflow:
+  1) 📄 Generate CV PDF
+  2) 📊 Extract JSON data
+  3) 🌐 Extract HTML from profile
 
-🔧 Setup & Utilities:
-  4) ⚙️ Run installation/setup
-  5) 📝 Export profile to JSON
-  6) 🆘 View system info
+🔐 Authentication:
+  4) 🔐 Login to LinkedIn (save session)
+  5) 🍪 Extract cookies from Chrome
+
+🔧 Setup & Testing:
+  6) ⚙️ Run installation/setup
+  7) 🧪 Run tests
+  8) 📊 View test coverage
 
 📚 Documentation:
-  7) 📖 View documentation
-  8) 🔍 Quick help
+  9) 📖 View documentation
+  h) 🔍 Quick help
 
-  9) ❌ Exit
+  0) ❌ Exit
 ```
 
 ---
@@ -210,11 +214,15 @@ linkedin-cv/
 ├── assets/
 │   └── banner.txt               # ASCII art banner
 ├── docs/
-│   └── AUTHENTICATION_GUIDE.md  # Authentication documentation
-├── output/                      # Generated CVs and data
-│   └── <linkedin-username>/     # User-specific output
-│       ├── profile_data.json    # Extracted profile data
-│       └── cv_*.pdf            # Generated PDF CVs
+│   ├── AUTHENTICATION_GUIDE.md     # Authentication documentation
+│   ├── WORKFLOW.md                 # Workflow options explained
+│   ├── OUTPUT_STRUCTURE.md         # Output file organization
+│   └── TROUBLESHOOTING_EMPTY_DATA.md  # Debugging guide
+├── output/                         # Generated CVs and data
+│   └── <linkedin-username>/        # User-specific output
+│       ├── profile_data.json       # Extracted profile data (option 2)
+│       ├── username_*.pdf          # Generated PDF CVs (option 1)
+│       └── html/                   # Raw HTML files (option 3)
 ├── run.sh                       # Interactive menu
 ├── pyproject.toml              # Poetry dependencies
 └── README.md
@@ -266,6 +274,26 @@ EXPERIENCE
    📅 Issued: Jan 2024 | 🎟️ ID: AWS-SA-12345
    🔗 Verification: credentials.aws.com/verify/12345
 ```
+
+---
+
+## 📚 Documentation
+
+Detailed guides available in the `docs/` directory:
+
+| Document | Description |
+|----------|-------------|
+| [WORKFLOW.md](docs/WORKFLOW.md) | **Workflow options** - Learn about the 3 different extraction methods |
+| [AUTHENTICATION_GUIDE.md](docs/AUTHENTICATION_GUIDE.md) | **Authentication setup** - How to log in and save sessions |
+| [OUTPUT_STRUCTURE.md](docs/OUTPUT_STRUCTURE.md) | **File organization** - Understanding the output directory |
+| [TROUBLESHOOTING_EMPTY_DATA.md](docs/TROUBLESHOOTING_EMPTY_DATA.md) | **Debugging guide** - Fix empty or incomplete data |
+
+### Quick Links
+
+- **New user?** Start with [WORKFLOW.md](docs/WORKFLOW.md) to understand the options
+- **Authentication issues?** Check [AUTHENTICATION_GUIDE.md](docs/AUTHENTICATION_GUIDE.md)
+- **Empty data?** See [TROUBLESHOOTING_EMPTY_DATA.md](docs/TROUBLESHOOTING_EMPTY_DATA.md)
+- **File structure?** Review [OUTPUT_STRUCTURE.md](docs/OUTPUT_STRUCTURE.md)
 
 ---
 

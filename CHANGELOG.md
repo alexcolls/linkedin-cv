@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2025-10-12
+
+### Added
+- 🌐 **Multi-Page Scraping** - New `scrape_all_sections()` method extracts data from dedicated LinkedIn detail pages
+- 📁 **Complete HTML Extraction** - Scrapes 10+ detail pages: experience, education, skills, certifications, projects, languages, volunteer, honors, publications
+- 🛠️ **Three Workflow Options**:
+  * Option 1: Generate CV PDF (all-in-one, recommended)
+  * Option 2: Extract JSON data (with automatic HTML cleanup)
+  * Option 3: Extract HTML from profile (advanced debugging)
+- 🧹 **Automatic Cleanup** - Option 2 removes HTML files after JSON extraction
+- 💾 **HTML Debug Files** - Each section saved as `last_scraped_<section>.html` for debugging
+- 📊 **Metadata Tracking** - Timestamps and URLs tracked in metadata.json
+- 📝 **Enhanced Parsers** - New methods: `parse_experience_detail()`, `parse_education_detail()`, `parse_skills_detail()`
+- 📚 **Comprehensive Documentation**:
+  * WORKFLOW.md - Detailed workflow options guide
+  * OUTPUT_STRUCTURE.md - File organization reference
+  * TROUBLESHOOTING_EMPTY_DATA.md - Debugging guide
+  * All docs linked from README
+
+### Changed
+- 🔄 **Menu Reordered** - Simplified: 1) Generate PDF, 2) Extract JSON, 3) Extract HTML
+- 📝 **PDF Naming** - Changed from `cv_timestamp.pdf` to `username_timestamp.pdf`
+- 📂 **File Structure** - HTML files now in `output/<username>/html/` subdirectory
+- 🔢 **Menu References** - Updated all option numbers (Login=4, Cookies=5, etc.)
+- 📚 **Documentation** - README now includes quick links to all documentation
+- 🏇 **Workflow Description** - Removed "(in order)" text, clarified each option's purpose
+
+### Fixed
+- ✅ **Experience Extraction** - Fixed to process only main UL, not nested ones (37 → 5 correct items)
+- ✅ **About Section** - Fixed extraction using anchor div parent lookup
+- ✅ **Grouped Experience** - Properly handles nested roles under company entries
+
 ## [0.4.1] - 2025-10-12
 
 ### Added
