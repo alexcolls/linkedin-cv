@@ -522,6 +522,149 @@ async def generate_cv(
     )
 
 
+def _create_index_html(html_sections: dict, username: str, css_count: int) -> str:
+    """Create an index.html file that combines all sections with styling.
+    
+    Args:
+        html_sections: Dictionary of section names to HTML content
+        username: LinkedIn username
+        css_count: Number of CSS files downloaded
+        
+    Returns:
+        Complete HTML string for index.html
+    """
+    from bs4 import BeautifulSoup
+    
+    # Start with the profile page as base
+    profile_html = html_sections.get('profile', '<html><head></head><body></body></html>')
+    soup = BeautifulSoup(profile_html, 'lxml')
+    
+    # Update title
+    if soup.title:
+        soup.title.string = f"{username} - LinkedIn Profile"
+    
+    # Add CSS links
+    if soup.head:
+        # Clear old stylesheet links
+        for link in soup.head.find_all('link', rel='stylesheet'):
+            link.decompose()
+        
+        # Add local CSS files
+        for i in range(css_count):
+            link = soup.new_tag('link', rel='stylesheet', href=f"css/linkedin_{i}.css")
+            soup.head.append(link)
+        
+        # Add custom styles for sections
+        style = soup.new_tag('style')
+        style.string = """
+        body { margin: 0; padding: 0; background: #f3f2ef; }
+        .section-header { 
+            background: #0a66c2; 
+            color: white; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 8px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .section-content {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 0 0 1px rgb(0 0 0 / 8%), 0 2px 4px rgb(0 0 0 / 16%);
+        }
+        .toc {
+            background: white;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 0 1px rgb(0 0 0 / 8%), 0 2px 4px rgb(0 0 0 / 16%);
+        }
+        .toc h2 { color: #0a66c2; margin-top: 0; }
+        .toc ul { list-style: none; padding: 0; }
+        .toc li { margin: 10px 0; }
+        .toc a { 
+            color: #0a66c2; 
+            text-decoration: none; 
+            font-weight: 500;
+        }
+        .toc a:hover { text-decoration: underline; }
+        """
+        soup.head.append(style)
+    
+    # Create table of contents
+    toc_div = soup.new_tag('div', **{'class': 'toc'})
+    toc_h2 = soup.new_tag('h2')
+    toc_h2.string = "📋 Table of Contents"
+    toc_div.append(toc_h2)
+    
+    toc_ul = soup.new_tag('ul')
+    sections_with_data = []
+    
+    section_names = {
+        'profile': '👤 Profile',
+        'experience': '💼 Experience',
+        'education': '🎓 Education',
+        'skills': '🛠️ Skills',
+        'certifications': '🏆 Certifications',
+        'projects': '💻 Projects',
+        'languages': '🌍 Languages',
+        'volunteer': '❤️ Volunteer',
+        'honors': '🏅 Honors & Awards',
+        'publications': '📖 Publications',
+    }
+    
+    for section_key in html_sections.keys():
+        if html_sections[section_key]:  # Only include sections with data
+            sections_with_data.append(section_key)
+            li = soup.new_tag('li')
+            a = soup.new_tag('a', href=f"#{section_key}-section")
+            a.string = section_names.get(section_key, section_key.title())
+            li.append(a)
+            toc_ul.append(li)
+    
+    toc_div.append(toc_ul)
+    
+    # Find main container
+    main = soup.find('main') or soup.find('body')
+    if main:
+        # Clear existing content (we'll add it back organized)
+        # Actually, keep the profile main content and add sections below
+        
+        # Add TOC at top
+        if main.name == 'main':
+            main.insert(0, toc_div)
+        else:
+            main.append(toc_div)
+        
+        # Add other sections
+        for section_key in ['experience', 'education', 'skills', 'certifications', 
+                            'projects', 'languages', 'volunteer', 'honors', 'publications']:
+            if section_key in sections_with_data and section_key != 'profile':
+                section_html = html_sections[section_key]
+                section_soup = BeautifulSoup(section_html, 'lxml')
+                
+                # Create section container
+                section_div = soup.new_tag('div', id=f"{section_key}-section", **{'class': 'section-content'})
+                
+                # Add section header
+                header = soup.new_tag('div', **{'class': 'section-header'})
+                header.string = section_names.get(section_key, section_key.title())
+                section_div.append(header)
+                
+                # Extract main content from section
+                section_main = section_soup.find('main')
+                if section_main:
+                    for child in section_main.children:
+                        if hasattr(child, 'name'):
+                            section_div.append(child)
+                
+                main.append(section_div)
+    
+    return str(soup)
+
+
 async def extract_all_html(profile_url: str, output_dir: str, headless: bool, debug: bool):
     """Extract HTML from all LinkedIn profile sections."""
     import json
@@ -564,12 +707,67 @@ async def extract_all_html(profile_url: str, output_dir: str, headless: bool, de
         else:
             console.print(f"  [dim]⊘ {section_name}.html (no data)[/dim]")
     
+    # Extract and save CSS
+    console.print("\n[cyan]Extracting CSS stylesheets...[/cyan]")
+    css_dir = user_output_dir / "css"
+    css_dir.mkdir(exist_ok=True)
+    
+    # Extract CSS from the profile page (main styles)
+    from bs4 import BeautifulSoup
+    import requests
+    
+    css_urls = set()
+    profile_html = html_sections.get('profile', '')
+    if profile_html:
+        soup = BeautifulSoup(profile_html, 'lxml')
+        # Find all link tags with stylesheet
+        for link in soup.find_all('link', rel='stylesheet'):
+            href = link.get('href')
+            if href:
+                # Make absolute URL
+                if href.startswith('//'):
+                    href = 'https:' + href
+                elif href.startswith('/'):
+                    href = 'https://www.linkedin.com' + href
+                elif not href.startswith('http'):
+                    continue
+                css_urls.add(href)
+    
+    # Download CSS files
+    css_count = 0
+    for css_url in css_urls:
+        try:
+            response = requests.get(css_url, timeout=10)
+            if response.status_code == 200:
+                # Create a simple filename from URL
+                css_filename = f"linkedin_{css_count}.css"
+                css_file = css_dir / css_filename
+                with open(css_file, 'wb') as f:
+                    f.write(response.content)
+                css_count += 1
+                if debug:
+                    console.print(f"  [dim]✓ {css_filename}[/dim]")
+        except Exception as e:
+            if debug:
+                console.print(f"  [dim]⊗ Failed to download CSS: {str(e)}[/dim]")
+    
+    console.print(f"  ✓ Downloaded {css_count} CSS files")
+    
+    # Create index.html that combines all sections
+    console.print("\n[cyan]Creating index.html...[/cyan]")
+    index_html = _create_index_html(html_sections, username, css_count)
+    index_file = user_output_dir / 'index.html'
+    with open(index_file, 'w', encoding='utf-8') as f:
+        f.write(index_html)
+    console.print(f"  ✓ index.html ({len(index_html):,} bytes)")
+    
     # Save metadata
     metadata = {
         'profile_url': profile_url,
         'username': username,
         'extracted_at': datetime.now().isoformat(),
         'sections': list(html_sections.keys()),
+        'css_files': css_count,
     }
     metadata_file = user_output_dir / 'metadata.json'
     with open(metadata_file, 'w', encoding='utf-8') as f:
@@ -577,6 +775,7 @@ async def extract_all_html(profile_url: str, output_dir: str, headless: bool, de
     
     console.print(f"\n[green]✅ HTML extraction complete![/green]")
     console.print(f"[cyan]Files saved in: {user_output_dir}[/cyan]")
+    console.print(f"\n[bold]🌍 Open in browser:[/bold] file://{index_file.absolute()}")
     console.print(f"\n[dim]Next step: Use option 2 to extract JSON or option 1 to generate PDF[/dim]")
 
 
