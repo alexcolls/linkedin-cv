@@ -369,7 +369,7 @@ show_quick_help() {
     echo -e "  • 🆕 NEW: Auto-login on first run!"
     echo -e "  • No need to pre-authenticate"
     echo -e "  • Session saved automatically (~30 days)"
-    echo -e "  • Stored in: ~/.linkedin_session.json"
+    echo -e "  • Stored in: .session/linkedin_session.json"
     echo -e "  • Manual setup: Use option 4 if preferred"
     echo ""
     

@@ -210,3 +210,4 @@ __marimo__/
 output/
 *.pdf
 last_scraped.html  # Debug HTML saved during scraping
+.session/  # Stored LinkedIn authentication sessions

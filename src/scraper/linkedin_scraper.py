@@ -22,7 +22,15 @@ class LinkedInScraper:
         self.headless = headless
         self.debug = debug
         self.browser: Optional[Browser] = None
-        self.session_file = session_file or str(Path.home() / ".linkedin_session.json")
+        # Use .session/ directory in project root
+        if session_file:
+            self.session_file = session_file
+        else:
+            # Get project root (parent of src directory)
+            project_root = Path(__file__).parent.parent.parent
+            session_dir = project_root / ".session"
+            session_dir.mkdir(exist_ok=True)
+            self.session_file = str(session_dir / "linkedin_session.json")
 
     def _is_authenticated(self) -> bool:
         """Check if we have valid LinkedIn authentication.
@@ -478,10 +486,23 @@ class LinkedInScraper:
         Returns:
             True if login successful
         """
+        # Ask if user wants to save session
+        print("\n🔐 LinkedIn Authentication Required")
+        print("\nDo you want to save your LinkedIn session for future use?")
+        print("This will store cookies in: .session/linkedin_session.json")
+        print("Session will last approximately 30 days.\n")
+        
+        save_session = input("Save session? [Y/n]: ").strip().lower()
+        should_save = save_session != 'n'
+        
         async with async_playwright() as p:
             print("\n🔐 Launching browser for LinkedIn login...")
             print("Please log in to LinkedIn in the browser window.")
-            print("After logging in, close the browser window.\n")
+            if should_save:
+                print("After logging in, close the browser window.")
+            else:
+                print("Session will NOT be saved - you'll need to login each time.")
+            print()
             
             # Launch in non-headless mode
             # Try Chrome first, fallback to Chromium
@@ -495,7 +516,7 @@ class LinkedInScraper:
             context = await self.browser.new_context(
                 user_agent=(
                     "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-                    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                    "(KHTML, like Gecko) Chrome/********* Safari/537.36"
                 ),
                 viewport={"width": 1920, "height": 1080},
             )
@@ -513,10 +534,14 @@ class LinkedInScraper:
                     await page.wait_for_url(lambda url: '/login' not in url, timeout=300000)  # 5 minutes
                     print("✓ Login detected!")
                     
-                    # Save the session
-                    await self._save_session(context)
-                    print(f"✓ Session saved to {self.session_file}")
-                    print("\n✅ You can now scrape profiles with authentication!\n")
+                    # Save the session if requested
+                    if should_save:
+                        await self._save_session(context)
+                        print(f"✓ Session saved to {self.session_file}")
+                        print("\n✅ You can now scrape profiles with authentication!")
+                    else:
+                        print("\n✅ Login successful! (Session not saved)")
+                    print()
                     
                     return True
                 except Exception as e:

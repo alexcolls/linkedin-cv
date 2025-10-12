@@ -82,8 +82,11 @@ def main():
     
     print(f"✅ Found {len(cookies)} LinkedIn cookies")
     
-    # Save to session file
-    session_file = Path.home() / ".linkedin_session.json"
+    # Save to session file in project .session/ directory
+    project_root = Path(__file__).parent.parent.parent
+    session_dir = project_root / ".session"
+    session_dir.mkdir(exist_ok=True)
+    session_file = session_dir / "linkedin_session.json"
     with open(session_file, 'w') as f:
         json.dump(cookies, f, indent=2)
     

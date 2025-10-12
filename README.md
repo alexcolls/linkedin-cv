@@ -136,7 +136,7 @@ Get full, unmasked content with authentication:
 
 1. **First run**: Detects no authentication → Opens browser automatically
 2. **You log in**: Once in the browser window
-3. **Session saved**: Cookies stored in `~/.linkedin_session.json`
+3. **Session saved**: Cookies stored in `.session/linkedin_session.json`
 4. **Future runs**: Reuses session for ~30 days - no login needed!
 
 **🚨 No more pre-authentication needed!** Just run and log in when prompted.
