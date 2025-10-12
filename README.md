@@ -146,6 +146,7 @@ Get full, unmasked content with authentication:
 **🚨 No more pre-authentication needed!** Just run and log in when prompted.
 
 **🔒 Privacy & Control:**
+
 - You control whether sessions are saved
 - Sessions stored locally in `.session/` (not uploaded to git)
 - Can opt out - just press 'n' when asked
@@ -176,9 +177,9 @@ Get full, unmasked content with authentication:
 
 ```
 📋 Main Workflow:
-  1) 📄 Generate CV PDF (auto-login if needed)
-  2) 📊 Extract JSON data (auto-login if needed)
-  3) 🌐 Extract HTML from profile (auto-login if needed)
+  1) 📄 Generate CV PDF
+  2) 📊 Extract JSON data
+  3) 🌐 Extract HTML from profile
 
 🔐 Authentication (Optional):
   4) 🔐 Pre-login to LinkedIn (manual setup)
@@ -397,19 +398,32 @@ poetry run mypy src/
 
 ## 🤝 Contributing
 
-Contributions are welcome! Here's how:
+Contributions are welcome! We appreciate your interest in making this project better.
+
+### Quick Start for Contributors
 
 1. **Fork the repository**
 2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
 3. **Make your changes**
-4. **Run tests** (`pytest tests/`)
+4. **Run tests** (`poetry run pytest`)
 5. **Commit with emoji** (`git commit -m "✨ Add amazing feature"`)
 6. **Push to branch** (`git push origin feature/amazing-feature`)
 7. **Open a Pull Request**
 
-### Commit Message Convention
+### 📖 Full Contributing Guide
 
-Use emoji prefixes:
+For detailed information about contributing, including:
+
+- Development setup and environment configuration
+- Coding standards and style guidelines
+- Testing requirements and best practices
+- Commit message conventions with emoji prefixes
+- Pull request process and templates
+- Issue reporting guidelines
+
+**Please read our [CONTRIBUTING.md](CONTRIBUTING.md)** guide.
+
+### Quick Emoji Reference
 
 - ✨ `:sparkles:` - New features
 - 🐛 `:bug:` - Bug fixes
