@@ -290,17 +290,29 @@ if [[ "$INSTALL_MODE" == "system" ]] || [[ "$INSTALL_MODE" == "both" ]]; then
     
     cat > "$WRAPPER_SCRIPT" << 'EOF'
 #!/usr/bin/env bash
-# LinkedIn CV - System wrapper script
+# LinkedIn CV - System wrapper script with interactive menu
 PROJECT_DIR="$HOME/.linkedin-cv-installation"
 
-if [[ -d "$PROJECT_DIR" ]]; then
-    # Preserve the user's working directory
-    export LINKEDIN_CV_CWD="$(pwd)"
-    cd "$PROJECT_DIR"
-    exec poetry run python -m src.cli "$@"
-else
+if [[ ! -d "$PROJECT_DIR" ]]; then
     echo "Error: LinkedIn CV installation not found at $PROJECT_DIR"
     exit 1
+fi
+
+# Preserve the user's working directory
+export LINKEDIN_CV_CWD="$(pwd)"
+cd "$PROJECT_DIR"
+
+# If arguments provided, run CLI directly
+if [ $# -gt 0 ]; then
+    exec poetry run python -m src.cli "$@"
+fi
+
+# Otherwise, show interactive menu (reuse run.sh)
+if [ -f "$PROJECT_DIR/run.sh" ]; then
+    exec bash "$PROJECT_DIR/run.sh"
+else
+    # Fallback: run CLI with no args (will prompt for input)
+    exec poetry run python -m src.cli
 fi
 EOF
     
