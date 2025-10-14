@@ -129,7 +129,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.4.1] - 2025-10-12
 
 ### Added
-- 🎨 **ASCII Banner** - Beautiful ASCII art banner from assets/banner.txt displayed in main menu
+- 🎨 **ASCII Banner** - Beautiful ASCII art banner from src/assets/banner.txt displayed in main menu
 - 📁 **User-Specific Output** - Output files now organized in `output/<linkedin-username>/` directories
 - 🛠️ **Debug Utilities** - Moved debug scripts to `src/utils/debug/` for better organization
 
@@ -151,7 +151,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - 🔐 **LinkedIn Authentication System** - Interactive login with persistent session cookies
-- 🍪 **Cookie Extraction Script** - Extract cookies from running Chrome browser (`scripts/extract_cookies.py`)
+- 🍪 **Cookie Extraction Script** - Extract cookies from running Chrome browser (`src/utils/extract_cookies.py`)
 - 📊 **JSON-LD Parser** - Parse LinkedIn's structured data for public profiles
 - ✨ **Username Normalization** - Accept just username instead of full URL (e.g., "alex-colls-outumuro")
 - 🌐 **Chrome Profile Integration** - Attempt to use existing Chrome session automatically

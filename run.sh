@@ -16,7 +16,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$SCRIPT_DIR"
 
 # Source common functions
-source "$SCRIPT_DIR/scripts/common.sh"
+source "$SCRIPT_DIR/src/scripts/common.sh"
 
 # Change to project root
 cd "$PROJECT_ROOT"
@@ -29,9 +29,9 @@ show_menu() {
     clear
     
     # Display the ASCII banner from assets
-    if [ -f "$PROJECT_ROOT/assets/banner.txt" ]; then
+    if [ -f "$PROJECT_ROOT/src/assets/banner.txt" ]; then
         echo -e "${CYAN}${BOLD}"
-        cat "$PROJECT_ROOT/assets/banner.txt"
+        cat "$PROJECT_ROOT/src/assets/banner.txt"
         echo -e "${NC}"
     fi
     
@@ -233,7 +233,7 @@ extract_cookies() {
     echo ""
     read -p "$(echo -e ${CYAN}Press Enter to continue...${NC})"
     
-    poetry run python scripts/extract_cookies.py
+    poetry run python src/utils/extract_cookies.py
     
     press_any_key
 }
@@ -242,7 +242,7 @@ extract_cookies() {
 run_installation() {
     print_header "⚙️ Installation & Setup"
     # Run the installation script
-    bash "$SCRIPT_DIR/scripts/install.sh"
+    bash "$SCRIPT_DIR/src/scripts/install.sh"
     press_any_key
 }
 
@@ -260,9 +260,9 @@ run_tests() {
     echo ""
     
     if [[ "$verbose" =~ ^[Yy]$ ]]; then
-        bash "$SCRIPT_DIR/scripts/test.sh" -v
+        bash "$SCRIPT_DIR/src/scripts/test.sh" -v
     else
-        bash "$SCRIPT_DIR/scripts/test.sh"
+        bash "$SCRIPT_DIR/src/scripts/test.sh"
     fi
     
     press_any_key

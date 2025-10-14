@@ -250,18 +250,18 @@ linkedin-cv/
 │   │   └── templates/
 │   │       ├── cv_template.html  # Professional template
 │   │       └── style.css         # 800+ lines of styling
-│   └── utils/
-│       ├── image_processor.py    # Image processing
-│       ├── extract_cookies.py    # Cookie extraction utility
-│       └── debug/               # Debug utilities
-│           ├── scrape_and_save.py    # HTML scraping debug tool
-│           └── extract_to_json.py    # Profile data extraction tool
-├── scripts/
-│   ├── install.sh               # Old installation script
-│   ├── common.sh                # Shared bash functions
-│   └── export-helper.sh         # Export utilities
-├── assets/
-│   └── banner.txt               # ASCII art banner
+│   ├── utils/
+│   │   ├── image_processor.py    # Image processing
+│   │   ├── extract_cookies.py    # Cookie extraction utility
+│   │   └── debug/               # Debug utilities
+│   │       ├── scrape_and_save.py    # HTML scraping debug tool
+│   │       └── extract_to_json.py    # Profile data extraction tool
+│   ├── scripts/
+│   │   ├── install.sh           # Old installation script
+│   │   ├── common.sh            # Shared bash functions
+│   │   └── export-helper.sh     # Export utilities
+│   └── assets/
+│       └── banner.txt           # ASCII art banner
 ├── docs/
 │   ├── AUTHENTICATION_GUIDE.md     # Authentication documentation
 │   ├── WORKFLOW.md                 # Workflow options explained

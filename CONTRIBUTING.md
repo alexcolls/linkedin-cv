@@ -109,10 +109,6 @@ linkedin-cv/
 │   └── utils/                  # Utility modules
 │       ├── image_processor.py  # Image handling
 │       └── extract_cookies.py  # Cookie extraction
-├── scripts/                    # Bash scripts
-│   ├── install.sh              # Installation script
-│   ├── common.sh               # Shared utilities
-│   └── export-helper.sh        # Export utilities
 ├── tests/                      # Test suite
 │   ├── test_parser.py          # Parser tests
 │   └── test_pdf_generator.py   # PDF generation tests
@@ -281,7 +277,7 @@ For bash scripts:
 - Use `#!/usr/bin/env bash` shebang
 - Add comments for complex logic
 - Use absolute paths (follow project rules)
-- Follow existing script patterns in `scripts/`
+- Follow existing script patterns in `src/scripts/`
 
 ---
 
