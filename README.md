@@ -86,7 +86,33 @@ LinkedIn's built-in PDF export is **frankly terrible** - cluttered, poorly forma
 
 ## 🚀 Quick Start
 
-### Single Command Installation
+### Installation Options
+
+#### Option 1: Automated Installation (Recommended)
+
+```bash
+# Clone the repository
+git clone https://github.com/alexcolls/linkedin-cv.git
+cd linkedin-cv
+
+# Run the installation script
+./install.sh  # Interactive menu with 3 options
+```
+
+**Installation Modes:**
+- **System Installation** (Recommended) - Installs globally as `linkedin-cv` command
+- **Development Installation** - Local Poetry setup with `./run.sh`
+- **Both** - Get both installation modes
+
+**What the installer does:**
+- ✅ Checks Python 3.9+ installation
+- ✅ Installs Poetry (if needed)
+- ✅ Installs system dependencies (WeasyPrint, Playwright)
+- ✅ Installs Playwright browsers
+- ✅ Sets up virtual environment
+- ✅ Creates global command (system mode)
+
+#### Option 2: Manual Setup
 
 ```bash
 # Clone and run - that's it!
@@ -95,7 +121,7 @@ cd linkedin-cv
 ./run.sh  # Handles everything!
 ```
 
-**The `run.sh` script is your ONLY entry point** - it handles:
+**The `run.sh` script handles:**
 
 - ✅ Dependency installation
 - ✅ Authentication
@@ -109,7 +135,18 @@ cd linkedin-cv
 - **Python 3.9+** ([Download](https://www.python.org/downloads/))
 - **Poetry** ([Install Guide](https://python-poetry.org/docs/#installation))
 
-### Usage (Using run.sh)
+### Usage
+
+#### After System Installation
+
+```bash
+# Use from anywhere!
+linkedin-cv --help
+linkedin-cv https://linkedin.com/in/username
+linkedin-cv alex-colls-outumuro  # Just the username!
+```
+
+#### After Development Installation (or Manual Setup)
 
 **Everything through one script:**
 
@@ -220,7 +257,7 @@ linkedin-cv/
 │           ├── scrape_and_save.py    # HTML scraping debug tool
 │           └── extract_to_json.py    # Profile data extraction tool
 ├── scripts/
-│   ├── install.sh               # Installation script
+│   ├── install.sh               # Old installation script
 │   ├── common.sh                # Shared bash functions
 │   └── export-helper.sh         # Export utilities
 ├── assets/
@@ -235,6 +272,8 @@ linkedin-cv/
 │       ├── profile_data.json       # Extracted profile data (option 2)
 │       ├── username_*.pdf          # Generated PDF CVs (option 1)
 │       └── html/                   # Raw HTML files (option 3)
+├── install.sh                   # System/Dev installation script
+├── uninstall.sh                 # Uninstallation script
 ├── run.sh                       # Interactive menu
 ├── pyproject.toml              # Poetry dependencies
 └── README.md
@@ -378,20 +417,36 @@ poetry run flake8 src/
 poetry run mypy src/
 ```
 
+### Installation Management
+
+```bash
+# Install (interactive)
+./install.sh
+
+# Install system-wide
+./install.sh --system
+
+# Install for development
+./install.sh --dev
+
+# Install both modes
+./install.sh --both
+
+# Uninstall (interactive)
+./uninstall.sh
+
+# Force uninstall (skip confirmations)
+./uninstall.sh --force
+```
+
 ### Project Commands
 
 ```bash
-# Interactive menu
+# Interactive menu (development mode)
 ./run.sh
 
-# Installation
-./scripts/install.sh
-
-# Testing
-./scripts/test.sh
-
-# Export and generate
-./scripts/export-and-generate.sh
+# System command (after system installation)
+linkedin-cv https://linkedin.com/in/username
 ```
 
 ---
