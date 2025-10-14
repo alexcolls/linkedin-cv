@@ -6,10 +6,10 @@
 # 1. System Installation: Installs globally with 'linkedin-cv' command
 # 2. Development Installation: Installs with Poetry for local testing
 #
-# Usage: ./install.sh [--system|--dev|--both]
+# Usage: ./install.sh [--system|--dev|--both] [--dry-run]
 #
 
-set -e  # Exit on error
+# Note: We don't use 'set -e' to allow graceful error handling
 
 # Colors for output
 RED='\033[0;31m'
@@ -89,15 +89,27 @@ if [[ "$HAS_SYSTEM" == true ]] || [[ "$HAS_DEV" == true ]]; then
     echo ""
 fi
 
-# Ask installation mode if not specified
+# Parse arguments
 INSTALL_MODE=""
-if [[ "$1" == "--system" ]]; then
-    INSTALL_MODE="system"
-elif [[ "$1" == "--dev" ]]; then
-    INSTALL_MODE="dev"
-elif [[ "$1" == "--both" ]]; then
-    INSTALL_MODE="both"
-else
+DRY_RUN=false
+
+for arg in "$@"; do
+    case $arg in
+        --system) INSTALL_MODE="system"; shift ;;
+        --dev) INSTALL_MODE="dev"; shift ;;
+        --both) INSTALL_MODE="both"; shift ;;
+        --dry-run) DRY_RUN=true; shift ;;
+        *) ;;
+    esac
+done
+
+if [[ "$DRY_RUN" == true ]]; then
+    print_warning "DRY RUN MODE - No actual installation will be performed"
+    echo ""
+fi
+
+# Ask installation mode if not specified
+if [[ -z "$INSTALL_MODE" ]] && [[ "$DRY_RUN" == false ]]; then
     print_header "Installation Mode Selection"
     echo -e "${CYAN}Choose installation type:${NC}\n"
     echo -e "  ${GREEN}1)${NC} ${BOLD}System Installation${NC} (Recommended)"
@@ -121,6 +133,10 @@ else
             * ) print_error "Invalid choice. Please enter 1, 2, or 3.";;
         esac
     done
+elif [[ -z "$INSTALL_MODE" ]] && [[ "$DRY_RUN" == true ]]; then
+    # Default to system mode for dry run
+    INSTALL_MODE="system"
+    print_info "Dry run: using system installation mode"
 fi
 
 # Check Python Installation
@@ -188,21 +204,62 @@ fi
 # Install System Dependencies
 print_header "Step 3: Installing System Dependencies"
 
+# Check for rsync (needed for system installation)
+if [[ "$INSTALL_MODE" == "system" ]] || [[ "$INSTALL_MODE" == "both" ]]; then
+    if ! command -v rsync &> /dev/null; then
+        print_warning "rsync not found, installing..."
+        if command -v apt-get &> /dev/null; then
+            sudo apt-get install -y -qq rsync 2>/dev/null || print_error "Failed to install rsync"
+        fi
+        if command -v rsync &> /dev/null; then
+            print_success "rsync installed"
+        else
+            print_error "rsync is required for system installation"
+            print_info "Please install rsync: sudo apt-get install rsync"
+            exit 1
+        fi
+    fi
+fi
+
 print_step "Installing WeasyPrint and Playwright dependencies..."
 
 if command -v apt-get &> /dev/null; then
-    sudo apt-get update -qq
-    # WeasyPrint dependencies
-    sudo apt-get install -y -qq \
-        libpango-1.0-0 \
-        libpangocairo-1.0-0 \
-        libgdk-pixbuf2.0-0 \
-        libffi-dev \
-        libcairo2 \
-        libcairo2-dev \
-        shared-mime-info || \
-    print_warning "Some system dependencies may not have been installed"
-    print_success "System dependencies installed"
+    print_info "Updating package lists..."
+    sudo apt-get update -qq 2>/dev/null || print_warning "Could not update package lists"
+    
+    # WeasyPrint dependencies - install individually to handle missing packages
+    PACKAGES=(
+        "libpango-1.0-0"
+        "libpangocairo-1.0-0"
+        "libgdk-pixbuf-2.0-0"  # Correct package name (with hyphens)
+        "libffi-dev"
+        "libcairo2"
+        "libcairo2-dev"
+        "shared-mime-info"
+        "libpangoft2-1.0-0"  # Additional dependency
+        "fonts-dejavu-core"  # Font support
+    )
+    
+    FAILED_PACKAGES=()
+    for pkg in "${PACKAGES[@]}"; do
+        if dpkg -l | grep -q "^ii  $pkg"; then
+            print_info "$pkg already installed"
+        else
+            if sudo apt-get install -y -qq "$pkg" 2>/dev/null; then
+                print_success "Installed $pkg"
+            else
+                print_warning "Could not install $pkg (may not be needed)"
+                FAILED_PACKAGES+=("$pkg")
+            fi
+        fi
+    done
+    
+    if [ ${#FAILED_PACKAGES[@]} -eq 0 ]; then
+        print_success "All system dependencies installed"
+    else
+        print_warning "Some packages could not be installed: ${FAILED_PACKAGES[*]}"
+        print_info "This may not affect functionality"
+    fi
 fi
 
 # MODE-SPECIFIC INSTALLATION
@@ -218,7 +275,12 @@ if [[ "$INSTALL_MODE" == "system" ]] || [[ "$INSTALL_MODE" == "both" ]]; then
     
     # Install dependencies
     print_info "Installing Python dependencies..."
-    poetry install --no-interaction --quiet
+    if poetry install --no-interaction --quiet 2>&1 | tee /tmp/poetry-install.log | grep -q "error\|Error\|ERROR"; then
+        print_error "Failed to install Python dependencies"
+        print_info "Check /tmp/poetry-install.log for details"
+        exit 1
+    fi
+    print_success "Python dependencies installed"
     
     # Create wrapper script in user's local bin
     BIN_DIR="$HOME/.local/bin"
@@ -258,11 +320,23 @@ EOF
     cd "$INSTALL_DIR"
     poetry config virtualenvs.create true --local
     poetry config virtualenvs.in-project false --local
-    poetry install --no-interaction --quiet
+    
+    if ! poetry install --no-interaction 2>&1 | tee /tmp/poetry-install-system.log; then
+        print_error "Failed to install Python dependencies"
+        print_info "Check /tmp/poetry-install-system.log for details"
+        cd "$SCRIPT_DIR"
+        exit 1
+    fi
+    print_success "Python dependencies installed"
     
     # Install Playwright browsers
-    print_info "Installing Playwright browsers..."
-    poetry run playwright install chromium --with-deps
+    print_info "Installing Playwright browsers (this may take a few minutes)..."
+    if ! poetry run playwright install chromium --with-deps 2>&1 | tee /tmp/playwright-install.log; then
+        print_warning "Playwright browser installation had issues"
+        print_info "You may need to run: playwright install chromium --with-deps"
+    else
+        print_success "Playwright browsers installed"
+    fi
     
     cd "$SCRIPT_DIR"
     
@@ -291,11 +365,21 @@ if [[ "$INSTALL_MODE" == "dev" ]] || [[ "$INSTALL_MODE" == "both" ]]; then
     
     # Install dependencies
     print_info "Installing Python dependencies..."
-    poetry install --no-interaction
+    if ! poetry install --no-interaction 2>&1 | tee /tmp/poetry-install-dev.log; then
+        print_error "Failed to install Python dependencies"
+        print_info "Check /tmp/poetry-install-dev.log for details"
+        exit 1
+    fi
+    print_success "Python dependencies installed"
     
     # Install Playwright browsers
-    print_info "Installing Playwright browsers..."
-    poetry run playwright install chromium --with-deps
+    print_info "Installing Playwright browsers (this may take a few minutes)..."
+    if ! poetry run playwright install chromium --with-deps 2>&1 | tee /tmp/playwright-install-dev.log; then
+        print_warning "Playwright browser installation had issues"
+        print_info "You may need to run: poetry run playwright install chromium --with-deps"
+    else
+        print_success "Playwright browsers installed"
+    fi
     
     # Create .env if not exists
     if [[ ! -f ".env" ]]; then
