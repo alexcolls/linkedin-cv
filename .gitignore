@@ -1,3 +1,13 @@
+# Linkedin CV
+data/
+logs/
+.env
+.env.local
+!.env.sample
+!config.yaml
+.system-installed
+.dev-installed
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
