@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2025-10-14
+
+### Added
+- 📦 **System/Development Installation Scripts** - Professional install.sh and uninstall.sh
+  * Interactive installation with 3 modes: System, Development, or Both
+  * System installation: Global `linkedin-cv` command in ~/.local/bin
+  * Development installation: Local Poetry environment with ./run.sh
+  * Automatic dependency detection (Python 3.9+, Poetry)
+  * System dependencies installation (WeasyPrint, Playwright libraries)
+  * Playwright browser installation (Chromium with deps)
+  * Installation markers for tracking installed modes
+- 🗑️ **Clean Uninstallation** - Comprehensive uninstall.sh script
+  * Removes system and/or development installations
+  * Optional cleanup of .env, output/, and data/ directories
+  * Force mode with --force flag
+  * Safe defaults with user confirmations
+  * Poetry virtual environment cleanup
+- 🎨 **Beautiful Terminal Output** - Colorful installation progress
+  * Progress indicators with emojis
+  * Clear status messages
+  * Success/warning/error visual feedback
+  * Installation summary at completion
+
+### Changed
+- 📚 **README Enhanced** - Added installation section with both automated and manual options
+- 📁 **Project Structure** - Added install.sh and uninstall.sh to root directory
+- 🔧 **Installation Process** - Now offers both global and local installation modes
+
+### Improved
+- 🚀 **User Experience** - One-command installation for easy setup
+- 🧹 **Cleanup Process** - Safe uninstallation with data preservation options
+- 📖 **Documentation** - Clear installation and usage instructions
+
 ## [0.5.2] - 2025-10-12
 
 ### Added
