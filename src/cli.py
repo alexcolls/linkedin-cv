@@ -137,6 +137,11 @@ def normalize_profile_url(input_str: str) -> str:
     default=None,
     help="Generate PDF from JSON data for a username",
 )
+@click.option(
+    "--generate-key",
+    is_flag=True,
+    help="Generate a secure encryption key for session encryption",
+)
 def main(
     profile_url: Optional[str],
     output_dir: str,
@@ -151,6 +156,7 @@ def main(
     extract_html: bool,
     parse_html: Optional[str],
     generate_pdf: Optional[str],
+    generate_key: bool,
 ):
     """Generate a professional PDF CV from a LinkedIn profile.
 
@@ -164,6 +170,17 @@ def main(
     """
     if not no_banner:
         display_banner()
+    
+    # Handle generate-key mode
+    if generate_key:
+        from src.utils.encryption import generate_encryption_key
+        key = generate_encryption_key()
+        console.print("\n[bold green]✅ Generated encryption key:[/bold green]\n")
+        console.print(f"[cyan]{key}[/cyan]\n")
+        console.print("[yellow]💡 Add this to your .env file:[/yellow]")
+        console.print(f"[dim]ENCRYPTION_KEY={key}[/dim]\n")
+        console.print("[yellow]⚠️  Keep this key secure! Anyone with this key can decrypt your sessions.[/yellow]")
+        sys.exit(0)
     
     # Handle login mode
     if login:

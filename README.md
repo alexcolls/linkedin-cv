@@ -434,6 +434,42 @@ The configuration system includes automatic validation with helpful error messag
 - **Path validation**: Expands home directory paths (e.g., `~/output`)
 - **Log level validation**: Checks for valid logging levels
 
+### Session Encryption
+
+**Protect your LinkedIn session data with encryption!**
+
+The tool supports optional encryption of stored browser sessions using Fernet symmetric encryption:
+
+#### Generating an Encryption Key
+
+```bash
+# Using the CLI
+linkedin-cv --generate-key
+
+# Or manually
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+#### Enabling Encryption
+
+1. Generate a key (see above)
+2. Add to your `.env` file:
+   ```bash
+   ENCRYPT_SESSION="true"
+   ENCRYPTION_KEY="your-64-character-hex-key"
+   ```
+3. Your sessions are now encrypted automatically!
+
+#### Security Features
+
+- **Fernet symmetric encryption** with PBKDF2 key derivation
+- **Automatic encryption detection** - loads both encrypted and plain sessions
+- **Secure file permissions** (0o600) - only owner can read/write
+- **Backward compatible** - existing plain sessions continue to work
+- **Key validation** - ensures encryption keys are properly formatted
+
+⚠️ **Important**: Keep your encryption key secure! Store it in `.env` (which is gitignored) and never commit it to version control.
+
 ### Custom Templates
 
 Create your own PDF templates using Jinja2 syntax:
@@ -444,7 +480,7 @@ linkedin-cv https://linkedin.com/in/username --template custom_template.html
 
 Templates have full access to all profile data fields.
 
-**Test Coverage**: 34% overall, 96% for configuration module (69 tests passing)
+**Test Coverage**: 88 tests passing (34% overall, 96% config, 86% encryption)
 
 ---
 
