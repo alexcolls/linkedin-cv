@@ -11,6 +11,14 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
+from src.exceptions import (
+    LinkedInAuthError,
+    LinkedInCVError,
+    ParsingError,
+    PDFGenerationError,
+    ScrapingError,
+    ValidationError,
+)
 from src.pdf.generator import PDFGenerator
 from src.scraper.linkedin_scraper import LinkedInScraper
 from src.scraper.parser import ProfileParser
@@ -166,8 +174,11 @@ def main(
         except KeyboardInterrupt:
             console.print("\n[yellow]⚠️  Login cancelled by user[/yellow]")
             sys.exit(0)
+        except LinkedInCVError as e:
+            console.print(f"\n[red]❌ {str(e)}[/red]")
+            sys.exit(1)
         except Exception as e:
-            console.print(f"\n[red]❌ Error during login: {str(e)}[/red]")
+            console.print(f"\n[red]❌ Unexpected error during login: {str(e)}[/red]")
             if debug:
                 console.print_exception()
             sys.exit(1)
@@ -257,8 +268,12 @@ def main(
     except KeyboardInterrupt:
         console.print("\n[yellow]⚠️  Operation cancelled by user[/yellow]")
         sys.exit(0)
+    except LinkedInCVError as e:
+        # Custom exceptions with troubleshooting hints
+        console.print(f"\n[red]❌ {str(e)}[/red]")
+        sys.exit(1)
     except Exception as e:
-        console.print(f"\n[red]❌ Error: {str(e)}[/red]")
+        console.print(f"\n[red]❌ Unexpected error: {str(e)}[/red]")
         if debug:
             console.print_exception()
         sys.exit(1)
@@ -291,9 +306,12 @@ async def generate_cv(
                     html_content = f.read()
                 progress.update(task1, completed=True)
                 console.print("   [green]✓[/green] HTML file loaded successfully!")
+            except FileNotFoundError:
+                progress.update(task1, completed=True)
+                raise ValidationError(f"HTML file not found: {html_file}", field="html_file")
             except Exception as e:
                 progress.update(task1, completed=True)
-                raise Exception(f"Failed to read HTML file: {str(e)}")
+                raise ParsingError(f"Failed to read HTML file: {str(e)}")
         else:
             task1 = progress.add_task("🔍 Scraping LinkedIn profile...", total=None)
 

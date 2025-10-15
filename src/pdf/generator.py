@@ -5,6 +5,8 @@ from typing import Any, Dict, Optional
 from jinja2 import Environment, FileSystemLoader, Template
 from weasyprint import HTML, CSS
 
+from src.exceptions import PDFGenerationError
+
 
 class PDFGenerator:
     """Generates professional PDF CVs from profile data."""
@@ -58,7 +60,7 @@ class PDFGenerator:
                 html_doc.write_pdf(output_path)
 
         except Exception as e:
-            raise Exception(f"Failed to generate PDF: {str(e)}")
+            raise PDFGenerationError(str(e))
 
     def validate_template(self, template_path: str) -> bool:
         """Validate if template file is valid HTML.

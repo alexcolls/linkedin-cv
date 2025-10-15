@@ -7,6 +7,8 @@ from typing import Optional
 
 from playwright.async_api import async_playwright, Browser, Page, TimeoutError
 
+from src.exceptions import LinkedInAuthError, ScrapingError, SessionError
+
 
 class LinkedInScraper:
     """Scrapes LinkedIn profiles using Playwright browser automation."""
@@ -75,8 +77,9 @@ class LinkedInScraper:
             Exception: If scraping fails
         """
         if not profile_url.startswith("https://www.linkedin.com/in/"):
-            raise ValueError(
-                "Invalid LinkedIn profile URL. Must start with https://www.linkedin.com/in/"
+            raise ScrapingError(
+                "Invalid LinkedIn profile URL",
+                url=profile_url
             )
         
         # Check authentication and trigger login if needed
@@ -85,7 +88,7 @@ class LinkedInScraper:
             print("🔐 Starting interactive login...\n")
             success = await self.login_interactive()
             if not success:
-                raise Exception("Authentication required. Login failed or was cancelled.")
+                raise LinkedInAuthError("Login failed or was cancelled")
             print()
         
         # Normalize URL
@@ -197,7 +200,7 @@ class LinkedInScraper:
             except Exception as e:
                 if self.debug:
                     print(f"[DEBUG] Error during scraping: {str(e)}")
-                raise Exception(f"Failed to scrape profile: {str(e)}")
+                raise ScrapingError(str(e), url=profile_url)
             
             finally:
                 await context.close()
@@ -220,8 +223,9 @@ class LinkedInScraper:
             Exception: If scraping fails
         """
         if not profile_url.startswith("https://www.linkedin.com/in/"):
-            raise ValueError(
-                "Invalid LinkedIn profile URL. Must start with https://www.linkedin.com/in/"
+            raise ScrapingError(
+                "Invalid LinkedIn profile URL",
+                url=profile_url
             )
         
         # Check authentication and trigger login if needed
@@ -230,7 +234,7 @@ class LinkedInScraper:
             print("🔐 Starting interactive login...\n")
             success = await self.login_interactive()
             if not success:
-                raise Exception("Authentication required. Login failed or was cancelled.")
+                raise LinkedInAuthError("Login failed or was cancelled")
             print()
 
         async with async_playwright() as p:
@@ -343,7 +347,7 @@ class LinkedInScraper:
             except Exception as e:
                 if self.debug:
                     print(f"[DEBUG] Error during scraping: {str(e)}")
-                raise Exception(f"Failed to scrape profile: {str(e)}")
+                raise ScrapingError(str(e), url=profile_url)
 
             finally:
                 await context.close()
