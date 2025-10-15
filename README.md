@@ -350,25 +350,101 @@ Detailed guides available in the `docs/` directory:
 
 ## 🔧 Configuration
 
-### Environment Variables (.env)
+The project uses environment variables for configuration. Copy `.env.sample` to `.env` and customize:
 
 ```bash
-# Optional configuration
-LINKEDIN_PROFILE_URL=https://linkedin.com/in/your-username
-OUTPUT_DIR=./output
+cp .env.sample .env
 ```
+
+### Available Configuration Options
+
+#### LinkedIn Profile
+
+```bash
+# Your LinkedIn profile URL or username
+LINKEDIN_PROFILE_URL="https://www.linkedin.com/in/yourprofile/"
+```
+
+#### Output Settings
+
+```bash
+# Directory for generated PDFs and data (default: ./output)
+OUTPUT_DIR="./output"
+
+# Custom template path for PDF generation (optional)
+TEMPLATE_PATH="/path/to/custom/template.html"
+```
+
+#### Logging
+
+```bash
+# Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL (default: INFO)
+LOG_LEVEL="INFO"
+
+# Optional: Save logs to a file
+LOG_FILE="./linkedin-cv.log"
+```
+
+#### Browser Settings
+
+```bash
+# Run browser in headless mode (default: true)
+HEADLESS="true"
+
+# Browser timeout in seconds (default: 30)
+BROWSER_TIMEOUT="30"
+
+# Page load timeout in seconds (default: 60)
+PAGE_LOAD_TIMEOUT="60"
+
+# Custom user agent (optional)
+USER_AGENT="Mozilla/5.0 ..."
+```
+
+#### Scraping Settings
+
+```bash
+# Pause duration between scroll actions in seconds (default: 1.5)
+SCROLL_PAUSE="1.5"
+
+# Maximum scroll attempts to load dynamic content (default: 10)
+MAX_SCROLL_ATTEMPTS="10"
+```
+
+#### Session Management
+
+```bash
+# Directory for storing browser session data (optional)
+SESSION_DIR="./custom_session"
+
+# Enable session encryption for security (default: false)
+ENCRYPT_SESSION="false"
+
+# Encryption key for session data (required if ENCRYPT_SESSION=true)
+# Generate with: python -c "import secrets; print(secrets.token_hex(32))"
+ENCRYPTION_KEY="your-generated-key-here"
+```
+
+### Configuration Validation
+
+The configuration system includes automatic validation with helpful error messages:
+
+- **Type checking**: Ensures integers, floats, and booleans are valid
+- **URL validation**: Verifies LinkedIn profile URLs are properly formatted
+- **Path validation**: Expands home directory paths (e.g., `~/output`)
+- **Log level validation**: Checks for valid logging levels
 
 ### Custom Templates
 
-Create your own templates:
+Create your own PDF templates using Jinja2 syntax:
 
 ```bash
-python src/cli.py --html profile.html --template custom_template.html
+linkedin-cv https://linkedin.com/in/username --template custom_template.html
 ```
 
-Template uses Jinja2 syntax with full access to profile data.
+Templates have full access to all profile data fields.
 
-**Current Coverage**: 40% (comprehensive test suite with JSON-LD tests)
+**Test Coverage**: 34% overall, 96% for configuration module (69 tests passing)
 
 ---
 
