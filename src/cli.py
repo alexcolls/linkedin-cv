@@ -877,7 +877,59 @@ async def parse_html_to_json(username: str, output_dir: str, debug: bool):
             if skills_data:
                 profile_data['skills'] = skills_data
         
-        # TODO: Parse other sections (certifications, projects, languages, etc.)
+        # Parse certifications section
+        certifications_html_file = html_dir / 'certifications.html'
+        if certifications_html_file.exists():
+            with open(certifications_html_file, 'r', encoding='utf-8') as f:
+                certifications_html = f.read()
+            certifications_data = parser.parse_certifications_detail(certifications_html)
+            if certifications_data:
+                profile_data['certifications'] = certifications_data
+        
+        # Parse projects section
+        projects_html_file = html_dir / 'projects.html'
+        if projects_html_file.exists():
+            with open(projects_html_file, 'r', encoding='utf-8') as f:
+                projects_html = f.read()
+            projects_data = parser.parse_projects_detail(projects_html)
+            if projects_data:
+                profile_data['projects'] = projects_data
+        
+        # Parse languages section
+        languages_html_file = html_dir / 'languages.html'
+        if languages_html_file.exists():
+            with open(languages_html_file, 'r', encoding='utf-8') as f:
+                languages_html = f.read()
+            languages_data = parser.parse_languages_detail(languages_html)
+            if languages_data:
+                profile_data['languages'] = languages_data
+        
+        # Parse volunteer section
+        volunteer_html_file = html_dir / 'volunteer.html'
+        if volunteer_html_file.exists():
+            with open(volunteer_html_file, 'r', encoding='utf-8') as f:
+                volunteer_html = f.read()
+            volunteer_data = parser.parse_volunteer_detail(volunteer_html)
+            if volunteer_data:
+                profile_data['volunteer'] = volunteer_data
+        
+        # Parse publications section
+        publications_html_file = html_dir / 'publications.html'
+        if publications_html_file.exists():
+            with open(publications_html_file, 'r', encoding='utf-8') as f:
+                publications_html = f.read()
+            publications_data = parser.parse_publications_detail(publications_html)
+            if publications_data:
+                profile_data['publications'] = publications_data
+        
+        # Parse honors section
+        honors_html_file = html_dir / 'honors.html'
+        if honors_html_file.exists():
+            with open(honors_html_file, 'r', encoding='utf-8') as f:
+                honors_html = f.read()
+            honors_data = parser.parse_honors_detail(honors_html)
+            if honors_data:
+                profile_data['honors'] = honors_data
         
         progress.update(task, completed=True)
         console.print("   [green]✓[/green] HTML parsing completed!")

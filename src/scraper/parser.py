@@ -1808,3 +1808,420 @@ class ProfileParser:
                     print(f"[DEBUG] Skill {idx+1}: {skill_data.get('name')} ({endorsements} endorsements)")
         
         return skills
+    
+    def parse_certifications_detail(self, html_content: str) -> List[Dict[str, Any]]:
+        """Parse certifications from the dedicated /details/certifications/ page.
+        
+        This page shows all certifications with complete details including
+        credential IDs and verification URLs.
+        
+        Args:
+            html_content: HTML from the certifications detail page
+            
+        Returns:
+            List of certification entries with full details
+        """
+        soup = BeautifulSoup(html_content, "lxml")
+        certifications = []
+        
+        if self.debug:
+            print("[DEBUG] Parsing certifications detail page...")
+        
+        # Look for the main content container
+        main_selectors = [
+            'main.scaffold-layout__main',
+            'main',
+            'div.scaffold-finite-scroll__content',
+        ]
+        
+        main = None
+        for selector in main_selectors:
+            main = soup.select_one(selector)
+            if main:
+                break
+        
+        if not main:
+            if self.debug:
+                print("[DEBUG] No main content found in certifications detail page")
+            return certifications
+        
+        # Find all certification items
+        item_selectors = [
+            'li.pvs-list__paged-list-item',
+            'ul.pvs-list > li',
+            'li[class*="pvs-list"]',
+        ]
+        
+        items = []
+        for selector in item_selectors:
+            items = main.select(selector)
+            if items:
+                if self.debug:
+                    print(f"[DEBUG] Found {len(items)} certification items with selector: {selector}")
+                break
+        
+        for idx, item in enumerate(items):
+            cert_data = self._extract_single_certification(item)
+            if cert_data and cert_data.get('name'):
+                certifications.append(cert_data)
+                if self.debug:
+                    print(f"[DEBUG] Certification {idx+1}: {cert_data.get('name')} from {cert_data.get('issuer', 'N/A')}")
+        
+        return certifications
+    
+    def parse_projects_detail(self, html_content: str) -> List[Dict[str, Any]]:
+        """Parse projects from the dedicated /details/projects/ page.
+        
+        Args:
+            html_content: HTML from the projects detail page
+            
+        Returns:
+            List of project entries with full details
+        """
+        soup = BeautifulSoup(html_content, "lxml")
+        projects = []
+        
+        if self.debug:
+            print("[DEBUG] Parsing projects detail page...")
+        
+        # Look for the main content container
+        main_selectors = [
+            'main.scaffold-layout__main',
+            'main',
+            'div.scaffold-finite-scroll__content',
+        ]
+        
+        main = None
+        for selector in main_selectors:
+            main = soup.select_one(selector)
+            if main:
+                break
+        
+        if not main:
+            if self.debug:
+                print("[DEBUG] No main content found in projects detail page")
+            return projects
+        
+        # Find all project items
+        item_selectors = [
+            'li.pvs-list__paged-list-item',
+            'ul.pvs-list > li',
+            'li[class*="pvs-list"]',
+        ]
+        
+        items = []
+        for selector in item_selectors:
+            items = main.select(selector)
+            if items:
+                if self.debug:
+                    print(f"[DEBUG] Found {len(items)} project items with selector: {selector}")
+                break
+        
+        for idx, item in enumerate(items):
+            # Extract project data
+            name = self._safe_extract(item, 'div.display-flex span[aria-hidden="true"]') or \
+                   self._safe_extract(item, 'h3 span[aria-hidden="true"]') or \
+                   self._safe_extract(item, 'div.t-bold')
+            
+            if name:
+                proj = {'name': name}
+                
+                # Description with full text
+                desc_elem = item.select_one('div.pv-shared-text-with-see-more span[aria-hidden="true"]') or \
+                           item.select_one('div.inline-show-more-text span[aria-hidden="true"]')
+                if desc_elem:
+                    proj['description'] = desc_elem.get_text(separator='\n', strip=True)
+                
+                # Date
+                date = self._safe_extract(item, 'span.t-14.t-normal.t-black--light span[aria-hidden="true"]') or \
+                       self._safe_extract(item, 'span.t-14.t-normal.t-black--light')
+                if date:
+                    proj['date'] = date
+                
+                # URL
+                link = item.select_one('a[href]')
+                if link and link.get('href') and 'http' in link.get('href', ''):
+                    proj['url'] = link['href']
+                
+                projects.append(proj)
+                if self.debug:
+                    print(f"[DEBUG] Project {idx+1}: {name}")
+        
+        return projects
+    
+    def parse_languages_detail(self, html_content: str) -> List[Dict[str, Any]]:
+        """Parse languages from the dedicated /details/languages/ page.
+        
+        Args:
+            html_content: HTML from the languages detail page
+            
+        Returns:
+            List of language entries with proficiency levels
+        """
+        soup = BeautifulSoup(html_content, "lxml")
+        languages = []
+        
+        if self.debug:
+            print("[DEBUG] Parsing languages detail page...")
+        
+        # Look for the main content container
+        main_selectors = [
+            'main.scaffold-layout__main',
+            'main',
+            'div.scaffold-finite-scroll__content',
+        ]
+        
+        main = None
+        for selector in main_selectors:
+            main = soup.select_one(selector)
+            if main:
+                break
+        
+        if not main:
+            if self.debug:
+                print("[DEBUG] No main content found in languages detail page")
+            return languages
+        
+        # Find all language items
+        item_selectors = [
+            'li.pvs-list__paged-list-item',
+            'ul.pvs-list > li',
+            'li[class*="pvs-list"]',
+        ]
+        
+        items = []
+        for selector in item_selectors:
+            items = main.select(selector)
+            if items:
+                if self.debug:
+                    print(f"[DEBUG] Found {len(items)} language items with selector: {selector}")
+                break
+        
+        for idx, item in enumerate(items):
+            lang_data = self._extract_single_language(item)
+            if lang_data and lang_data.get('name'):
+                languages.append(lang_data)
+                if self.debug:
+                    proficiency = lang_data.get('proficiency', 'N/A')
+                    print(f"[DEBUG] Language {idx+1}: {lang_data.get('name')} ({proficiency})")
+        
+        return languages
+    
+    def parse_volunteer_detail(self, html_content: str) -> List[Dict[str, Any]]:
+        """Parse volunteer experience from the dedicated /details/volunteering/ page.
+        
+        Args:
+            html_content: HTML from the volunteer detail page
+            
+        Returns:
+            List of volunteer entries with full details
+        """
+        soup = BeautifulSoup(html_content, "lxml")
+        volunteer = []
+        
+        if self.debug:
+            print("[DEBUG] Parsing volunteer detail page...")
+        
+        # Look for the main content container
+        main_selectors = [
+            'main.scaffold-layout__main',
+            'main',
+            'div.scaffold-finite-scroll__content',
+        ]
+        
+        main = None
+        for selector in main_selectors:
+            main = soup.select_one(selector)
+            if main:
+                break
+        
+        if not main:
+            if self.debug:
+                print("[DEBUG] No main content found in volunteer detail page")
+            return volunteer
+        
+        # Find all volunteer items
+        item_selectors = [
+            'li.pvs-list__paged-list-item',
+            'ul.pvs-list > li',
+            'li[class*="pvs-list"]',
+        ]
+        
+        items = []
+        for selector in item_selectors:
+            items = main.select(selector)
+            if items:
+                if self.debug:
+                    print(f"[DEBUG] Found {len(items)} volunteer items with selector: {selector}")
+                break
+        
+        for idx, item in enumerate(items):
+            vol_data = self._extract_single_volunteer(item)
+            if vol_data and (vol_data.get('role') or vol_data.get('organization')):
+                volunteer.append(vol_data)
+                if self.debug:
+                    print(f"[DEBUG] Volunteer {idx+1}: {vol_data.get('role', 'N/A')} at {vol_data.get('organization', 'N/A')}")
+        
+        return volunteer
+    
+    def parse_publications_detail(self, html_content: str) -> List[Dict[str, Any]]:
+        """Parse publications from the dedicated /details/publications/ page.
+        
+        Args:
+            html_content: HTML from the publications detail page
+            
+        Returns:
+            List of publication entries with full details
+        """
+        soup = BeautifulSoup(html_content, "lxml")
+        publications = []
+        
+        if self.debug:
+            print("[DEBUG] Parsing publications detail page...")
+        
+        # Look for the main content container
+        main_selectors = [
+            'main.scaffold-layout__main',
+            'main',
+            'div.scaffold-finite-scroll__content',
+        ]
+        
+        main = None
+        for selector in main_selectors:
+            main = soup.select_one(selector)
+            if main:
+                break
+        
+        if not main:
+            if self.debug:
+                print("[DEBUG] No main content found in publications detail page")
+            return publications
+        
+        # Find all publication items
+        item_selectors = [
+            'li.pvs-list__paged-list-item',
+            'ul.pvs-list > li',
+            'li[class*="pvs-list"]',
+        ]
+        
+        items = []
+        for selector in item_selectors:
+            items = main.select(selector)
+            if items:
+                if self.debug:
+                    print(f"[DEBUG] Found {len(items)} publication items with selector: {selector}")
+                break
+        
+        for idx, item in enumerate(items):
+            # Extract publication data
+            title = self._safe_extract(item, 'div.display-flex span[aria-hidden="true"]') or \
+                   self._safe_extract(item, 'h3 span[aria-hidden="true"]') or \
+                   self._safe_extract(item, 'div.t-bold')
+            
+            if title:
+                pub = {'title': title}
+                
+                # Publisher
+                publisher = self._safe_extract(item, 'span.t-14.t-normal span[aria-hidden="true"]') or \
+                           self._safe_extract(item, 'span.t-14.t-normal')
+                if publisher and publisher != title:
+                    pub['publisher'] = publisher
+                
+                # Date
+                date = self._safe_extract(item, 'span.t-14.t-normal.t-black--light span[aria-hidden="true"]') or \
+                       self._safe_extract(item, 'span.t-14.t-normal.t-black--light')
+                if date:
+                    pub['date'] = date
+                
+                # Description
+                desc_elem = item.select_one('div.pv-shared-text-with-see-more span[aria-hidden="true"]') or \
+                           item.select_one('div.inline-show-more-text span[aria-hidden="true"]')
+                if desc_elem:
+                    pub['description'] = desc_elem.get_text(separator='\n', strip=True)
+                
+                publications.append(pub)
+                if self.debug:
+                    print(f"[DEBUG] Publication {idx+1}: {title}")
+        
+        return publications
+    
+    def parse_honors_detail(self, html_content: str) -> List[Dict[str, Any]]:
+        """Parse honors and awards from the dedicated /details/honors/ page.
+        
+        Args:
+            html_content: HTML from the honors detail page
+            
+        Returns:
+            List of honor/award entries with full details
+        """
+        soup = BeautifulSoup(html_content, "lxml")
+        honors = []
+        
+        if self.debug:
+            print("[DEBUG] Parsing honors detail page...")
+        
+        # Look for the main content container
+        main_selectors = [
+            'main.scaffold-layout__main',
+            'main',
+            'div.scaffold-finite-scroll__content',
+        ]
+        
+        main = None
+        for selector in main_selectors:
+            main = soup.select_one(selector)
+            if main:
+                break
+        
+        if not main:
+            if self.debug:
+                print("[DEBUG] No main content found in honors detail page")
+            return honors
+        
+        # Find all honor items
+        item_selectors = [
+            'li.pvs-list__paged-list-item',
+            'ul.pvs-list > li',
+            'li[class*="pvs-list"]',
+        ]
+        
+        items = []
+        for selector in item_selectors:
+            items = main.select(selector)
+            if items:
+                if self.debug:
+                    print(f"[DEBUG] Found {len(items)} honor items with selector: {selector}")
+                break
+        
+        for idx, item in enumerate(items):
+            # Extract honor data
+            title = self._safe_extract(item, 'div.display-flex span[aria-hidden="true"]') or \
+                   self._safe_extract(item, 'h3 span[aria-hidden="true"]') or \
+                   self._safe_extract(item, 'div.t-bold')
+            
+            if title:
+                honor = {'title': title}
+                
+                # Issuer
+                issuer = self._safe_extract(item, 'span.t-14.t-normal span[aria-hidden="true"]') or \
+                        self._safe_extract(item, 'span.t-14.t-normal')
+                if issuer and issuer != title:
+                    honor['issuer'] = issuer
+                
+                # Date
+                date = self._safe_extract(item, 'span.t-14.t-normal.t-black--light span[aria-hidden="true"]') or \
+                       self._safe_extract(item, 'span.t-14.t-normal.t-black--light')
+                if date:
+                    honor['date'] = date
+                
+                # Description
+                desc_elem = item.select_one('div.pv-shared-text-with-see-more span[aria-hidden="true"]') or \
+                           item.select_one('div.inline-show-more-text span[aria-hidden="true"]')
+                if desc_elem:
+                    honor['description'] = desc_elem.get_text(separator='\n', strip=True)
+                
+                honors.append(honor)
+                if self.debug:
+                    print(f"[DEBUG] Honor {idx+1}: {title}")
+        
+        return honors
