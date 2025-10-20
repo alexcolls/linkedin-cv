@@ -332,12 +332,16 @@ EXPERIENCE
 
 Detailed guides available in the `docs/` directory:
 
-| Document                                                            | Description                                                           |
-| ------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| [WORKFLOW.md](docs/WORKFLOW.md)                                     | **Workflow options** - Learn about the 3 different extraction methods |
-| [AUTHENTICATION_GUIDE.md](docs/AUTHENTICATION_GUIDE.md)             | **Authentication setup** - How to log in and save sessions            |
-| [OUTPUT_STRUCTURE.md](docs/OUTPUT_STRUCTURE.md)                     | **File organization** - Understanding the output directory            |
-| [TROUBLESHOOTING_EMPTY_DATA.md](docs/TROUBLESHOOTING_EMPTY_DATA.md) | **Debugging guide** - Fix empty or incomplete data                    |
+| Document                                                            | Description                                                              |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| [WORKFLOW.md](docs/WORKFLOW.md)                                     | **Workflow options** - Learn about the 3 different extraction methods    |
+| [AUTHENTICATION_GUIDE.md](docs/AUTHENTICATION_GUIDE.md)             | **Authentication setup** - How to log in and save sessions               |
+| [OUTPUT_STRUCTURE.md](docs/OUTPUT_STRUCTURE.md)                     | **File organization** - Understanding the output directory               |
+| [TROUBLESHOOTING_EMPTY_DATA.md](docs/TROUBLESHOOTING_EMPTY_DATA.md) | **Debugging guide** - Fix empty or incomplete data                       |
+| [IMPLEMENTATION_COMPLETE.md](docs/IMPLEMENTATION_COMPLETE.md)       | **Architecture & features** - Complete feature breakdown                 |
+| [IMPLEMENTATION_PROGRESS.md](docs/IMPLEMENTATION_PROGRESS.md)       | **Development timeline** - Detailed version history and milestones       |
+| [HTML_EXPORT_GUIDE.md](docs/HTML_EXPORT_GUIDE.md)                   | **Manual HTML export** - Step-by-step guide for offline processing       |
+| [TASK_6_LANGUAGES_GUIDE.md](docs/TASK_6_LANGUAGES_GUIDE.md)         | **Languages feature** - Implementation details and troubleshooting       |
 
 ### Quick Links
 
@@ -618,12 +622,12 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ---
 
-## 📚 Documentation
+## 📚 Additional Documentation
 
-- **[Implementation Complete](docs/IMPLEMENTATION_COMPLETE.md)** - Full feature breakdown
-- **[Implementation Progress](docs/IMPLEMENTATION_PROGRESS.md)** - Development journey
-- **[HTML Export Guide](docs/HTML_EXPORT_GUIDE.md)** - Step-by-step HTML export
-- **[Language Guide](docs/TASK_6_LANGUAGES_GUIDE.md)** - Languages implementation
+- **[Implementation Complete](docs/IMPLEMENTATION_COMPLETE.md)** - Comprehensive feature breakdown with architecture details
+- **[Implementation Progress](docs/IMPLEMENTATION_PROGRESS.md)** - Development journey from v0.1.0 to v0.5.2
+- **[HTML Export Guide](docs/HTML_EXPORT_GUIDE.md)** - Step-by-step manual HTML export for troubleshooting
+- **[Languages Guide](docs/TASK_6_LANGUAGES_GUIDE.md)** - Languages feature implementation and usage
 
 ---
 
