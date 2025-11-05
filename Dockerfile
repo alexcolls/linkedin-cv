@@ -1,13 +1,16 @@
 # LinkedIn CV Generator Dockerfile
-# Multi-stage build for optimized image size
+# Optimized multi-stage build for production
 
+# Build stage
 FROM python:3.9-slim as builder
+
+ARG PYTHON_VERSION=3.9
 
 # Set working directory
 WORKDIR /app
 
 # Install system dependencies for building and WeasyPrint
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     git \
@@ -17,39 +20,55 @@ RUN apt-get update && apt-get install -y \
     libgdk-pixbuf2.0-0 \
     libffi-dev \
     shared-mime-info \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 # Install Poetry
+ENV POETRY_VERSION=1.7.1 \
+    POETRY_HOME=/opt/poetry \
+    POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_CREATE=false
+
 RUN curl -sSL https://install.python-poetry.org | python3 - && \
-    ln -s /root/.local/bin/poetry /usr/local/bin/poetry
+    ln -s ${POETRY_HOME}/bin/poetry /usr/local/bin/poetry
 
 # Copy Poetry files
 COPY pyproject.toml poetry.lock* ./
 
 # Install dependencies (without dev dependencies)
-RUN poetry config virtualenvs.create false && \
-    poetry install --no-dev --no-interaction --no-ansi
+RUN poetry install --only main --no-interaction --no-ansi --no-root \
+    && pip cache purge
 
-# Install Playwright browsers
-RUN poetry run playwright install chromium && \
-    poetry run playwright install-deps chromium
+# Install Playwright browsers with minimal deps
+RUN poetry run playwright install chromium --with-deps \
+    && rm -rf /root/.cache/ms-playwright/chromium-*/locales \
+    && rm -rf /root/.cache/ms-playwright/chromium-*/chrome_crashpad_handler
 
-# Final stage
+# Runtime stage
 FROM python:3.9-slim
+
+# Labels for metadata
+LABEL maintainer="LinkedIn CV Generator" \
+      version="0.6.0" \
+      description="Production-ready LinkedIn CV generator with beautiful templates"
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    DEBIAN_FRONTEND=noninteractive
+    DEBIAN_FRONTEND=noninteractive \
+    PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright \
+    PATH="/app:$PATH"
 
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
+# Install runtime dependencies (minimal set)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # WeasyPrint dependencies
     libcairo2 \
     libpango-1.0-0 \
     libpangocairo-1.0-0 \
     libgdk-pixbuf2.0-0 \
-    libffi-dev \
+    libffi7 \
     shared-mime-info \
+    # Playwright/Chromium dependencies
     ca-certificates \
     fonts-liberation \
     libnss3 \
@@ -69,7 +88,9 @@ RUN apt-get update && apt-get install -y \
     libxfixes3 \
     libxrandr2 \
     xdg-utils \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && rm -rf /tmp/* /var/tmp/*
 
 # Create non-root user
 RUN useradd -m -u 1000 -s /bin/bash linkedin && \
@@ -93,9 +114,12 @@ USER linkedin
 # Create output directory
 RUN mkdir -p /data/output
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python3 -c "import sys; sys.exit(0)"
+# Expose volume mount points
+VOLUME ["/data/output", "/app/sessions"]
+
+# Health check (validate imports and dependencies)
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD python3 -c "from src.config import Config; from src.pdf.generator import PDFGenerator; import sys; sys.exit(0)" || exit 1
 
 # Entry point
 ENTRYPOINT ["python3", "-m", "src.cli"]

@@ -7,6 +7,206 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0+] - 2025-11-05
+
+### Added
+- 🔒 **Security Hardening** - Comprehensive input validation and protection (Phase 11)
+  * `SecurityValidator` class with validation for URLs, filenames, paths, colors, usernames
+  * Protection against path traversal, null byte injection, command injection
+  * URL validation with protocol and domain enforcement
+  * Reserved filename detection (Windows reserved names)
+  * Dangerous directory access blocking (/etc, /root, /sys, /proc, /dev)
+  * Rate limiting with multiple strategies:
+    - Token bucket algorithm (RateLimiter)
+    - Sliding window for accurate tracking (SlidingWindowRateLimiter)
+    - Multi-key rate limiter for per-user/per-IP tracking
+    - Thread-safe implementations with proper locking
+  * Integrated into CLI and batch processor for early validation
+  * 53 security tests (25 validator + 28 rate limiter), all passing
+  * Security documentation: `docs/SECURITY_HARDENING.md` (373 lines)
+  * OWASP compliance: CWE-22, CWE-78, CWE-79, CWE-434
+- ⚡ **Performance Optimization** - Caching and profiling infrastructure (Phase 10)
+  * `SimpleCache` class with file-based caching and TTL support
+  * `ImageCache` specialized for profile images (24h TTL)
+  * Cache statistics, cleanup, and size calculation
+  * Decorator for function result caching
+  * Integrated caching into ImageProcessor:
+    - Automatic caching of downloaded/processed images
+    - Cache key based on URL + processing parameters  
+    - Eliminates redundant downloads and processing
+  * Performance profiling script (`scripts/profile_performance.py`):
+    - Profiles all CV generation phases with cProfile
+    - Visual progress bars and performance summaries
+    - Detailed function-level statistics
+    - Save profiling data for analysis
+  * 7 performance benchmark tests, all passing
+  * Cache operations: <1s for 100 writes, <0.5s for 100 reads
+- 📊 **HTML Export** - Standalone HTML CV generation (Phase 5 partial)
+  * `HTMLExporter` class for creating standalone HTML files
+  * Support for all 4 themes with embedded or external CSS
+  * QR code integration in HTML exports
+  * `--format {pdf|html}` CLI flag
+- 🔄 **Batch Processing** - Process multiple LinkedIn profiles efficiently (Phase 6)
+  * `BatchProcessor` class with asyncio parallel processing
+  * CSV input support (format: url,name)
+  * `--batch-file` CLI flag for batch mode
+  * `--max-concurrent` to control parallelism (default: 3)
+  * `--create-sample-csv` to generate example CSV
+  * Progress bar with real-time status updates
+  * Summary table with success rate and timing
+  * Per-profile error handling (failures don't stop batch)
+- ✅ **Expanded Test Coverage** - From 108 to 185 tests (Phase 12 partial)
+  * QR code integration tests (17 tests)
+  * Security validator tests (25 tests)
+  * Rate limiter tests (28 tests)
+  * Performance benchmark tests (7 tests)
+  * Overall coverage: 41% (up from 37%)
+  * Security modules: 85-97% coverage
+
+### Changed
+- 🔧 **CLI Enhanced** - New flags and security validation
+  * `--format` for output format selection (pdf/html)
+  * `--batch-file` for CSV batch processing
+  * `--max-concurrent` for parallel processing control
+  * `--create-sample-csv` for batch template generation
+  * Early input validation for all user inputs
+  * Clear security error messages
+- 🏗️ **Project Structure** - New modules and organization
+  * `src/security/` - validator and rate_limiter modules
+  * `src/batch/` - processor module
+  * `src/exporters/` - html_exporter module
+  * `src/utils/cache.py` - caching utilities
+  * `scripts/profile_performance.py` - profiling tool
+  * `docs/SECURITY_HARDENING.md` - security documentation
+
+### Improved  
+- 🔒 **Security Posture** - Production-ready input validation
+  * All user inputs validated before processing
+  * Protection against common vulnerabilities
+  * Rate limiting prevents abuse
+  * Thread-safe implementations
+- ⚡ **Performance** - Caching eliminates redundant work
+  * Image caching for repeated requests
+  * Configurable TTL (1h default, 24h for images)
+  * Automatic cache expiry and cleanup
+  * Profiling tools to identify bottlenecks
+- 🎯 **User Experience** - More output options and batch mode
+  * HTML export for web publishing
+  * Batch processing for multiple profiles
+  * Better progress indicators
+  * Comprehensive error messages
+
+### Technical Details
+- **Security Validator**: 505 lines, 85% test coverage
+- **Rate Limiters**: 284 lines, 97% test coverage
+- **Cache System**: 327 lines, 65% test coverage
+- **Batch Processor**: 339 lines with asyncio
+- **HTML Exporter**: 231 lines
+- **Performance Tests**: 196 lines, 7 test cases
+- **Security Tests**: 277 lines (validator) + 351 lines (rate limiter)
+- **Total New Tests**: 185 tests (up from 108)
+- **Overall Coverage**: 41% (security modules 85-97%)
+
+## [0.6.0] - 2025-11-05
+
+### Added
+- 🎨 **Beautiful PDF Template System** - Major redesign with 4 professional themes
+  * **Modern Professional**: Two-column layout with gradient header, Inter/Poppins fonts, timeline visualization, progress bars for skills
+  * **Creative Bold**: Asymmetric three-column design, vibrant purple/pink/green colors, Montserrat/Raleway fonts, organic shape borders
+  * **Executive Elegant**: Traditional single-column layout, Playfair Display/Source Serif Pro serif fonts, navy/burgundy/gold colors, refined spacing
+  * **Classic**: Original LinkedIn-inspired design (preserved for backwards compatibility)
+- 🎨 **Template Manager Architecture** - Centralized template system with theme selection and customization
+  * `TemplateManager` class for rendering templates with color schemes
+  * `ColorScheme` dataclass for customizable color palettes
+  * Theme validation and error handling
+- 🎨 **CLI Theme Options** - New command-line flags for template customization
+  * `--theme {modern|creative|executive|classic}` - Select CV template theme (default: modern)
+  * `--list-themes` - Display all available themes with descriptions
+  * `--color-primary #HEX` - Override primary color
+  * `--color-accent #HEX` - Override accent color
+- 🔲 **QR Code Integration** - QR codes in CV footers linking to LinkedIn profiles
+  * Integrated into all 4 CV templates (Modern, Creative, Executive, Classic)
+  * `--add-qr-code/--no-qr-code` CLI flag (enabled by default)
+  * Automatic generation from LinkedIn profile URL
+  * Theme-specific styling matching each template design
+  * High error correction for reliability, optimized size (70-80px)
+  * `QRGenerator` utility class with customizable styling
+  * Support for optional logo overlay and custom colors
+  * Base64 data URI output for seamless PDF embedding
+- 🐳 **Production Docker Configuration** - Optimized containerization for deployment
+  * Improved multi-stage Dockerfile with reduced image size
+  * Comprehensive docker-compose.yml with health checks
+  * Resource limits (CPU/memory) and security options
+  * Volume mounts for output, sessions, and configuration
+  * `.env.production.sample` with all configuration options
+  * Health checks validating application dependencies
+  * Non-root user execution for security
+  * Redis service configuration (commented, for future caching)
+- 📚 **Comprehensive Documentation** - 1,127 lines of production guides
+  * `docs/TEMPLATES.md` - Complete guide to all 4 CV templates
+    - Theme features, typography, colors, and best practices
+    - Template comparison table and selection guide
+    - Color customization and QR code integration
+    - Troubleshooting and custom template development
+  * `docs/DEPLOYMENT.md` - Production deployment guide
+    - Docker, Docker Compose, and bare metal installation
+    - Security considerations and best practices
+    - Monitoring, logging, and troubleshooting
+    - Backup/recovery and scaling strategies
+    - CI/CD integration examples
+- ✅ **Comprehensive Test Suite** - 20 new tests for template system
+  * Tests for all 4 themes and color schemes
+  * Template rendering with various profile data
+  * Integration tests for full profiles
+  * 96% coverage for template manager module
+  * Total: 108 tests passing (up from 88)
+- 📊 **Development Tracker** - DEVELOPMENT_STATUS.md documenting progress and roadmap
+
+### Changed
+- 🏗️ **Template Directory Structure** - Reorganized into theme-based subdirectories
+  * `src/pdf/templates/modern/` - Modern Professional theme
+  * `src/pdf/templates/creative/` - Creative Bold theme
+  * `src/pdf/templates/executive/` - Executive Elegant theme
+  * `src/pdf/templates/classic/` - Classic theme (original)
+- 🔧 **PDF Generator Enhanced** - Updated to use TemplateManager
+  * Support for theme parameter in constructor
+  * Custom color scheme support
+  * Improved error messages with context
+  * Theme validation before rendering
+- 📝 **CLI Workflow Updated** - Theme selection integrated throughout
+  * Progress messages show selected theme
+  * Theme validation and helpful error messages
+  * Color customization passed through entire workflow
+- ⬆️ **Dependencies Added** - New libraries for enhanced features
+  * `qrcode` v8.2 - QR code generation
+- 📈 **Test Coverage** - Improved from 37% to 38% overall
+  * Template manager: 96% coverage
+  * Config module: 95% coverage
+  * Encryption module: 86% coverage
+
+### Improved
+- 🎨 **Visual Design** - Professional, modern, and elegant CV templates
+  * Modern gradient headers and timeline visualizations
+  * Creative asymmetric layouts with vibrant colors
+  * Executive traditional design with refined typography
+  * All templates print-optimized for A4 paper
+- 🚀 **User Experience** - Easy theme selection and customization
+  * Interactive theme list command
+  * Simple color overrides via CLI
+  * Clear progress indicators during generation
+- 📚 **Code Quality** - Well-tested and documented template system
+  * Comprehensive test coverage for new features
+  * Type hints throughout template manager
+  * Clear separation of concerns
+
+### Technical Details
+- **Modern Template**: 634 lines CSS, two-column with sidebar, gradient/shadow effects
+- **Creative Template**: 534 lines CSS, three-column asymmetric, bold typography
+- **Executive Template**: 400 lines CSS, single-column centered, serif fonts
+- **Template Manager**: 241 lines, 80 statements, 96% test coverage
+- **QR Generator**: 124 lines with PIL/qrcode integration
+- **New Tests**: 267 lines, 20 test cases, all passing
+
 ## [0.4.2] - 2025-10-14
 
 ### Added

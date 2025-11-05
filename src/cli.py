@@ -4,7 +4,7 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
 import click
 from rich.console import Console
@@ -22,6 +22,7 @@ from src.exceptions import (
 from src.pdf.generator import PDFGenerator
 from src.scraper.linkedin_scraper import LinkedInScraper
 from src.scraper.parser import ProfileParser
+from src.security import SecurityValidator
 from src.utils.image_processor import ImageProcessor
 
 console = Console()
@@ -142,6 +143,58 @@ def normalize_profile_url(input_str: str) -> str:
     is_flag=True,
     help="Generate a secure encryption key for session encryption",
 )
+@click.option(
+    "--theme",
+    type=click.Choice(["modern", "creative", "executive", "classic"], case_sensitive=False),
+    default="modern",
+    help="CV template theme (default: modern)",
+)
+@click.option(
+    "--list-themes",
+    is_flag=True,
+    help="List available template themes and exit",
+)
+@click.option(
+    "--color-primary",
+    type=str,
+    default=None,
+    help="Override primary color (hex format, e.g., #2563eb)",
+)
+@click.option(
+    "--color-accent",
+    type=str,
+    default=None,
+    help="Override accent color (hex format, e.g., #f59e0b)",
+)
+@click.option(
+    "--add-qr-code/--no-qr-code",
+    default=True,
+    help="Include QR code linking to LinkedIn profile (default: enabled)",
+)
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["pdf", "html"], case_sensitive=False),
+    default="pdf",
+    help="Output format (pdf or html, default: pdf)",
+)
+@click.option(
+    "--batch-file",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False),
+    default=None,
+    help="CSV file with profile URLs for batch processing (format: url,name)",
+)
+@click.option(
+    "--create-sample-csv",
+    is_flag=True,
+    help="Create a sample CSV file for batch processing",
+)
+@click.option(
+    "--max-concurrent",
+    type=int,
+    default=3,
+    help="Maximum concurrent profiles for batch processing (default: 3)",
+)
 def main(
     profile_url: Optional[str],
     output_dir: str,
@@ -157,8 +210,17 @@ def main(
     parse_html: Optional[str],
     generate_pdf: Optional[str],
     generate_key: bool,
+    theme: str,
+    list_themes: bool,
+    color_primary: Optional[str],
+    color_accent: Optional[str],
+    add_qr_code: bool,
+    output_format: str,
+    batch_file: Optional[str],
+    create_sample_csv: bool,
+    max_concurrent: int,
 ):
-    """Generate a professional PDF CV from a LinkedIn profile.
+    """Generate professional PDF or HTML CVs from LinkedIn profiles (single or batch).
 
     PROFILE_URL: LinkedIn profile URL (e.g., https://www.linkedin.com/in/username/)
                  Not required if --html-file, --parse-html, or --generate-pdf is provided.
@@ -168,8 +230,131 @@ def main(
     2. --parse-html <username>: Parse saved HTML files to extract JSON data
     3. --generate-pdf <username>: Generate PDF from saved JSON data
     """
+    # Initialize security validator
+    validator = SecurityValidator()
+    
+    # Validate inputs early
+    try:
+        # Validate colors if provided
+        if color_primary:
+            color_primary = validator.validate_hex_color(color_primary)
+        
+        if color_accent:
+            color_accent = validator.validate_hex_color(color_accent)
+        
+        # Validate paths
+        if output_dir:
+            validator.validate_path(output_dir)
+        
+        if template:
+            validator.validate_path(template)
+        
+        if html_file:
+            validator.validate_path(html_file)
+        
+        if batch_file:
+            validator.validate_path(batch_file)
+        
+        # Validate usernames if provided
+        if parse_html:
+            parse_html = validator.validate_username(parse_html)
+        
+        if generate_pdf:
+            generate_pdf = validator.validate_username(generate_pdf)
+        
+        # Validate profile URL if provided (will be validated again after normalization)
+        if profile_url:
+            # First normalize it
+            profile_url = normalize_profile_url(profile_url)
+            # Then validate
+            profile_url = validator.validate_linkedin_url(profile_url)
+    
+    except ValidationError as e:
+        console.print(f"[red]❌ Validation error: {str(e)}[/red]")
+        sys.exit(1)
+    except Exception as e:
+        console.print(f"[red]❌ Security validation failed: {str(e)}[/red]")
+        if debug:
+            console.print_exception()
+        sys.exit(1)
+    
     if not no_banner:
         display_banner()
+    
+    # Handle create-sample-csv mode
+    if create_sample_csv:
+        from src.batch.processor import BatchProcessor
+        try:
+            BatchProcessor.create_sample_csv("profiles.csv")
+            sys.exit(0)
+        except Exception as e:
+            console.print(f"\n[red]❌ Error creating sample CSV: {str(e)}[/red]")
+            sys.exit(1)
+    
+    # Handle batch-file mode
+    if batch_file:
+        from src.batch.processor import BatchProcessor
+        try:
+            # Load profiles from CSV
+            profiles = BatchProcessor.load_from_csv(batch_file)
+            console.print(f"[cyan]📄 Loaded {len(profiles)} profiles from {batch_file}[/cyan]")
+            
+            # Prepare custom colors
+            custom_colors = {}
+            if color_primary:
+                custom_colors["primary"] = color_primary
+            if color_accent:
+                custom_colors["accent"] = color_accent
+            
+            # Create batch processor
+            processor = BatchProcessor(
+                output_dir=output_dir,
+                theme=theme,
+                output_format=output_format,
+                headless=headless,
+                add_qr_code=add_qr_code,
+                custom_colors=custom_colors if custom_colors else None,
+                max_concurrent=max_concurrent,
+            )
+            
+            # Process batch
+            results = asyncio.run(processor.process_batch(profiles))
+            
+            # Exit with appropriate code
+            sys.exit(0 if results['failed'] == 0 else 1)
+            
+        except FileNotFoundError as e:
+            console.print(f"\n[red]❌ {str(e)}[/red]")
+            sys.exit(1)
+        except ValueError as e:
+            console.print(f"\n[red]❌ {str(e)}[/red]")
+            sys.exit(1)
+        except KeyboardInterrupt:
+            console.print("\n[yellow]⚠️  Batch processing cancelled by user[/yellow]")
+            sys.exit(0)
+        except Exception as e:
+            console.print(f"\n[red]❌ Unexpected error: {str(e)}[/red]")
+            if debug:
+                console.print_exception()
+            sys.exit(1)
+    
+    # Handle list-themes mode
+    if list_themes:
+        from src.pdf.template_manager import TemplateManager
+        manager = TemplateManager()
+        console.print("\n[bold cyan]📋 Available CV Themes:[/bold cyan]\n")
+        themes = manager.get_available_themes()
+        theme_descriptions = {
+            "modern": "Two-column layout with gradient header, progress bars, and timeline",
+            "creative": "Asymmetric design with vibrant colors and bold typography",
+            "executive": "Traditional elegant layout with sophisticated styling",
+            "classic": "Original LinkedIn-inspired single-column design",
+        }
+        for t in themes:
+            desc = theme_descriptions.get(t, "No description available")
+            console.print(f"  [green]•[/green] [bold]{t}[/bold]: {desc}")
+        console.print()
+        sys.exit(0)
     
     # Handle generate-key mode
     if generate_key:
@@ -279,9 +464,20 @@ def main(
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 
+    # Prepare custom colors dictionary
+    custom_colors = {}
+    if color_primary:
+        custom_colors["primary"] = color_primary
+    if color_accent:
+        custom_colors["accent"] = color_accent
+    
     try:
         # Run the async workflow
-        asyncio.run(generate_cv(profile_url, output_path, template, html_file, headless, debug, export_json, json_file))
+        asyncio.run(generate_cv(
+            profile_url, output_path, template, html_file, headless, debug,
+            export_json, json_file, theme, custom_colors if custom_colors else None,
+            add_qr_code, output_format
+        ))
     except KeyboardInterrupt:
         console.print("\n[yellow]⚠️  Operation cancelled by user[/yellow]")
         sys.exit(0)
@@ -305,6 +501,10 @@ async def generate_cv(
     debug: bool,
     export_json: bool,
     json_file: str,
+    theme: str = "modern",
+    custom_colors: Optional[Dict[str, str]] = None,
+    add_qr_code: bool = True,
+    output_format: str = "pdf",
 ):
     """Main workflow to generate CV from LinkedIn profile or export to JSON."""
 
@@ -494,18 +694,32 @@ async def generate_cv(
 
         # Add profile image to data
         profile_data["profile_image_data"] = profile_image_data
-
-        # Step 4: Generate PDF
-        task4 = progress.add_task("📄 Generating professional PDF CV...", total=None)
-
-        generator = PDFGenerator(template_path=template)
         
+        # Step 3.5: Generate QR code if enabled
+        if add_qr_code and profile_url:
+            task3_5 = progress.add_task("🔲 Generating QR code...", total=None)
+            try:
+                from src.utils.qr_generator import QRGenerator
+                qr_gen = QRGenerator(box_size=10, border=1)
+                qr_data_uri = qr_gen.generate(profile_url)
+                profile_data["qr_code"] = qr_data_uri
+                profile_data["profile_url"] = profile_url
+                profile_data["linkedin_url"] = profile_url
+                progress.update(task3_5, completed=True)
+                console.print("   [green]✓[/green] QR code generated!")
+            except Exception as e:
+                progress.update(task3_5, completed=True)
+                console.print(f"   [yellow]⚠️  QR code generation failed: {str(e)}[/yellow]")
+                profile_data["qr_code"] = None
+        else:
+            profile_data["qr_code"] = None
+
         # Get username from profile data or URL
         username = profile_data.get("username", "linkedin-profile")
         if username == 'linkedin-profile' and profile_url:
             # Try to extract from URL
             import re
-            match = re.search(r'linkedin\.com/in/([^/]+)', profile_url)
+            match = re.search(r'linkedin\\.com/in/([^/]+)', profile_url)
             if match:
                 username = match.group(1)
         
@@ -515,13 +729,40 @@ async def generate_cv(
         
         # Generate filename with username and timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_filename = f"{username}_{timestamp}.pdf"
-        output_file = user_output_dir / output_filename
+        
+        # Step 4: Generate CV in requested format
+        if output_format.lower() == "html":
+            task4 = progress.add_task(f"🌐 Generating HTML CV ({theme} theme)...", total=None)
+            
+            from src.exporters.html_exporter import HTMLExporter
+            exporter = HTMLExporter(
+                theme=theme,
+                custom_colors=custom_colors,
+            )
+            
+            output_filename = f"{username}_{timestamp}.html"
+            output_file = user_output_dir / output_filename
+            
+            exporter.export(profile_data, str(output_file))
+            
+            progress.update(task4, completed=True)
+            console.print("   [green]✓[/green] HTML CV generated successfully!")
+        else:
+            task4 = progress.add_task(f"📄 Generating professional PDF CV ({theme} theme)...", total=None)
 
-        generator.generate(profile_data, str(output_file))
+            generator = PDFGenerator(
+                template_path=template,
+                theme=theme,
+                custom_colors=custom_colors,
+            )
+            
+            output_filename = f"{username}_{timestamp}.pdf"
+            output_file = user_output_dir / output_filename
 
-        progress.update(task4, completed=True)
-        console.print("   [green]✓[/green] Professional PDF CV generated successfully!")
+            generator.generate(profile_data, str(output_file))
+
+            progress.update(task4, completed=True)
+            console.print("   [green]✓[/green] Professional PDF CV generated successfully!")
 
     # Success message
     console.print()
@@ -545,10 +786,13 @@ async def generate_cv(
         )
         console.print()
     
+    # Determine file type for message
+    file_type = output_format.upper()
+    
     console.print(
         Panel(
             f"[bold green]✅ Done![/bold green]\n\n"
-            f"PDF saved: [cyan]{output_file}[/cyan]\n"
+            f"{file_type} saved: [cyan]{output_file}[/cyan]\n"
             f"File size: [dim]{output_file.stat().st_size:,} bytes[/dim]\n\n"
             f"[dim]Ready to send to any company![/dim]",
             border_style="green",
