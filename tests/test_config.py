@@ -234,10 +234,15 @@ class TestGlobalConfig:
             env_file = f.name
         
         try:
+            # Clear LOG_LEVEL environment variable to ensure clean state
+            old_log_level = os.environ.pop("LOG_LEVEL", None)
             reset_config()
             config = get_config(env_file=env_file)
             assert config.get("log_level") == "DEBUG"
         finally:
+            # Restore environment
+            if old_log_level:
+                os.environ["LOG_LEVEL"] = old_log_level
             os.unlink(env_file)
 
 
