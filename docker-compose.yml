@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # LinkedIn CV Generator application
+  linkedin-cv:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: "3.9"
+    image: linkedin-cv:latest
+    container_name: linkedin-cv-generator
+    restart: unless-stopped
+    
+    # Environment variables
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - OUTPUT_DIR=/data/output
+    
+    # Volume mounts
+    volumes:
+      # Output directory for generated CVs
+      - ./output:/data/output
+      # Session data for LinkedIn authentication
+      - ./sessions:/app/sessions
+      # Configuration file (if using)
+      - ./config.json:/app/config.json:ro
+      # Environment file
+      - ./.env:/app/.env:ro
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 512M
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import sys; from src.config import Config; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # Networking
+    networks:
+      - linkedin-cv-network
+    
+    # Entry point override for interactive use
+    # Uncomment to run as a service
+    # command: ["--help"]
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    
+    # User
+    user: "1000:1000"
+
+  # Optional: Redis for caching (future enhancement)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: linkedin-cv-redis
+  #   restart: unless-stopped
+  #   volumes:
+  #     - redis-data:/data
+  #   networks:
+  #     - linkedin-cv-network
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 3s
+  #     retries: 3
+
+# Networks
+networks:
+  linkedin-cv-network:
+    driver: bridge
+    name: linkedin-cv-network
+
+# Volumes
+volumes:
+  redis-data:
+    driver: local
+    name: linkedin-cv-redis-data
