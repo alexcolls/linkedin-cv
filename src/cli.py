@@ -4,7 +4,7 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 
 import click
 from rich.console import Console
@@ -142,6 +142,29 @@ def normalize_profile_url(input_str: str) -> str:
     is_flag=True,
     help="Generate a secure encryption key for session encryption",
 )
+@click.option(
+    "--theme",
+    type=click.Choice(["modern", "creative", "executive", "classic"], case_sensitive=False),
+    default="modern",
+    help="CV template theme (default: modern)",
+)
+@click.option(
+    "--list-themes",
+    is_flag=True,
+    help="List available template themes and exit",
+)
+@click.option(
+    "--color-primary",
+    type=str,
+    default=None,
+    help="Override primary color (hex format, e.g., #2563eb)",
+)
+@click.option(
+    "--color-accent",
+    type=str,
+    default=None,
+    help="Override accent color (hex format, e.g., #f59e0b)",
+)
 def main(
     profile_url: Optional[str],
     output_dir: str,
@@ -157,6 +180,10 @@ def main(
     parse_html: Optional[str],
     generate_pdf: Optional[str],
     generate_key: bool,
+    theme: str,
+    list_themes: bool,
+    color_primary: Optional[str],
+    color_accent: Optional[str],
 ):
     """Generate a professional PDF CV from a LinkedIn profile.
 
@@ -170,6 +197,24 @@ def main(
     """
     if not no_banner:
         display_banner()
+    
+    # Handle list-themes mode
+    if list_themes:
+        from src.pdf.template_manager import TemplateManager
+        manager = TemplateManager()
+        console.print("\n[bold cyan]📋 Available CV Themes:[/bold cyan]\n")
+        themes = manager.get_available_themes()
+        theme_descriptions = {
+            "modern": "Two-column layout with gradient header, progress bars, and timeline",
+            "creative": "Asymmetric design with vibrant colors and bold typography",
+            "executive": "Traditional elegant layout with sophisticated styling",
+            "classic": "Original LinkedIn-inspired single-column design",
+        }
+        for t in themes:
+            desc = theme_descriptions.get(t, "No description available")
+            console.print(f"  [green]•[/green] [bold]{t}[/bold]: {desc}")
+        console.print()
+        sys.exit(0)
     
     # Handle generate-key mode
     if generate_key:
@@ -279,9 +324,19 @@ def main(
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 
+    # Prepare custom colors dictionary
+    custom_colors = {}
+    if color_primary:
+        custom_colors["primary"] = color_primary
+    if color_accent:
+        custom_colors["accent"] = color_accent
+    
     try:
         # Run the async workflow
-        asyncio.run(generate_cv(profile_url, output_path, template, html_file, headless, debug, export_json, json_file))
+        asyncio.run(generate_cv(
+            profile_url, output_path, template, html_file, headless, debug,
+            export_json, json_file, theme, custom_colors if custom_colors else None
+        ))
     except KeyboardInterrupt:
         console.print("\n[yellow]⚠️  Operation cancelled by user[/yellow]")
         sys.exit(0)
@@ -305,6 +360,8 @@ async def generate_cv(
     debug: bool,
     export_json: bool,
     json_file: str,
+    theme: str = "modern",
+    custom_colors: Optional[Dict[str, str]] = None,
 ):
     """Main workflow to generate CV from LinkedIn profile or export to JSON."""
 
@@ -496,9 +553,13 @@ async def generate_cv(
         profile_data["profile_image_data"] = profile_image_data
 
         # Step 4: Generate PDF
-        task4 = progress.add_task("📄 Generating professional PDF CV...", total=None)
+        task4 = progress.add_task(f"📄 Generating professional PDF CV ({theme} theme)...", total=None)
 
-        generator = PDFGenerator(template_path=template)
+        generator = PDFGenerator(
+            template_path=template,
+            theme=theme,
+            custom_colors=custom_colors,
+        )
         
         # Get username from profile data or URL
         username = profile_data.get("username", "linkedin-profile")
