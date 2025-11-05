@@ -24,11 +24,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `--list-themes` - Display all available themes with descriptions
   * `--color-primary #HEX` - Override primary color
   * `--color-accent #HEX` - Override accent color
-- 🚀 **QR Code Generation** - Generate QR codes for LinkedIn profile URLs
+- 🔲 **QR Code Integration** - QR codes in CV footers linking to LinkedIn profiles
+  * Integrated into all 4 CV templates (Modern, Creative, Executive, Classic)
+  * `--add-qr-code/--no-qr-code` CLI flag (enabled by default)
+  * Automatic generation from LinkedIn profile URL
+  * Theme-specific styling matching each template design
+  * High error correction for reliability, optimized size (70-80px)
   * `QRGenerator` utility class with customizable styling
-  * Support for QR codes with optional logo overlay
-  * Base64 data URI output for embedding in PDFs
-  * High error correction for logo placement
+  * Support for optional logo overlay and custom colors
+  * Base64 data URI output for seamless PDF embedding
+- 🐳 **Production Docker Configuration** - Optimized containerization for deployment
+  * Improved multi-stage Dockerfile with reduced image size
+  * Comprehensive docker-compose.yml with health checks
+  * Resource limits (CPU/memory) and security options
+  * Volume mounts for output, sessions, and configuration
+  * `.env.production.sample` with all configuration options
+  * Health checks validating application dependencies
+  * Non-root user execution for security
+  * Redis service configuration (commented, for future caching)
+- 📚 **Comprehensive Documentation** - 1,127 lines of production guides
+  * `docs/TEMPLATES.md` - Complete guide to all 4 CV templates
+    - Theme features, typography, colors, and best practices
+    - Template comparison table and selection guide
+    - Color customization and QR code integration
+    - Troubleshooting and custom template development
+  * `docs/DEPLOYMENT.md` - Production deployment guide
+    - Docker, Docker Compose, and bare metal installation
+    - Security considerations and best practices
+    - Monitoring, logging, and troubleshooting
+    - Backup/recovery and scaling strategies
+    - CI/CD integration examples
 - ✅ **Comprehensive Test Suite** - 20 new tests for template system
   * Tests for all 4 themes and color schemes
   * Template rendering with various profile data
