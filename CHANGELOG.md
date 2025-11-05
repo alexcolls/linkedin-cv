@@ -7,6 +7,106 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0+] - 2025-11-05
+
+### Added
+- 🔒 **Security Hardening** - Comprehensive input validation and protection (Phase 11)
+  * `SecurityValidator` class with validation for URLs, filenames, paths, colors, usernames
+  * Protection against path traversal, null byte injection, command injection
+  * URL validation with protocol and domain enforcement
+  * Reserved filename detection (Windows reserved names)
+  * Dangerous directory access blocking (/etc, /root, /sys, /proc, /dev)
+  * Rate limiting with multiple strategies:
+    - Token bucket algorithm (RateLimiter)
+    - Sliding window for accurate tracking (SlidingWindowRateLimiter)
+    - Multi-key rate limiter for per-user/per-IP tracking
+    - Thread-safe implementations with proper locking
+  * Integrated into CLI and batch processor for early validation
+  * 53 security tests (25 validator + 28 rate limiter), all passing
+  * Security documentation: `docs/SECURITY_HARDENING.md` (373 lines)
+  * OWASP compliance: CWE-22, CWE-78, CWE-79, CWE-434
+- ⚡ **Performance Optimization** - Caching and profiling infrastructure (Phase 10)
+  * `SimpleCache` class with file-based caching and TTL support
+  * `ImageCache` specialized for profile images (24h TTL)
+  * Cache statistics, cleanup, and size calculation
+  * Decorator for function result caching
+  * Integrated caching into ImageProcessor:
+    - Automatic caching of downloaded/processed images
+    - Cache key based on URL + processing parameters  
+    - Eliminates redundant downloads and processing
+  * Performance profiling script (`scripts/profile_performance.py`):
+    - Profiles all CV generation phases with cProfile
+    - Visual progress bars and performance summaries
+    - Detailed function-level statistics
+    - Save profiling data for analysis
+  * 7 performance benchmark tests, all passing
+  * Cache operations: <1s for 100 writes, <0.5s for 100 reads
+- 📊 **HTML Export** - Standalone HTML CV generation (Phase 5 partial)
+  * `HTMLExporter` class for creating standalone HTML files
+  * Support for all 4 themes with embedded or external CSS
+  * QR code integration in HTML exports
+  * `--format {pdf|html}` CLI flag
+- 🔄 **Batch Processing** - Process multiple LinkedIn profiles efficiently (Phase 6)
+  * `BatchProcessor` class with asyncio parallel processing
+  * CSV input support (format: url,name)
+  * `--batch-file` CLI flag for batch mode
+  * `--max-concurrent` to control parallelism (default: 3)
+  * `--create-sample-csv` to generate example CSV
+  * Progress bar with real-time status updates
+  * Summary table with success rate and timing
+  * Per-profile error handling (failures don't stop batch)
+- ✅ **Expanded Test Coverage** - From 108 to 185 tests (Phase 12 partial)
+  * QR code integration tests (17 tests)
+  * Security validator tests (25 tests)
+  * Rate limiter tests (28 tests)
+  * Performance benchmark tests (7 tests)
+  * Overall coverage: 41% (up from 37%)
+  * Security modules: 85-97% coverage
+
+### Changed
+- 🔧 **CLI Enhanced** - New flags and security validation
+  * `--format` for output format selection (pdf/html)
+  * `--batch-file` for CSV batch processing
+  * `--max-concurrent` for parallel processing control
+  * `--create-sample-csv` for batch template generation
+  * Early input validation for all user inputs
+  * Clear security error messages
+- 🏗️ **Project Structure** - New modules and organization
+  * `src/security/` - validator and rate_limiter modules
+  * `src/batch/` - processor module
+  * `src/exporters/` - html_exporter module
+  * `src/utils/cache.py` - caching utilities
+  * `scripts/profile_performance.py` - profiling tool
+  * `docs/SECURITY_HARDENING.md` - security documentation
+
+### Improved  
+- 🔒 **Security Posture** - Production-ready input validation
+  * All user inputs validated before processing
+  * Protection against common vulnerabilities
+  * Rate limiting prevents abuse
+  * Thread-safe implementations
+- ⚡ **Performance** - Caching eliminates redundant work
+  * Image caching for repeated requests
+  * Configurable TTL (1h default, 24h for images)
+  * Automatic cache expiry and cleanup
+  * Profiling tools to identify bottlenecks
+- 🎯 **User Experience** - More output options and batch mode
+  * HTML export for web publishing
+  * Batch processing for multiple profiles
+  * Better progress indicators
+  * Comprehensive error messages
+
+### Technical Details
+- **Security Validator**: 505 lines, 85% test coverage
+- **Rate Limiters**: 284 lines, 97% test coverage
+- **Cache System**: 327 lines, 65% test coverage
+- **Batch Processor**: 339 lines with asyncio
+- **HTML Exporter**: 231 lines
+- **Performance Tests**: 196 lines, 7 test cases
+- **Security Tests**: 277 lines (validator) + 351 lines (rate limiter)
+- **Total New Tests**: 185 tests (up from 108)
+- **Overall Coverage**: 41% (security modules 85-97%)
+
 ## [0.6.0] - 2025-11-05
 
 ### Added
