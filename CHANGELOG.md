@@ -7,6 +7,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2025-11-05
+
+### Added
+- 🎨 **Beautiful PDF Template System** - Major redesign with 4 professional themes
+  * **Modern Professional**: Two-column layout with gradient header, Inter/Poppins fonts, timeline visualization, progress bars for skills
+  * **Creative Bold**: Asymmetric three-column design, vibrant purple/pink/green colors, Montserrat/Raleway fonts, organic shape borders
+  * **Executive Elegant**: Traditional single-column layout, Playfair Display/Source Serif Pro serif fonts, navy/burgundy/gold colors, refined spacing
+  * **Classic**: Original LinkedIn-inspired design (preserved for backwards compatibility)
+- 🎨 **Template Manager Architecture** - Centralized template system with theme selection and customization
+  * `TemplateManager` class for rendering templates with color schemes
+  * `ColorScheme` dataclass for customizable color palettes
+  * Theme validation and error handling
+- 🎨 **CLI Theme Options** - New command-line flags for template customization
+  * `--theme {modern|creative|executive|classic}` - Select CV template theme (default: modern)
+  * `--list-themes` - Display all available themes with descriptions
+  * `--color-primary #HEX` - Override primary color
+  * `--color-accent #HEX` - Override accent color
+- 🚀 **QR Code Generation** - Generate QR codes for LinkedIn profile URLs
+  * `QRGenerator` utility class with customizable styling
+  * Support for QR codes with optional logo overlay
+  * Base64 data URI output for embedding in PDFs
+  * High error correction for logo placement
+- ✅ **Comprehensive Test Suite** - 20 new tests for template system
+  * Tests for all 4 themes and color schemes
+  * Template rendering with various profile data
+  * Integration tests for full profiles
+  * 96% coverage for template manager module
+  * Total: 108 tests passing (up from 88)
+- 📊 **Development Tracker** - DEVELOPMENT_STATUS.md documenting progress and roadmap
+
+### Changed
+- 🏗️ **Template Directory Structure** - Reorganized into theme-based subdirectories
+  * `src/pdf/templates/modern/` - Modern Professional theme
+  * `src/pdf/templates/creative/` - Creative Bold theme
+  * `src/pdf/templates/executive/` - Executive Elegant theme
+  * `src/pdf/templates/classic/` - Classic theme (original)
+- 🔧 **PDF Generator Enhanced** - Updated to use TemplateManager
+  * Support for theme parameter in constructor
+  * Custom color scheme support
+  * Improved error messages with context
+  * Theme validation before rendering
+- 📝 **CLI Workflow Updated** - Theme selection integrated throughout
+  * Progress messages show selected theme
+  * Theme validation and helpful error messages
+  * Color customization passed through entire workflow
+- ⬆️ **Dependencies Added** - New libraries for enhanced features
+  * `qrcode` v8.2 - QR code generation
+- 📈 **Test Coverage** - Improved from 37% to 38% overall
+  * Template manager: 96% coverage
+  * Config module: 95% coverage
+  * Encryption module: 86% coverage
+
+### Improved
+- 🎨 **Visual Design** - Professional, modern, and elegant CV templates
+  * Modern gradient headers and timeline visualizations
+  * Creative asymmetric layouts with vibrant colors
+  * Executive traditional design with refined typography
+  * All templates print-optimized for A4 paper
+- 🚀 **User Experience** - Easy theme selection and customization
+  * Interactive theme list command
+  * Simple color overrides via CLI
+  * Clear progress indicators during generation
+- 📚 **Code Quality** - Well-tested and documented template system
+  * Comprehensive test coverage for new features
+  * Type hints throughout template manager
+  * Clear separation of concerns
+
+### Technical Details
+- **Modern Template**: 634 lines CSS, two-column with sidebar, gradient/shadow effects
+- **Creative Template**: 534 lines CSS, three-column asymmetric, bold typography
+- **Executive Template**: 400 lines CSS, single-column centered, serif fonts
+- **Template Manager**: 241 lines, 80 statements, 96% test coverage
+- **QR Generator**: 124 lines with PIL/qrcode integration
+- **New Tests**: 267 lines, 20 test cases, all passing
+
 ## [0.4.2] - 2025-10-14
 
 ### Added
