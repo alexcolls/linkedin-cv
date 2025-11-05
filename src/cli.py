@@ -170,6 +170,13 @@ def normalize_profile_url(input_str: str) -> str:
     default=True,
     help="Include QR code linking to LinkedIn profile (default: enabled)",
 )
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["pdf", "html"], case_sensitive=False),
+    default="pdf",
+    help="Output format (pdf or html, default: pdf)",
+)
 def main(
     profile_url: Optional[str],
     output_dir: str,
@@ -190,8 +197,9 @@ def main(
     color_primary: Optional[str],
     color_accent: Optional[str],
     add_qr_code: bool,
+    output_format: str,
 ):
-    """Generate a professional PDF CV from a LinkedIn profile.
+    """Generate a professional PDF or HTML CV from a LinkedIn profile.
 
     PROFILE_URL: LinkedIn profile URL (e.g., https://www.linkedin.com/in/username/)
                  Not required if --html-file, --parse-html, or --generate-pdf is provided.
@@ -342,7 +350,7 @@ def main(
         asyncio.run(generate_cv(
             profile_url, output_path, template, html_file, headless, debug,
             export_json, json_file, theme, custom_colors if custom_colors else None,
-            add_qr_code
+            add_qr_code, output_format
         ))
     except KeyboardInterrupt:
         console.print("\n[yellow]⚠️  Operation cancelled by user[/yellow]")
@@ -370,6 +378,7 @@ async def generate_cv(
     theme: str = "modern",
     custom_colors: Optional[Dict[str, str]] = None,
     add_qr_code: bool = True,
+    output_format: str = "pdf",
 ):
     """Main workflow to generate CV from LinkedIn profile or export to JSON."""
 
@@ -565,12 +574,8 @@ async def generate_cv(
             task3_5 = progress.add_task("🔲 Generating QR code...", total=None)
             try:
                 from src.utils.qr_generator import QRGenerator
-                qr_gen = QRGenerator()
-                qr_data_uri = qr_gen.generate_data_uri(
-                    data=profile_url,
-                    size=10,
-                    border=1,
-                )
+                qr_gen = QRGenerator(box_size=10, border=1)
+                qr_data_uri = qr_gen.generate(profile_url)
                 profile_data["qr_code"] = qr_data_uri
                 profile_data["profile_url"] = profile_url
                 profile_data["linkedin_url"] = profile_url
@@ -583,21 +588,12 @@ async def generate_cv(
         else:
             profile_data["qr_code"] = None
 
-        # Step 4: Generate PDF
-        task4 = progress.add_task(f"📄 Generating professional PDF CV ({theme} theme)...", total=None)
-
-        generator = PDFGenerator(
-            template_path=template,
-            theme=theme,
-            custom_colors=custom_colors,
-        )
-        
         # Get username from profile data or URL
         username = profile_data.get("username", "linkedin-profile")
         if username == 'linkedin-profile' and profile_url:
             # Try to extract from URL
             import re
-            match = re.search(r'linkedin\.com/in/([^/]+)', profile_url)
+            match = re.search(r'linkedin\\.com/in/([^/]+)', profile_url)
             if match:
                 username = match.group(1)
         
@@ -607,13 +603,40 @@ async def generate_cv(
         
         # Generate filename with username and timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_filename = f"{username}_{timestamp}.pdf"
-        output_file = user_output_dir / output_filename
+        
+        # Step 4: Generate CV in requested format
+        if output_format.lower() == "html":
+            task4 = progress.add_task(f"🌐 Generating HTML CV ({theme} theme)...", total=None)
+            
+            from src.exporters.html_exporter import HTMLExporter
+            exporter = HTMLExporter(
+                theme=theme,
+                custom_colors=custom_colors,
+            )
+            
+            output_filename = f"{username}_{timestamp}.html"
+            output_file = user_output_dir / output_filename
+            
+            exporter.export(profile_data, str(output_file))
+            
+            progress.update(task4, completed=True)
+            console.print("   [green]✓[/green] HTML CV generated successfully!")
+        else:
+            task4 = progress.add_task(f"📄 Generating professional PDF CV ({theme} theme)...", total=None)
 
-        generator.generate(profile_data, str(output_file))
+            generator = PDFGenerator(
+                template_path=template,
+                theme=theme,
+                custom_colors=custom_colors,
+            )
+            
+            output_filename = f"{username}_{timestamp}.pdf"
+            output_file = user_output_dir / output_filename
 
-        progress.update(task4, completed=True)
-        console.print("   [green]✓[/green] Professional PDF CV generated successfully!")
+            generator.generate(profile_data, str(output_file))
+
+            progress.update(task4, completed=True)
+            console.print("   [green]✓[/green] Professional PDF CV generated successfully!")
 
     # Success message
     console.print()
@@ -637,10 +660,13 @@ async def generate_cv(
         )
         console.print()
     
+    # Determine file type for message
+    file_type = output_format.upper()
+    
     console.print(
         Panel(
             f"[bold green]✅ Done![/bold green]\n\n"
-            f"PDF saved: [cyan]{output_file}[/cyan]\n"
+            f"{file_type} saved: [cyan]{output_file}[/cyan]\n"
             f"File size: [dim]{output_file.stat().st_size:,} bytes[/dim]\n\n"
             f"[dim]Ready to send to any company![/dim]",
             border_style="green",
