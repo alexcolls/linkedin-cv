@@ -1,0 +1,383 @@
+"""Input validation and sanitization for security."""
+import re
+from pathlib import Path
+from typing import Optional, Tuple
+from urllib.parse import urlparse
+
+from src.exceptions import ValidationError
+
+
+class SecurityValidator:
+    """Validate and sanitize inputs for security."""
+
+    # LinkedIn URL patterns
+    LINKEDIN_URL_PATTERN = re.compile(
+        r'^https?://(www\.)?linkedin\.com/in/[\w\-]+/?(\?.*)?$',
+        re.IGNORECASE
+    )
+
+    # Safe filename characters
+    SAFE_FILENAME_PATTERN = re.compile(r'^[\w\-\.]+$')
+
+    # Hex color pattern
+    HEX_COLOR_PATTERN = re.compile(r'^#[0-9A-Fa-f]{6}$')
+
+    # Maximum lengths
+    MAX_URL_LENGTH = 2048
+    MAX_FILENAME_LENGTH = 255
+    MAX_PATH_LENGTH = 4096
+    MAX_USERNAME_LENGTH = 100
+
+    # Dangerous path components
+    DANGEROUS_PATH_COMPONENTS = {
+        '..',
+        '~',
+        '/etc',
+        '/root',
+        '/sys',
+        '/proc',
+        '/dev',
+    }
+
+    @classmethod
+    def validate_linkedin_url(cls, url: str) -> str:
+        """Validate LinkedIn profile URL.
+
+        Args:
+            url: URL to validate
+
+        Returns:
+            Validated and sanitized URL
+
+        Raises:
+            ValidationError: If URL is invalid
+        """
+        if not url or not isinstance(url, str):
+            raise ValidationError("URL must be a non-empty string", field="url")
+
+        url = url.strip()
+
+        # Check length
+        if len(url) > cls.MAX_URL_LENGTH:
+            raise ValidationError(
+                f"URL exceeds maximum length of {cls.MAX_URL_LENGTH}",
+                field="url"
+            )
+
+        # Check pattern
+        if not cls.LINKEDIN_URL_PATTERN.match(url):
+            raise ValidationError(
+                "Invalid LinkedIn profile URL format",
+                field="url"
+            )
+
+        # Parse and validate
+        try:
+            parsed = urlparse(url)
+            
+            # Must be HTTPS or HTTP
+            if parsed.scheme not in ['http', 'https']:
+                raise ValidationError(
+                    "URL must use HTTP or HTTPS protocol",
+                    field="url"
+                )
+
+            # Must be linkedin.com domain
+            if 'linkedin.com' not in parsed.netloc.lower():
+                raise ValidationError(
+                    "URL must be from linkedin.com domain",
+                    field="url"
+                )
+
+            return url
+
+        except ValidationError:
+            raise
+        except Exception as e:
+            raise ValidationError(f"Invalid URL format: {str(e)}", field="url")
+
+
+
+    @classmethod
+    def sanitize_filename(cls, filename: str) -> str:
+        """Sanitize filename by removing unsafe characters.
+
+        Args:
+            filename: Filename to sanitize
+
+        Returns:
+            Sanitized filename
+
+        Raises:
+            ValidationError: If filename is completely invalid
+        """
+        if not filename:
+            raise ValidationError("Filename cannot be empty", field="filename")
+
+        # Remove path separators
+        filename = filename.replace('/', '_').replace('\\', '_')
+
+        # Remove null bytes
+        filename = filename.replace('\x00', '')
+
+        # Keep only safe characters
+        filename = ''.join(c if c.isalnum() or c in '-_.' else '_' for c in filename)
+
+        # Remove leading/trailing dots and underscores
+        filename = filename.strip('._')
+
+        # Ensure not empty after sanitization
+        if not filename:
+            raise ValidationError("Filename becomes empty after sanitization", field="filename")
+
+        # Truncate if too long
+        if len(filename) > cls.MAX_FILENAME_LENGTH:
+            name, ext = filename.rsplit('.', 1) if '.' in filename else (filename, '')
+            max_name_len = cls.MAX_FILENAME_LENGTH - len(ext) - 1 if ext else cls.MAX_FILENAME_LENGTH
+            filename = name[:max_name_len] + ('.' + ext if ext else '')
+
+        return filename
+
+    @classmethod
+    def validate_path(cls, path: str) -> Tuple[bool, Optional[str]]:
+        """Validate file path for security.
+
+        Args:
+            path: Path to validate
+
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        if not path or not isinstance(path, str):
+            return False, "Path must be a non-empty string"
+
+        path = path.strip()
+
+        # Check length
+        if len(path) > cls.MAX_PATH_LENGTH:
+            return False, f"Path exceeds maximum length of {cls.MAX_PATH_LENGTH}"
+
+        # Check for null bytes
+        if '\x00' in path:
+            return False, "Path contains null bytes"
+
+        # Check for dangerous components
+        path_lower = path.lower()
+        for dangerous in cls.DANGEROUS_PATH_COMPONENTS:
+            if dangerous in path_lower:
+                return False, f"Path contains dangerous component: {dangerous}"
+
+        # Try to resolve path
+        try:
+            resolved = Path(path).resolve()
+            
+            # Path traversal check - ensure it doesn't escape intended directory
+            # (This is a basic check - application should enforce its own boundaries)
+            if '..' in str(resolved):
+                return False, "Path contains traversal attempts"
+
+            return True, None
+
+        except Exception as e:
+            return False, f"Invalid path: {str(e)}"
+
+    @classmethod
+    def sanitize_path(cls, path: str, base_dir: Optional[str] = None) -> str:
+        """Sanitize path and ensure it's within base directory.
+
+        Args:
+            path: Path to sanitize
+            base_dir: Base directory to constrain path within
+
+        Returns:
+            Sanitized path
+
+        Raises:
+            ValidationError: If path is invalid or escapes base directory
+        """
+        if not path:
+            raise ValidationError("Path cannot be empty", field="path")
+
+        # Resolve path
+        try:
+            resolved = Path(path).resolve()
+        except Exception as e:
+            raise ValidationError(f"Invalid path: {str(e)}", field="path")
+
+        # If base_dir provided, ensure path is within it
+        if base_dir:
+            base_resolved = Path(base_dir).resolve()
+            try:
+                resolved.relative_to(base_resolved)
+            except ValueError:
+                raise ValidationError(
+                    f"Path escapes base directory: {path}",
+                    field="path"
+                )
+
+        return str(resolved)
+
+    @classmethod
+    def validate_hex_color(cls, color: str) -> Tuple[bool, Optional[str]]:
+        """Validate hex color code.
+
+        Args:
+            color: Color code to validate
+
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        if not color or not isinstance(color, str):
+            return False, "Color must be a non-empty string"
+
+        color = color.strip()
+
+        if not cls.HEX_COLOR_PATTERN.match(color):
+            return False, "Invalid hex color format (expected #RRGGBB)"
+
+        return True, None
+
+    @classmethod
+    def sanitize_hex_color(cls, color: str) -> str:
+        """Sanitize hex color code.
+
+        Args:
+            color: Color code to sanitize
+
+        Returns:
+            Sanitized color code
+
+        Raises:
+            ValidationError: If color is invalid
+        """
+        if not color:
+            raise ValidationError("Color cannot be empty", field="color")
+
+        color = color.strip().upper()
+
+        # Add # if missing
+        if not color.startswith('#'):
+            color = '#' + color
+
+        # Validate
+        is_valid, error = cls.validate_hex_color(color)
+        if not is_valid:
+            raise ValidationError(error, field="color")
+
+        return color
+
+    @classmethod
+    def validate_username(cls, username: str) -> Tuple[bool, Optional[str]]:
+        """Validate LinkedIn username.
+
+        Args:
+            username: Username to validate
+
+        Returns:
+            Tuple of (is_valid, error_message)
+        """
+        if not username or not isinstance(username, str):
+            return False, "Username must be a non-empty string"
+
+        username = username.strip()
+
+        # Check length
+        if len(username) > cls.MAX_USERNAME_LENGTH:
+            return False, f"Username exceeds maximum length of {cls.MAX_USERNAME_LENGTH}"
+
+        # Check pattern (alphanumeric, dash, underscore)
+        if not re.match(r'^[\w\-]+$', username):
+            return False, "Username contains invalid characters"
+
+        return True, None
+
+    @classmethod
+    def sanitize_username(cls, username: str) -> str:
+        """Sanitize LinkedIn username.
+
+        Args:
+            username: Username to sanitize
+
+        Returns:
+            Sanitized username
+
+        Raises:
+            ValidationError: If username is invalid
+        """
+        if not username:
+            raise ValidationError("Username cannot be empty", field="username")
+
+        # Remove special characters
+        username = re.sub(r'[^\w\-]', '', username)
+
+        # Truncate if too long
+        if len(username) > cls.MAX_USERNAME_LENGTH:
+            username = username[:cls.MAX_USERNAME_LENGTH]
+
+        # Ensure not empty after sanitization
+        if not username:
+            raise ValidationError("Username becomes empty after sanitization", field="username")
+
+        return username.lower()
+
+    @classmethod
+    def validate_all_inputs(
+        cls,
+        profile_url: Optional[str] = None,
+        output_path: Optional[str] = None,
+        filename: Optional[str] = None,
+        color_primary: Optional[str] = None,
+        color_accent: Optional[str] = None,
+    ) -> dict:
+        """Validate all inputs at once.
+
+        Args:
+            profile_url: LinkedIn profile URL
+            output_path: Output directory path
+            filename: Output filename
+            color_primary: Primary color
+            color_accent: Accent color
+
+        Returns:
+            Dictionary of validation results
+
+        Raises:
+            ValidationError: If any critical input is invalid
+        """
+        results = {}
+
+        # Validate URL
+        if profile_url:
+            is_valid, error = cls.validate_linkedin_url(profile_url)
+            results['url'] = {'valid': is_valid, 'error': error}
+            if not is_valid:
+                raise ValidationError(error, field="url")
+
+        # Validate path
+        if output_path:
+            is_valid, error = cls.validate_path(output_path)
+            results['path'] = {'valid': is_valid, 'error': error}
+            if not is_valid:
+                raise ValidationError(error, field="path")
+
+        # Validate filename
+        if filename:
+            is_valid, error = cls.validate_filename(filename)
+            results['filename'] = {'valid': is_valid, 'error': error}
+            if not is_valid:
+                raise ValidationError(error, field="filename")
+
+        # Validate colors
+        if color_primary:
+            is_valid, error = cls.validate_hex_color(color_primary)
+            results['color_primary'] = {'valid': is_valid, 'error': error}
+            if not is_valid:
+                raise ValidationError(error, field="color_primary")
+
+        if color_accent:
+            is_valid, error = cls.validate_hex_color(color_accent)
+            results['color_accent'] = {'valid': is_valid, 'error': error}
+            if not is_valid:
+                raise ValidationError(error, field="color_accent")
+
+        return results

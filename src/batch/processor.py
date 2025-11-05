@@ -9,11 +9,12 @@ from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
 from rich.table import Table
 
-from src.exceptions import LinkedInCVError
+from src.exceptions import LinkedInCVError, ValidationError
 from src.pdf.generator import PDFGenerator
 from src.exporters.html_exporter import HTMLExporter
 from src.scraper.linkedin_scraper import LinkedInScraper
 from src.scraper.parser import ProfileParser
+from src.security import SecurityValidator
 from src.utils.image_processor import ImageProcessor
 from src.utils.qr_generator import QRGenerator
 
@@ -52,6 +53,7 @@ class BatchProcessor:
         self.custom_colors = custom_colors
         self.max_concurrent = max_concurrent
         self.results = []
+        self.validator = SecurityValidator()
 
     async def process_batch(self, profiles: List[Dict[str, str]]) -> Dict[str, any]:
         """Process multiple profiles in batch.
@@ -143,6 +145,12 @@ class BatchProcessor:
         profile_name = profile_data.get('name', '')
 
         try:
+            # Validate profile URL
+            profile_url = self.validator.validate_linkedin_url(profile_url)
+            
+            # Validate profile name if provided
+            if profile_name:
+                profile_name = self.validator.validate_username(profile_name)
             # Step 1: Scrape profile
             scraper = LinkedInScraper(headless=self.headless, debug=False)
             html_content = await scraper.scrape_profile(profile_url)

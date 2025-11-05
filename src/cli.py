@@ -22,6 +22,7 @@ from src.exceptions import (
 from src.pdf.generator import PDFGenerator
 from src.scraper.linkedin_scraper import LinkedInScraper
 from src.scraper.parser import ProfileParser
+from src.security import SecurityValidator
 from src.utils.image_processor import ImageProcessor
 
 console = Console()
@@ -229,6 +230,54 @@ def main(
     2. --parse-html <username>: Parse saved HTML files to extract JSON data
     3. --generate-pdf <username>: Generate PDF from saved JSON data
     """
+    # Initialize security validator
+    validator = SecurityValidator()
+    
+    # Validate inputs early
+    try:
+        # Validate colors if provided
+        if color_primary:
+            color_primary = validator.validate_hex_color(color_primary)
+        
+        if color_accent:
+            color_accent = validator.validate_hex_color(color_accent)
+        
+        # Validate paths
+        if output_dir:
+            validator.validate_path(output_dir)
+        
+        if template:
+            validator.validate_path(template)
+        
+        if html_file:
+            validator.validate_path(html_file)
+        
+        if batch_file:
+            validator.validate_path(batch_file)
+        
+        # Validate usernames if provided
+        if parse_html:
+            parse_html = validator.validate_username(parse_html)
+        
+        if generate_pdf:
+            generate_pdf = validator.validate_username(generate_pdf)
+        
+        # Validate profile URL if provided (will be validated again after normalization)
+        if profile_url:
+            # First normalize it
+            profile_url = normalize_profile_url(profile_url)
+            # Then validate
+            profile_url = validator.validate_linkedin_url(profile_url)
+    
+    except ValidationError as e:
+        console.print(f"[red]❌ Validation error: {str(e)}[/red]")
+        sys.exit(1)
+    except Exception as e:
+        console.print(f"[red]❌ Security validation failed: {str(e)}[/red]")
+        if debug:
+            console.print_exception()
+        sys.exit(1)
+    
     if not no_banner:
         display_banner()
     
