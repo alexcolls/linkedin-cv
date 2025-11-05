@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ name }} - Creative CV</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Asymmetric Header with Bold Design -->
+        <header class="header">
+            <div class="header-shape"></div>
+            <div class="header-content">
+                <div class="header-left">
+                    {% if profile_image_data %}
+                    <div class="profile-photo">
+                        <img src="{{ profile_image_data }}" alt="{{ name }}">
+                        <div class="photo-border"></div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="header-right">
+                    {% if name %}
+                    <h1 class="name">{{ name }}</h1>
+                    {% endif %}
+                    {% if headline %}
+                    <p class="headline">{{ headline }}</p>
+                    {% endif %}
+                    <div class="header-badges">
+                        {% if location %}
+                        <span class="badge">📍 {{ location }}</span>
+                        {% endif %}
+                        {% if stats and stats.connections %}
+                        <span class="badge">👥 {{ stats.connections }}+ connections</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Asymmetric Three-Column Layout -->
+        <div class="main-grid">
+            <!-- Left Sidebar (Skills & Quick Info) -->
+            <aside class="sidebar-left">
+                <!-- Contact -->
+                {% if contact_info and (contact_info.email or contact_info.phone or contact_info.website) %}
+                <section class="sidebar-card">
+                    <h2 class="card-title">💬 Contact</h2>
+                    <div class="contact-list">
+                        {% if contact_info.email %}
+                        <div class="contact-line">{{ contact_info.email }}</div>
+                        {% endif %}
+                        {% if contact_info.phone %}
+                        <div class="contact-line">{{ contact_info.phone }}</div>
+                        {% endif %}
+                        {% if contact_info.website %}
+                        <div class="contact-line">{{ contact_info.website }}</div>
+                        {% endif %}
+                    </div>
+                </section>
+                {% endif %}
+
+                <!-- Top Skills as Badges -->
+                {% if skills and skills|length > 0 %}
+                <section class="sidebar-card">
+                    <h2 class="card-title">⚡ Top Skills</h2>
+                    <div class="skill-badges">
+                        {% for skill in skills[:8] %}
+                        <span class="skill-badge">{{ skill.name }}</span>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+
+                <!-- Languages -->
+                {% if languages and languages|length > 0 %}
+                <section class="sidebar-card">
+                    <h2 class="card-title">🌐 Languages</h2>
+                    <div class="lang-list">
+                        {% for language in languages %}
+                        <div class="lang-item">
+                            <span class="lang-name">{{ language.name }}</span>
+                            {% if language.proficiency %}
+                            <span class="lang-level">{{ language.proficiency }}</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+            </aside>
+
+            <!-- Main Content (Experience & Education) -->
+            <main class="content-main">
+                <!-- About -->
+                {% if about %}
+                <section class="content-card">
+                    <div class="card-header">
+                        <h2 class="section-title">About Me</h2>
+                        <div class="title-decoration"></div>
+                    </div>
+                    <p class="about-text">{{ about }}</p>
+                </section>
+                {% endif %}
+
+                <!-- Experience -->
+                {% if experience and experience|length > 0 %}
+                <section class="content-card">
+                    <div class="card-header">
+                        <h2 class="section-title">💼 Work Experience</h2>
+                        <div class="title-decoration"></div>
+                    </div>
+                    <div class="experience-grid">
+                        {% for job in experience %}
+                        <div class="exp-card">
+                            <div class="exp-header">
+                                <div class="exp-icon">💼</div>
+                                <div class="exp-info">
+                                    <h3 class="exp-title">{{ job.title }}</h3>
+                                    <div class="exp-company">{{ job.company.split('·')[0].strip() if '·' in job.company else job.company }}</div>
+                                    {% if job.duration %}
+                                    <div class="exp-duration">{{ job.duration }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if job.description %}
+                            <p class="exp-description">{{ job.description }}</p>
+                            {% endif %}
+                            {% if job.skills and job.skills|length > 0 %}
+                            <div class="exp-skills">
+                                {% for skill in job.skills[:5] %}
+                                <span class="skill-tag">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+
+                <!-- Education -->
+                {% if education and education|length > 0 %}
+                <section class="content-card">
+                    <div class="card-header">
+                        <h2 class="section-title">🎓 Education</h2>
+                        <div class="title-decoration"></div>
+                    </div>
+                    {% for edu in education %}
+                    <div class="edu-card">
+                        <div class="edu-icon">🎓</div>
+                        <div class="edu-content">
+                            <h3 class="edu-institution">{{ edu.institution }}</h3>
+                            {% if edu.degree %}
+                            <div class="edu-degree">{{ edu.degree }}</div>
+                            {% endif %}
+                            {% if edu.field %}
+                            <div class="edu-field">{{ edu.field }}</div>
+                            {% endif %}
+                            <div class="edu-meta">
+                                {% if edu.duration %}
+                                <span>{{ edu.duration }}</span>
+                                {% endif %}
+                                {% if edu.grade %}
+                                <span class="edu-grade">{{ edu.grade }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </section>
+                {% endif %}
+            </main>
+
+            <!-- Right Sidebar (Certifications & Projects) -->
+            <aside class="sidebar-right">
+                <!-- Certifications -->
+                {% if certifications and certifications|length > 0 %}
+                <section class="sidebar-card">
+                    <h2 class="card-title">🏆 Certifications</h2>
+                    {% for cert in certifications[:4] %}
+                    <div class="cert-item">
+                        <div class="cert-name">{{ cert.name }}</div>
+                        <div class="cert-org">{{ cert.issuing_organization }}</div>
+                        {% if cert.issue_date %}
+                        <div class="cert-date">{{ cert.issue_date }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </section>
+                {% endif %}
+
+                <!-- Projects -->
+                {% if projects and projects|length > 0 %}
+                <section class="sidebar-card">
+                    <h2 class="card-title">🚀 Projects</h2>
+                    {% for project in projects[:3] %}
+                    <div class="project-item">
+                        <div class="project-name">{{ project.name }}</div>
+                        {% if project.description %}
+                        <div class="project-desc">{{ project.description[:100] }}{% if project.description|length > 100 %}...{% endif %}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </section>
+                {% endif %}
+
+                <!-- Volunteer -->
+                {% if volunteer and volunteer|length > 0 %}
+                <section class="sidebar-card">
+                    <h2 class="card-title">❤️ Volunteer</h2>
+                    {% for vol in volunteer[:2] %}
+                    <div class="vol-item">
+                        <div class="vol-role">{{ vol.role }}</div>
+                        <div class="vol-org">{{ vol.organization }}</div>
+                    </div>
+                    {% endfor %}
+                </section>
+                {% endif %}
+            </aside>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,534 @@
+/* Creative Bold CV Template - Vibrant & Asymmetric Design */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Raleway:wght@400;500;600;700&display=swap');
+
+:root {
+    /* Creative Bold Colors - Purple, Pink, Green */
+    --primary-color: #7c3aed;
+    --secondary-color: #ec4899;
+    --accent-color: #10b981;
+    --text-primary: #18181b;
+    --text-secondary: #52525b;
+    --text-muted: #a1a1aa;
+    --background-white: #ffffff;
+    --background-light: #fafafa;
+    --border-color: #d4d4d8;
+    
+    /* Typography */
+    --font-primary: 'Raleway', sans-serif;
+    --font-heading: 'Montserrat', sans-serif;
+    
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 12px;
+    --spacing-lg: 20px;
+    --spacing-xl: 28px;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(124, 58, 237, 0.1);
+    --shadow-md: 0 4px 8px rgba(124, 58, 237, 0.15);
+    --shadow-lg: 0 8px 16px rgba(124, 58, 237, 0.2);
+    
+    /* Border Radius */
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-full: 9999px;
+}
+
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-primary);
+    font-size: 9.5pt;
+    line-height: 1.5;
+    color: var(--text-primary);
+    background: var(--background-white);
+}
+
+@page {
+    size: A4;
+    margin: 15mm;
+}
+
+.container {
+    max-width: 210mm;
+    margin: 0 auto;
+}
+
+/* Bold Asymmetric Header */
+.header {
+    position: relative;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    padding: 30px;
+    margin: -15mm -15mm 0 -15mm;
+    border-radius: 0 0 30px 0;
+    overflow: hidden;
+    page-break-inside: avoid;
+}
+
+.header-shape {
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: rotate(-15deg);
+}
+
+.header-shape::after {
+    content: '';
+    position: absolute;
+    bottom: -80px;
+    left: -80px;
+    width: 150px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xl);
+}
+
+.header-left {
+    flex-shrink: 0;
+}
+
+.profile-photo {
+    position: relative;
+    width: 110px;
+    height: 110px;
+}
+
+.profile-photo img {
+    width: 100%;
+    height: 100%;
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+    object-fit: cover;
+    border: 4px solid white;
+    box-shadow: var(--shadow-lg);
+}
+
+.photo-border {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 32% 68% 68% 32% / 32% 32% 68% 68%;
+    pointer-events: none;
+}
+
+.header-right {
+    flex: 1;
+    color: white;
+}
+
+.name {
+    font-family: var(--font-heading);
+    font-size: 32pt;
+    font-weight: 800;
+    margin-bottom: var(--spacing-xs);
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+}
+
+.headline {
+    font-size: 14pt;
+    font-weight: 500;
+    margin-bottom: var(--spacing-md);
+    opacity: 0.95;
+}
+
+.header-badges {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    font-size: 9pt;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+}
+
+/* Asymmetric Three-Column Grid */
+.main-grid {
+    display: grid;
+    grid-template-columns: 28% 44% 28%;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-xl);
+}
+
+/* Sidebar Cards */
+.sidebar-left,
+.sidebar-right {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.sidebar-card {
+    background: var(--background-white);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    page-break-inside: avoid;
+}
+
+.card-title {
+    font-family: var(--font-heading);
+    font-size: 11pt;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-md);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Contact */
+.contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.contact-line {
+    font-size: 9pt;
+    color: var(--text-secondary);
+    word-break: break-word;
+    padding: var(--spacing-xs);
+    background: var(--background-light);
+    border-radius: var(--radius-sm);
+}
+
+/* Skill Badges */
+.skill-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+}
+
+.skill-badge {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 6px 12px;
+    border-radius: var(--radius-full);
+    font-size: 8.5pt;
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Languages */
+.lang-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.lang-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-xs);
+    background: var(--background-light);
+    border-radius: var(--radius-sm);
+    font-size: 9pt;
+}
+
+.lang-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.lang-level {
+    font-size: 8pt;
+    color: var(--text-muted);
+}
+
+/* Certifications */
+.cert-item {
+    margin-bottom: var(--spacing-md);
+    padding-left: var(--spacing-md);
+    border-left: 3px solid var(--accent-color);
+}
+
+.cert-item:last-child {
+    margin-bottom: 0;
+}
+
+.cert-name {
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.cert-org {
+    font-size: 8pt;
+    color: var(--secondary-color);
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.cert-date {
+    font-size: 8pt;
+    color: var(--text-muted);
+}
+
+/* Projects & Volunteer */
+.project-item,
+.vol-item {
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background: var(--background-light);
+    border-radius: var(--radius-sm);
+}
+
+.project-item:last-child,
+.vol-item:last-child {
+    margin-bottom: 0;
+}
+
+.project-name,
+.vol-role {
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.project-desc,
+.vol-org {
+    font-size: 8pt;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* Main Content */
+.content-main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+.content-card {
+    background: var(--background-white);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    border: 2px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+    page-break-inside: avoid;
+}
+
+.card-header {
+    position: relative;
+    margin-bottom: var(--spacing-lg);
+}
+
+.section-title {
+    font-family: var(--font-heading);
+    font-size: 18pt;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.title-decoration {
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+    border-radius: 2px;
+}
+
+/* About */
+.about-text {
+    font-size: 10pt;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+/* Experience Cards */
+.experience-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+.exp-card {
+    background: var(--background-light);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--primary-color);
+    page-break-inside: avoid;
+}
+
+.exp-header {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.exp-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18pt;
+    box-shadow: var(--shadow-sm);
+}
+
+.exp-info {
+    flex: 1;
+}
+
+.exp-title {
+    font-family: var(--font-heading);
+    font-size: 12pt;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.exp-company {
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 2px;
+}
+
+.exp-duration {
+    font-size: 9pt;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.exp-description {
+    font-size: 9pt;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.exp-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+}
+
+.skill-tag {
+    background: white;
+    color: var(--primary-color);
+    padding: 4px 10px;
+    border-radius: var(--radius-full);
+    font-size: 8pt;
+    font-weight: 600;
+    border: 2px solid var(--primary-color);
+}
+
+/* Education */
+.edu-card {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: var(--background-light);
+    border-radius: var(--radius-md);
+    page-break-inside: avoid;
+}
+
+.edu-card:last-child {
+    margin-bottom: 0;
+}
+
+.edu-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18pt;
+    box-shadow: var(--shadow-sm);
+}
+
+.edu-content {
+    flex: 1;
+}
+
+.edu-institution {
+    font-family: var(--font-heading);
+    font-size: 11pt;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.edu-degree {
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--accent-color);
+    margin-bottom: 2px;
+}
+
+.edu-field {
+    font-size: 9pt;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.edu-meta {
+    display: flex;
+    gap: var(--spacing-md);
+    font-size: 9pt;
+    color: var(--text-muted);
+}
+
+.edu-grade {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+/* Print Optimization */
+@media print {
+    body {
+        background: white;
+    }
+    
+    .header,
+    .sidebar-card,
+    .content-card,
+    .exp-card,
+    .edu-card {
+        page-break-inside: avoid;
+    }
+    
+    .section-title,
+    .card-title {
+        page-break-after: avoid;
+    }
+}
