@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ name }} - Executive CV</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Elegant Header -->
+        <header class="header">
+            {% if profile_image_data %}
+            <div class="profile-photo">
+                <img src="{{ profile_image_data }}" alt="{{ name }}">
+            </div>
+            {% endif %}
+            <div class="header-content">
+                {% if name %}
+                <h1 class="name">{{ name }}</h1>
+                {% endif %}
+                {% if headline %}
+                <p class="headline">{{ headline }}</p>
+                {% endif %}
+                {% if location %}
+                <p class="location">{{ location }}</p>
+                {% endif %}
+            </div>
+            <div class="header-divider"></div>
+        </header>
+
+        <!-- Contact Bar -->
+        {% if contact_info and (contact_info.email or contact_info.phone or contact_info.website) %}
+        <section class="contact-bar">
+            {% if contact_info.email %}
+            <div class="contact-item">
+                <span class="contact-label">Email:</span>
+                <span class="contact-value">{{ contact_info.email }}</span>
+            </div>
+            {% endif %}
+            {% if contact_info.phone %}
+            <div class="contact-item">
+                <span class="contact-label">Phone:</span>
+                <span class="contact-value">{{ contact_info.phone }}</span>
+            </div>
+            {% endif %}
+            {% if contact_info.website %}
+            <div class="contact-item">
+                <span class="contact-label">Website:</span>
+                <span class="contact-value">{{ contact_info.website }}</span>
+            </div>
+            {% endif %}
+        </section>
+        {% endif %}
+
+        <!-- Professional Summary -->
+        {% if about %}
+        <section class="section">
+            <h2 class="section-title">Professional Summary</h2>
+            <p class="summary-text">{{ about }}</p>
+        </section>
+        {% endif %}
+
+        <!-- Professional Experience -->
+        {% if experience and experience|length > 0 %}
+        <section class="section">
+            <h2 class="section-title">Professional Experience</h2>
+            {% for job in experience %}
+            <div class="experience-item">
+                <div class="exp-header">
+                    <div class="exp-left">
+                        <h3 class="job-title">{{ job.title }}</h3>
+                        <div class="company-name">{{ job.company.split('·')[0].strip() if '·' in job.company else job.company }}</div>
+                    </div>
+                    <div class="exp-right">
+                        {% if job.duration %}
+                        <div class="job-duration">{{ job.duration }}</div>
+                        {% endif %}
+                        {% if job.location %}
+                        <div class="job-location">{{ job.location }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if job.description %}
+                <p class="job-description">{{ job.description }}</p>
+                {% endif %}
+                {% if job.skills and job.skills|length > 0 %}
+                <div class="job-skills">
+                    <span class="skills-label">Key Skills:</span>
+                    {% for skill in job.skills[:6] %}
+                    <span class="skill">{{ skill }}</span>{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <!-- Education -->
+        {% if education and education|length > 0 %}
+        <section class="section">
+            <h2 class="section-title">Education</h2>
+            {% for edu in education %}
+            <div class="education-item">
+                <div class="edu-header">
+                    <div class="edu-left">
+                        <h3 class="edu-institution">{{ edu.institution }}</h3>
+                        {% if edu.degree %}
+                        <div class="edu-degree">{{ edu.degree }}{% if edu.field %}, {{ edu.field }}{% endif %}</div>
+                        {% endif %}
+                    </div>
+                    <div class="edu-right">
+                        {% if edu.duration %}
+                        <div class="edu-duration">{{ edu.duration }}</div>
+                        {% endif %}
+                        {% if edu.grade %}
+                        <div class="edu-grade">{{ edu.grade }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <!-- Core Competencies (Skills) -->
+        {% if skills and skills|length > 0 %}
+        <section class="section">
+            <h2 class="section-title">Core Competencies</h2>
+            <div class="competencies-grid">
+                {% for skill in skills[:12] %}
+                <div class="competency-item">{{ skill.name }}</div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Certifications & Professional Development -->
+        {% if certifications and certifications|length > 0 %}
+        <section class="section">
+            <h2 class="section-title">Certifications & Professional Development</h2>
+            {% for cert in certifications %}
+            <div class="cert-item">
+                <div class="cert-name">{{ cert.name }}</div>
+                <div class="cert-details">
+                    {{ cert.issuing_organization }}{% if cert.issue_date %} • {{ cert.issue_date }}{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <!-- Additional Information (Languages, Volunteer) -->
+        <div class="additional-info">
+            {% if languages and languages|length > 0 %}
+            <div class="info-column">
+                <h3 class="info-title">Languages</h3>
+                {% for language in languages %}
+                <div class="info-item">{{ language.name }}{% if language.proficiency %} ({{ language.proficiency }}){% endif %}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if volunteer and volunteer|length > 0 %}
+            <div class="info-column">
+                <h3 class="info-title">Community Engagement</h3>
+                {% for vol in volunteer[:3] %}
+                <div class="info-item">{{ vol.role }} • {{ vol.organization }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

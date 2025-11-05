@@ -1,0 +1,400 @@
+/* Executive Elegant CV Template - Traditional Sophisticated Design */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Serif+Pro:wght@400;600;700&display=swap');
+
+:root {
+    /* Executive Elegant Colors - Navy, Burgundy, Gold */
+    --primary-color: #1e3a8a;
+    --secondary-color: #881337;
+    --accent-color: #b45309;
+    --text-primary: #1c1917;
+    --text-secondary: #57534e;
+    --text-muted: #a8a29e;
+    --background-white: #ffffff;
+    --background-light: #fafaf9;
+    --border-color: #e7e5e4;
+    
+    /* Typography */
+    --font-primary: 'Source Serif Pro', Georgia, serif;
+    --font-heading: 'Playfair Display', Georgia, serif;
+    
+    /* Spacing */
+    --spacing-xs: 6px;
+    --spacing-sm: 10px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+}
+
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-primary);
+    font-size: 10.5pt;
+    line-height: 1.7;
+    color: var(--text-primary);
+    background: var(--background-white);
+}
+
+@page {
+    size: A4;
+    margin: 20mm 20mm 25mm 20mm;
+}
+
+.container {
+    max-width: 210mm;
+    margin: 0 auto;
+}
+
+/* Elegant Header */
+.header {
+    text-align: center;
+    padding-bottom: var(--spacing-xl);
+    page-break-inside: avoid;
+}
+
+.profile-photo {
+    margin: 0 auto var(--spacing-lg);
+    width: 90px;
+    height: 90px;
+}
+
+.profile-photo img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-color);
+}
+
+.header-content {
+    margin-bottom: var(--spacing-md);
+}
+
+.name {
+    font-family: var(--font-heading);
+    font-size: 28pt;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-sm);
+    letter-spacing: 0.02em;
+}
+
+.headline {
+    font-size: 13pt;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+    font-weight: 400;
+    font-style: italic;
+}
+
+.location {
+    font-size: 10pt;
+    color: var(--text-muted);
+}
+
+.header-divider {
+    height: 2px;
+    width: 80px;
+    background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+    margin: var(--spacing-lg) auto 0;
+}
+
+/* Contact Bar */
+.contact-bar {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-xl);
+    flex-wrap: wrap;
+    padding: var(--spacing-lg) 0;
+    margin-bottom: var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    background: var(--background-light);
+    page-break-inside: avoid;
+}
+
+.contact-item {
+    font-size: 9.5pt;
+    color: var(--text-secondary);
+}
+
+.contact-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-right: var(--spacing-xs);
+}
+
+.contact-value {
+    color: var(--text-secondary);
+}
+
+/* Sections */
+.section {
+    margin-bottom: var(--spacing-xl);
+    page-break-inside: avoid;
+}
+
+.section-title {
+    font-family: var(--font-heading);
+    font-size: 16pt;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+/* Professional Summary */
+.summary-text {
+    font-size: 10.5pt;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    text-align: justify;
+    text-indent: 2em;
+}
+
+/* Experience */
+.experience-item {
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--border-color);
+    page-break-inside: avoid;
+}
+
+.experience-item:last-child {
+    border-bottom: none;
+}
+
+.exp-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-md);
+    gap: var(--spacing-lg);
+}
+
+.exp-left {
+    flex: 1;
+}
+
+.job-title {
+    font-family: var(--font-heading);
+    font-size: 13pt;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.company-name {
+    font-size: 11pt;
+    color: var(--secondary-color);
+    font-weight: 600;
+}
+
+.exp-right {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.job-duration {
+    font-size: 10pt;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.job-location {
+    font-size: 9.5pt;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.job-description {
+    font-size: 10pt;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+    text-align: justify;
+}
+
+.job-skills {
+    font-size: 9.5pt;
+    color: var(--text-secondary);
+    margin-top: var(--spacing-sm);
+}
+
+.skills-label {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-right: var(--spacing-xs);
+}
+
+.skill {
+    color: var(--text-secondary);
+}
+
+/* Education */
+.education-item {
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    page-break-inside: avoid;
+}
+
+.education-item:last-child {
+    border-bottom: none;
+}
+
+.edu-header {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-lg);
+}
+
+.edu-left {
+    flex: 1;
+}
+
+.edu-institution {
+    font-family: var(--font-heading);
+    font-size: 12pt;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.edu-degree {
+    font-size: 10.5pt;
+    color: var(--secondary-color);
+    font-weight: 600;
+}
+
+.edu-right {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.edu-duration {
+    font-size: 10pt;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.edu-grade {
+    font-size: 9.5pt;
+    color: var(--accent-color);
+    font-weight: 600;
+    font-style: italic;
+}
+
+/* Core Competencies */
+.competencies-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-sm) var(--spacing-lg);
+    margin-top: var(--spacing-md);
+}
+
+.competency-item {
+    font-size: 10pt;
+    color: var(--text-secondary);
+    padding: var(--spacing-xs) 0;
+    border-left: 3px solid var(--accent-color);
+    padding-left: var(--spacing-sm);
+}
+
+/* Certifications */
+.cert-item {
+    margin-bottom: var(--spacing-md);
+    padding-left: var(--spacing-lg);
+    position: relative;
+}
+
+.cert-item::before {
+    content: '■';
+    position: absolute;
+    left: 0;
+    color: var(--accent-color);
+    font-size: 8pt;
+}
+
+.cert-name {
+    font-size: 10.5pt;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.cert-details {
+    font-size: 9.5pt;
+    color: var(--text-secondary);
+}
+
+/* Additional Information */
+.additional-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-xl);
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 2px solid var(--border-color);
+}
+
+.info-column {
+    page-break-inside: avoid;
+}
+
+.info-title {
+    font-family: var(--font-heading);
+    font-size: 12pt;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-md);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.info-item {
+    font-size: 10pt;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+    padding-left: var(--spacing-md);
+    position: relative;
+}
+
+.info-item::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--accent-color);
+}
+
+/* Print Optimization */
+@media print {
+    body {
+        background: white;
+    }
+    
+    .header,
+    .contact-bar,
+    .section,
+    .experience-item,
+    .education-item,
+    .info-column {
+        page-break-inside: avoid;
+    }
+    
+    .section-title,
+    .info-title,
+    .job-title,
+    .edu-institution {
+        page-break-after: avoid;
+    }
+}
