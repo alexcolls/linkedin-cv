@@ -177,6 +177,23 @@ def normalize_profile_url(input_str: str) -> str:
     default="pdf",
     help="Output format (pdf or html, default: pdf)",
 )
+@click.option(
+    "--batch-file",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False),
+    default=None,
+    help="CSV file with profile URLs for batch processing (format: url,name)",
+)
+@click.option(
+    "--create-sample-csv",
+    is_flag=True,
+    help="Create a sample CSV file for batch processing",
+)
+@click.option(
+    "--max-concurrent",
+    type=int,
+    default=3,
+    help="Maximum concurrent profiles for batch processing (default: 3)",
+)
 def main(
     profile_url: Optional[str],
     output_dir: str,
@@ -198,8 +215,11 @@ def main(
     color_accent: Optional[str],
     add_qr_code: bool,
     output_format: str,
+    batch_file: Optional[str],
+    create_sample_csv: bool,
+    max_concurrent: int,
 ):
-    """Generate a professional PDF or HTML CV from a LinkedIn profile.
+    """Generate professional PDF or HTML CVs from LinkedIn profiles (single or batch).
 
     PROFILE_URL: LinkedIn profile URL (e.g., https://www.linkedin.com/in/username/)
                  Not required if --html-file, --parse-html, or --generate-pdf is provided.
@@ -211,6 +231,63 @@ def main(
     """
     if not no_banner:
         display_banner()
+    
+    # Handle create-sample-csv mode
+    if create_sample_csv:
+        from src.batch.processor import BatchProcessor
+        try:
+            BatchProcessor.create_sample_csv("profiles.csv")
+            sys.exit(0)
+        except Exception as e:
+            console.print(f"\n[red]❌ Error creating sample CSV: {str(e)}[/red]")
+            sys.exit(1)
+    
+    # Handle batch-file mode
+    if batch_file:
+        from src.batch.processor import BatchProcessor
+        try:
+            # Load profiles from CSV
+            profiles = BatchProcessor.load_from_csv(batch_file)
+            console.print(f"[cyan]📄 Loaded {len(profiles)} profiles from {batch_file}[/cyan]")
+            
+            # Prepare custom colors
+            custom_colors = {}
+            if color_primary:
+                custom_colors["primary"] = color_primary
+            if color_accent:
+                custom_colors["accent"] = color_accent
+            
+            # Create batch processor
+            processor = BatchProcessor(
+                output_dir=output_dir,
+                theme=theme,
+                output_format=output_format,
+                headless=headless,
+                add_qr_code=add_qr_code,
+                custom_colors=custom_colors if custom_colors else None,
+                max_concurrent=max_concurrent,
+            )
+            
+            # Process batch
+            results = asyncio.run(processor.process_batch(profiles))
+            
+            # Exit with appropriate code
+            sys.exit(0 if results['failed'] == 0 else 1)
+            
+        except FileNotFoundError as e:
+            console.print(f"\n[red]❌ {str(e)}[/red]")
+            sys.exit(1)
+        except ValueError as e:
+            console.print(f"\n[red]❌ {str(e)}[/red]")
+            sys.exit(1)
+        except KeyboardInterrupt:
+            console.print("\n[yellow]⚠️  Batch processing cancelled by user[/yellow]")
+            sys.exit(0)
+        except Exception as e:
+            console.print(f"\n[red]❌ Unexpected error: {str(e)}[/red]")
+            if debug:
+                console.print_exception()
+            sys.exit(1)
     
     # Handle list-themes mode
     if list_themes:
