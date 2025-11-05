@@ -376,6 +376,67 @@ body {
     color: var(--accent-color);
 }
 
+/* Footer with QR Code */
+.cv-footer {
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-xl);
+    page-break-inside: avoid;
+}
+
+.footer-divider {
+    height: 3px;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color), var(--accent-color));
+    margin-bottom: var(--spacing-lg);
+    border-radius: var(--radius-sm);
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg);
+    background: var(--background-light);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    gap: var(--spacing-lg);
+}
+
+.footer-text {
+    flex: 1;
+}
+
+.footer-label {
+    font-family: var(--font-heading);
+    font-size: 10.5pt;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: 0 0 var(--spacing-xs) 0;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.footer-url {
+    font-size: 9pt;
+    color: var(--text-secondary);
+    margin: 0;
+    font-family: 'Georgia', serif;
+    font-style: italic;
+}
+
+.qr-container {
+    flex-shrink: 0;
+    padding: var(--spacing-sm);
+    border: 2px solid var(--accent-color);
+    border-radius: var(--radius-sm);
+    background: white;
+}
+
+.qr-code {
+    display: block;
+    width: 70px;
+    height: 70px;
+}
+
 /* Print Optimization */
 @media print {
     body {
@@ -387,7 +448,8 @@ body {
     .section,
     .experience-item,
     .education-item,
-    .info-column {
+    .info-column,
+    .cv-footer {
         page-break-inside: avoid;
     }
     
@@ -398,3 +460,4 @@ body {
         page-break-after: avoid;
     }
 }
+

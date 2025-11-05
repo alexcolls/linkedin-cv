@@ -165,6 +165,11 @@ def normalize_profile_url(input_str: str) -> str:
     default=None,
     help="Override accent color (hex format, e.g., #f59e0b)",
 )
+@click.option(
+    "--add-qr-code/--no-qr-code",
+    default=True,
+    help="Include QR code linking to LinkedIn profile (default: enabled)",
+)
 def main(
     profile_url: Optional[str],
     output_dir: str,
@@ -184,6 +189,7 @@ def main(
     list_themes: bool,
     color_primary: Optional[str],
     color_accent: Optional[str],
+    add_qr_code: bool,
 ):
     """Generate a professional PDF CV from a LinkedIn profile.
 
@@ -335,7 +341,8 @@ def main(
         # Run the async workflow
         asyncio.run(generate_cv(
             profile_url, output_path, template, html_file, headless, debug,
-            export_json, json_file, theme, custom_colors if custom_colors else None
+            export_json, json_file, theme, custom_colors if custom_colors else None,
+            add_qr_code
         ))
     except KeyboardInterrupt:
         console.print("\n[yellow]⚠️  Operation cancelled by user[/yellow]")
@@ -362,6 +369,7 @@ async def generate_cv(
     json_file: str,
     theme: str = "modern",
     custom_colors: Optional[Dict[str, str]] = None,
+    add_qr_code: bool = True,
 ):
     """Main workflow to generate CV from LinkedIn profile or export to JSON."""
 
@@ -551,6 +559,29 @@ async def generate_cv(
 
         # Add profile image to data
         profile_data["profile_image_data"] = profile_image_data
+        
+        # Step 3.5: Generate QR code if enabled
+        if add_qr_code and profile_url:
+            task3_5 = progress.add_task("🔲 Generating QR code...", total=None)
+            try:
+                from src.utils.qr_generator import QRGenerator
+                qr_gen = QRGenerator()
+                qr_data_uri = qr_gen.generate_data_uri(
+                    data=profile_url,
+                    size=10,
+                    border=1,
+                )
+                profile_data["qr_code"] = qr_data_uri
+                profile_data["profile_url"] = profile_url
+                profile_data["linkedin_url"] = profile_url
+                progress.update(task3_5, completed=True)
+                console.print("   [green]✓[/green] QR code generated!")
+            except Exception as e:
+                progress.update(task3_5, completed=True)
+                console.print(f"   [yellow]⚠️  QR code generation failed: {str(e)}[/yellow]")
+                profile_data["qr_code"] = None
+        else:
+            profile_data["qr_code"] = None
 
         # Step 4: Generate PDF
         task4 = progress.add_task(f"📄 Generating professional PDF CV ({theme} theme)...", total=None)

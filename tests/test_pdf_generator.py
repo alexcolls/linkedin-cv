@@ -86,14 +86,16 @@ class TestPDFGenerator:
     def test_default_template_exists(self):
         """Test that default CV template exists."""
         generator = PDFGenerator()
-        template_file = generator.templates_dir / "cv_template.html"
-        assert template_file.exists()
+        # Updated for theme-based template structure
+        template_file = generator.templates_dir / "modern" / "cv_template.html"
+        assert template_file.exists(), f"Template not found at {template_file}"
 
     def test_default_css_exists(self):
         """Test that default CSS file exists."""
         generator = PDFGenerator()
-        css_file = generator.templates_dir / "style.css"
-        assert css_file.exists()
+        # Updated for theme-based template structure
+        css_file = generator.templates_dir / "modern" / "style.css"
+        assert css_file.exists(), f"CSS not found at {css_file}"
 
 
 class TestPDFGeneratorEdgeCases:

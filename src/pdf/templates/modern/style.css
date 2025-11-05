@@ -610,6 +610,55 @@ body {
     fill: none;
 }
 
+/* Footer with QR Code */
+.cv-footer {
+    margin-top: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    border-radius: var(--radius-lg);
+    page-break-inside: avoid;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.footer-text {
+    flex: 1;
+}
+
+.footer-title {
+    font-family: var(--font-heading);
+    font-size: 11pt;
+    font-weight: 600;
+    color: white;
+    margin: 0 0 var(--spacing-xs) 0;
+}
+
+.footer-url {
+    font-size: 9pt;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+    font-family: 'Courier New', monospace;
+}
+
+.qr-code-container {
+    flex-shrink: 0;
+    background: white;
+    padding: var(--spacing-sm);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.qr-code {
+    display: block;
+    width: 80px;
+    height: 80px;
+}
+
 /* Print Optimization */
 @media print {
     body {
@@ -621,7 +670,8 @@ body {
     .content-section,
     .timeline-item,
     .education-item,
-    .project-item {
+    .project-item,
+    .cv-footer {
         page-break-inside: avoid;
     }
     
