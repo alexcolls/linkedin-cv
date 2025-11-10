@@ -24,8 +24,14 @@ from src.scraper.linkedin_scraper import LinkedInScraper
 from src.scraper.parser import ProfileParser
 from src.security import SecurityValidator
 from src.utils.image_processor import ImageProcessor
+from src.utils.structured_logger import (
+    configure_structured_logging,
+    get_logger,
+    CorrelationContext,
+)
 
 console = Console()
+logger = get_logger(__name__)
 
 
 def display_banner():
@@ -230,6 +236,55 @@ def main(
     2. --parse-html <username>: Parse saved HTML files to extract JSON data
     3. --generate-pdf <username>: Generate PDF from saved JSON data
     """
+    # Configure structured logging
+    log_level = "DEBUG" if debug else "INFO"
+    configure_structured_logging(level=log_level, json_logs=False)
+    
+    # Start correlation context for this CLI invocation
+    with CorrelationContext() as corr_id:
+        logger.info(
+            "cli_started",
+            profile_url=profile_url,
+            output_dir=output_dir,
+            mode="batch" if batch_file else "single",
+            debug=debug,
+        )
+        
+        # Call the internal main logic with correlation tracking
+        _main_internal(
+            profile_url, output_dir, template, html_file, headless, debug,
+            login, export_json, json_file, no_banner, extract_html, parse_html,
+            generate_pdf, generate_key, theme, list_themes, color_primary, color_accent,
+            add_qr_code, output_format, batch_file, create_sample_csv, max_concurrent
+        )
+
+
+def _main_internal(
+    profile_url: Optional[str],
+    output_dir: str,
+    template: Optional[str],
+    html_file: Optional[str],
+    headless: bool,
+    debug: bool,
+    login: bool,
+    export_json: bool,
+    json_file: str,
+    no_banner: bool,
+    extract_html: bool,
+    parse_html: Optional[str],
+    generate_pdf: Optional[str],
+    generate_key: bool,
+    theme: str,
+    list_themes: bool,
+    color_primary: Optional[str],
+    color_accent: Optional[str],
+    add_qr_code: bool,
+    output_format: str,
+    batch_file: Optional[str],
+    create_sample_csv: bool,
+    max_concurrent: int,
+):
+    """Internal main function with correlation context already set."""
     # Initialize security validator
     validator = SecurityValidator()
     
@@ -270,9 +325,11 @@ def main(
             profile_url = validator.validate_linkedin_url(profile_url)
     
     except ValidationError as e:
+        logger.error("validation_failed", error=str(e), field=e.field if hasattr(e, 'field') else None)
         console.print(f"[red]❌ Validation error: {str(e)}[/red]")
         sys.exit(1)
     except Exception as e:
+        logger.error("security_validation_failed", error=str(e), error_type=type(e).__name__)
         console.print(f"[red]❌ Security validation failed: {str(e)}[/red]")
         if debug:
             console.print_exception()
@@ -507,6 +564,17 @@ async def generate_cv(
     output_format: str = "pdf",
 ):
     """Main workflow to generate CV from LinkedIn profile or export to JSON."""
+    import time
+    
+    logger.info(
+        "generate_cv_started",
+        profile_url=profile_url,
+        html_file=html_file,
+        theme=theme,
+        output_format=output_format,
+    )
+    
+    workflow_start = time.time()
 
     with Progress(
         SpinnerColumn(),
@@ -517,36 +585,57 @@ async def generate_cv(
         # Step 1: Get HTML content (either from file or by scraping)
         if html_file:
             task1 = progress.add_task("📂 Loading HTML file...", total=None)
+            logger.debug("loading_html_file", html_file=html_file)
             
             try:
                 with open(html_file, "r", encoding="utf-8") as f:
                     html_content = f.read()
                 progress.update(task1, completed=True)
                 console.print("   [green]✓[/green] HTML file loaded successfully!")
+                logger.info("html_file_loaded", html_file=html_file, size_bytes=len(html_content))
             except FileNotFoundError:
                 progress.update(task1, completed=True)
+                logger.error("html_file_not_found", html_file=html_file)
                 raise ValidationError(f"HTML file not found: {html_file}", field="html_file")
             except Exception as e:
                 progress.update(task1, completed=True)
+                logger.error("html_file_load_failed", html_file=html_file, error=str(e))
                 raise ParsingError(f"Failed to read HTML file: {str(e)}")
         else:
             task1 = progress.add_task("🔍 Scraping LinkedIn profile...", total=None)
+            logger.debug("scraping_profile", profile_url=profile_url)
 
+            scrape_start = time.time()
             scraper = LinkedInScraper(headless=headless, debug=debug)
             html_content = await scraper.scrape_profile(profile_url)
+            scrape_duration = (time.time() - scrape_start) * 1000
 
             progress.update(task1, completed=True)
             console.print("   [green]✓[/green] Profile scraped successfully!")
+            logger.info(
+                "profile_scraped",
+                profile_url=profile_url,
+                duration_ms=f"{scrape_duration:.2f}",
+                size_bytes=len(html_content),
+            )
 
         # Step 2: Parse profile data
         task2 = progress.add_task("📋 Parsing profile data...", total=None)
+        logger.debug("parsing_profile")
 
+        parse_start = time.time()
         parser = ProfileParser(debug=debug)
         profile_data = parser.parse(html_content)
+        parse_duration = (time.time() - parse_start) * 1000
 
         progress.update(task2, completed=True)
         console.print(
             f"   [green]✓[/green] Parsed {len(profile_data.get('sections', []))} sections!"
+        )
+        logger.info(
+            "profile_parsed",
+            sections_count=len(profile_data.get('sections', [])),
+            duration_ms=f"{parse_duration:.2f}",
         )
         
         # Check if we got meaningful data
