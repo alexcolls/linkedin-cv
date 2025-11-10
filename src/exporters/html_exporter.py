@@ -78,8 +78,7 @@ class HTMLExporter:
             raise
         except Exception as e:
             raise PDFGenerationError(
-                f"Failed to export HTML: {str(e)}",
-                context={"output_path": output_path, "theme": self.theme},
+                f"Failed to export HTML: {str(e)}"
             )
 
     def _create_standalone_html(self, html_content: str, css_content: str) -> str:
@@ -196,8 +195,7 @@ class HTMLExporter:
             raise
         except Exception as e:
             raise PDFGenerationError(
-                f"Failed to export HTML with assets: {str(e)}",
-                context={"output_dir": output_dir, "theme": self.theme},
+                f"Failed to export HTML with assets: {str(e)}"
             )
 
     def _link_external_css(self, html_content: str, css_path: str) -> str:
