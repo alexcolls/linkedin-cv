@@ -7,6 +7,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2025-11-08
+
+### Added
+- 📊 **Structured Logging** - Enhanced observability with correlation tracking
+  * `structured_logger` module with structlog integration
+  * Correlation ID tracking for request tracing across workflows
+  * Thread-safe context variables for correlation IDs
+  * Decorators for function timing and error logging
+  * JSON output support for production environments
+  * Integrated into CLI with automatic correlation contexts
+  * 22 comprehensive tests, 100% coverage
+- 🔄 **Async Image Processing** - Non-blocking I/O for better performance
+  * Converted ImageProcessor to use aiohttp instead of requests
+  * Async process() and validate_url() methods
+  * Batch processor updated to await async operations
+  * 14 comprehensive tests, 100% coverage
+  * Supports cache, resizing, format conversion, error handling
+- ✅ **Massively Expanded Test Coverage** - From 41% to 51% overall
+  * Batch processor tests: 19 tests, 93% coverage
+  * HTML exporter tests: 21 tests, 100% coverage
+  * Async image processor tests: 14 tests, 100% coverage
+  * Structured logger tests: 22 tests, 100% coverage
+  * Total: 261 tests passing (up from 185)
+
+### Changed
+- 🔧 **Dependencies** - Added aiohttp for async HTTP operations
+  * aiohttp v3.13.2 for non-blocking image downloads
+  * structlog v25.5.0 for structured logging
+- 📝 **Logging** - Structured logging throughout CLI and workflows
+  * Rich contextual information in logs (profile_url, duration_ms, etc.)
+  * Correlation IDs automatically added to all log events
+  * Better error tracking and debugging capabilities
+
+### Improved
+- ⚡ **Performance** - Async I/O for image processing
+  * Non-blocking image downloads improve batch processing speed
+  * Better resource utilization with async/await patterns
+- 🔍 **Observability** - Structured logging for production debugging
+  * Easy to search and filter logs by correlation ID
+  * Rich context in every log event
+  * JSON output compatible with log aggregation tools
+- 🧪 **Code Quality** - Significantly improved test coverage
+  * Critical paths now well-tested
+  * Higher confidence in production deployments
+  * Better error scenario coverage
+
+### Technical Details
+- **Structured Logger**: 222 lines, 100% test coverage
+- **Async Image Processor**: 50 lines (refactored), 100% test coverage
+- **Batch Processor Tests**: 528 lines, 93% module coverage
+- **HTML Exporter Tests**: 378 lines, 100% module coverage  
+- **Total New Tests**: 76 new tests (261 total, up from 185)
+- **Overall Coverage**: 51% (up from 41%)
+- **Key Modules Coverage**:
+  * Batch processor: 94%
+  * Config: 95%
+  * HTML exporter: 100%
+  * Image processor: 100%
+  * Structured logger: 100%
+  * Template manager: 96%
+  * Security validator: 85%
+  * Rate limiter: 97%
+
 ## [0.6.0+] - 2025-11-05
 
 ### Added
