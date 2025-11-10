@@ -3,7 +3,7 @@ import base64
 from io import BytesIO
 from typing import Optional
 
-import requests
+import aiohttp
 from PIL import Image
 
 from src.utils.cache import get_image_cache
@@ -25,7 +25,7 @@ class ImageProcessor:
         self.use_cache = use_cache
         self.cache = get_image_cache() if use_cache else None
 
-    def process(self, image_url: str) -> str:
+    async def process(self, image_url: str) -> str:
         """Download, process, and convert image to base64 data URI.
 
         Args:
@@ -47,12 +47,14 @@ class ImageProcessor:
                 return f"data:image/jpeg;base64,{img_data}"
         
         try:
-            # Download image
-            response = requests.get(image_url, timeout=10)
-            response.raise_for_status()
+            # Download image asynchronously
+            async with aiohttp.ClientSession() as session:
+                async with session.get(image_url, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                    response.raise_for_status()
+                    content = await response.read()
 
             # Open and process image
-            image = Image.open(BytesIO(response.content))
+            image = Image.open(BytesIO(content))
 
             # Convert to RGB if necessary
             if image.mode in ("RGBA", "LA", "P"):
@@ -83,7 +85,7 @@ class ImageProcessor:
         except Exception as e:
             raise Exception(f"Failed to process image: {str(e)}")
 
-    def validate_url(self, url: str) -> bool:
+    async def validate_url(self, url: str) -> bool:
         """Validate if URL is accessible.
 
         Args:
@@ -93,7 +95,8 @@ class ImageProcessor:
             True if URL is accessible, False otherwise
         """
         try:
-            response = requests.head(url, timeout=5)
-            return response.status_code == 200
+            async with aiohttp.ClientSession() as session:
+                async with session.head(url, timeout=aiohttp.ClientTimeout(total=5)) as response:
+                    return response.status == 200
         except:
             return False

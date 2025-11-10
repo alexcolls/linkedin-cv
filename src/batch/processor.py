@@ -164,7 +164,7 @@ class BatchProcessor:
             if parsed_data.get("profile_picture_url"):
                 try:
                     image_processor = ImageProcessor()
-                    profile_image_data = image_processor.process(
+                    profile_image_data = await image_processor.process(
                         parsed_data["profile_picture_url"]
                     )
                 except Exception:
