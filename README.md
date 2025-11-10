@@ -606,6 +606,16 @@ For detailed information about contributing, including:
 
 ---
 
+## 👤 Author
+
+**Alex Colls Outumuro**
+
+- 📧 Email: alexcollsoutumuro@gmail.com
+- 💼 LinkedIn: [linkedin.com/in/alex-colls-outumuro](https://linkedin.com/in/alex-colls-outumuro)
+- 🐙 GitHub: [@alexcolls](https://github.com/alexcolls)
+
+---
+
 ## 📝 License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
